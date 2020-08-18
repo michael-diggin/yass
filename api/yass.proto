@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/michael-diggin/yass/api;api";
+
+service Cache{
+    rpc Add(Pair) returns(KeyError){}
+    rpc Get(Key) returns(Pair){}
+}
+
+
+message Pair {
+    string key = 1;
+    string value = 2;
+}
+
+message Key {
+    string key = 1;
+}
+
+message KeyError {
+    string key = 1;
+    string errorStatus = 2;
+}
