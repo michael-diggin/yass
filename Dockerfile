@@ -1,4 +1,4 @@
-FROM golang:1.14.6
+FROM golang:1.14.6-alpine as builder
 
 WORKDIR /app
 COPY go.mod .
@@ -7,6 +7,6 @@ RUN go mod download
 
 COPY . .
 EXPOSE 8080
-RUN GOOS=linux go build -o server github.com/michael-diggin/yass/backend/cmd/main.go
+RUN GOOS=linux go build -o /bin/server github.com/michael-diggin/yass/backend/cmd
 
-ENTRYPOINT [ "./server" ]
+ENTRYPOINT [ "/bin/server" ]
