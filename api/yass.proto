@@ -7,6 +7,8 @@ option go_package = "github.com/michael-diggin/yass/api;api";
 service Cache{
     rpc Add(Pair) returns(Key){}
     rpc Get(Key) returns(Pair){}
+    rpc Reset(Pair) returns(Key){}
+    rpc Delete(Key) returns(Null){}
 }
 
 
@@ -18,3 +20,5 @@ message Pair {
 message Key {
     string key = 1;
 }
+
+message Null{}
