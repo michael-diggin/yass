@@ -131,6 +131,44 @@ func (x *Key) GetKey() string {
 	return ""
 }
 
+type Null struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Null) Reset() {
+	*x = Null{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_yass_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Null) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Null) ProtoMessage() {}
+
+func (x *Null) ProtoReflect() protoreflect.Message {
+	mi := &file_yass_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Null.ProtoReflect.Descriptor instead.
+func (*Null) Descriptor() ([]byte, []int) {
+	return file_yass_proto_rawDescGZIP(), []int{2}
+}
+
 var File_yass_proto protoreflect.FileDescriptor
 
 var file_yass_proto_rawDesc = []byte{
@@ -139,15 +177,19 @@ var file_yass_proto_rawDesc = []byte{
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76,
 	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
 	0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x32, 0x43, 0x0a, 0x05, 0x43, 0x61,
-	0x63, 0x68, 0x65, 0x12, 0x1c, 0x0a, 0x03, 0x41, 0x64, 0x64, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69,
-	0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22,
-	0x00, 0x12, 0x1c, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b,
-	0x65, 0x79, 0x1a, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x42,
-	0x28, 0x5a, 0x26, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69,
-	0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73,
-	0x73, 0x2f, 0x61, 0x70, 0x69, 0x3b, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75,
+	0x6c, 0x6c, 0x32, 0x84, 0x01, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x1c, 0x0a, 0x03,
+	0x41, 0x64, 0x64, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x08,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1c, 0x0a, 0x03, 0x47, 0x65,
+	0x74, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09, 0x2e, 0x61, 0x70,
+	0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x1e, 0x0a, 0x05, 0x52, 0x65, 0x73, 0x65,
+	0x74, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x08, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1f, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09, 0x2e, 0x61,
+	0x70, 0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x28, 0x5a, 0x26, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d,
+	0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x3b,
+	0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -162,18 +204,23 @@ func file_yass_proto_rawDescGZIP() []byte {
 	return file_yass_proto_rawDescData
 }
 
-var file_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_yass_proto_goTypes = []interface{}{
 	(*Pair)(nil), // 0: api.Pair
 	(*Key)(nil),  // 1: api.Key
+	(*Null)(nil), // 2: api.Null
 }
 var file_yass_proto_depIdxs = []int32{
 	0, // 0: api.Cache.Add:input_type -> api.Pair
 	1, // 1: api.Cache.Get:input_type -> api.Key
-	1, // 2: api.Cache.Add:output_type -> api.Key
-	0, // 3: api.Cache.Get:output_type -> api.Pair
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	0, // 2: api.Cache.Reset:input_type -> api.Pair
+	1, // 3: api.Cache.Delete:input_type -> api.Key
+	1, // 4: api.Cache.Add:output_type -> api.Key
+	0, // 5: api.Cache.Get:output_type -> api.Pair
+	1, // 6: api.Cache.Reset:output_type -> api.Key
+	2, // 7: api.Cache.Delete:output_type -> api.Null
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -209,6 +256,18 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
+		file_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Null); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -216,7 +275,7 @@ func file_yass_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_yass_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -244,6 +303,8 @@ const _ = grpc.SupportPackageIsVersion6
 type CacheClient interface {
 	Add(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
 	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
+	Reset(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
+	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
 }
 
 type cacheClient struct {
@@ -272,10 +333,30 @@ func (c *cacheClient) Get(ctx context.Context, in *Key, opts ...grpc.CallOption)
 	return out, nil
 }
 
+func (c *cacheClient) Reset(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
+	out := new(Key)
+	err := c.cc.Invoke(ctx, "/api.Cache/Reset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cacheClient) Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/api.Cache/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CacheServer is the server API for Cache service.
 type CacheServer interface {
 	Add(context.Context, *Pair) (*Key, error)
 	Get(context.Context, *Key) (*Pair, error)
+	Reset(context.Context, *Pair) (*Key, error)
+	Delete(context.Context, *Key) (*Null, error)
 }
 
 // UnimplementedCacheServer can be embedded to have forward compatible implementations.
@@ -287,6 +368,12 @@ func (*UnimplementedCacheServer) Add(context.Context, *Pair) (*Key, error) {
 }
 func (*UnimplementedCacheServer) Get(context.Context, *Key) (*Pair, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedCacheServer) Reset(context.Context, *Pair) (*Key, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
+}
+func (*UnimplementedCacheServer) Delete(context.Context, *Key) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 
 func RegisterCacheServer(s *grpc.Server, srv CacheServer) {
@@ -329,6 +416,42 @@ func _Cache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Cache_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Pair)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Cache/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).Reset(ctx, req.(*Pair))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Key)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Cache/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).Delete(ctx, req.(*Key))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Cache_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.Cache",
 	HandlerType: (*CacheServer)(nil),
@@ -340,6 +463,14 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Get",
 			Handler:    _Cache_Get_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _Cache_Reset_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _Cache_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
