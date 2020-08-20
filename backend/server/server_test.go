@@ -6,13 +6,14 @@ import (
 	"testing"
 
 	pb "github.com/michael-diggin/yass/api"
+	"github.com/michael-diggin/yass/backend/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func setUpCacheServer() Server {
-	testCache := make(map[string]string)
+	testCache := storage.NewCacheService()
 	testCache["testKey"] = "testValue"
 	srv := New(testCache)
 	return srv
@@ -84,44 +85,6 @@ func TestGetFromCache(t *testing.T) {
 
 			if res != nil {
 				if res.Value != tc.value {
-					t.Fatalf("Expected %s, got %s", tc.value, res.Key)
-				}
-			}
-
-		})
-	}
-}
-
-func TestResetKeyValue(t *testing.T) {
-	logrus.SetOutput(ioutil.Discard) // Discard log output for test
-	srv := setUpCacheServer()
-	tt := []struct {
-		name    string
-		key     string
-		value   string
-		errCode codes.Code
-	}{
-		{"valid case", "testKey", "newValue", codes.OK},
-		{"key not found", "newKey", "value", codes.NotFound},
-		{"empty key", "", "", codes.InvalidArgument},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-
-			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
-
-			res, err := srv.Reset(context.Background(), testKV)
-			e, ok := status.FromError(err)
-			if !ok {
-				t.Errorf("Could not get code from error: %v", err)
-			}
-			if e.Code() != tc.errCode {
-				t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-			}
-
-			if res != nil {
-				if res.Key != tc.key {
 					t.Fatalf("Expected %s, got %s", tc.value, res.Key)
 				}
 			}

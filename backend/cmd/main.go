@@ -8,6 +8,7 @@ import (
 
 	pb "github.com/michael-diggin/yass/api"
 	"github.com/michael-diggin/yass/backend/server"
+	"github.com/michael-diggin/yass/backend/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -15,8 +16,6 @@ import (
 var cache map[string]string
 
 func main() {
-
-	cache = make(map[string]string)
 
 	port := flag.Int("p", 8080, "port for server to listen on")
 	flag.Parse()
@@ -27,6 +26,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
+	cache := storage.NewCacheService()
 	pb.RegisterCacheServer(s, server.New(cache))
 	log.Printf("Starting server on port %d", *port)
 	err = s.Serve(lis)
