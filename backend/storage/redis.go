@@ -14,9 +14,17 @@ type RedisService struct {
 }
 
 // NewRedisService returns an instance of the redis service
-func NewRedisService(conn redis.Conn) RedisService {
-	return RedisService{conn: conn}
+func NewRedisService(username, password, addr string) (RedisService, error) {
+	userOpt := redis.DialUsername(username)
+	passOpt := redis.DialPassword(password)
+	conn, err := redis.Dial("tcp", addr, userOpt, passOpt)
 
+	return RedisService{conn}, err
+}
+
+//Close terminates the connection
+func (r RedisService) Close() error {
+	return r.conn.Close()
 }
 
 // Set is redis implementation of service set

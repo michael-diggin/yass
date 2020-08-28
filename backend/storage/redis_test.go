@@ -10,12 +10,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: put tests for set/get into test table
 func TestRedisSet(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("SET", "testKey", "testValue").Expect("ok")
-	service := NewRedisService(conn)
+	service := RedisService{conn: conn}
+	defer service.Close()
 	ctx := context.TODO()
 	key, err := service.Set(ctx, "testKey", "testValue")
 
@@ -38,7 +38,8 @@ func TestSetRedisWithError(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("SET", "testKey", "testValue").ExpectError(errors.New("Redis Error thrown"))
-	service := NewRedisService(conn)
+	service := RedisService{conn: conn}
+	defer service.Close()
 	ctx := context.TODO()
 	key, err := service.Set(ctx, "testKey", "testValue")
 
@@ -60,7 +61,8 @@ func TestGetRedisWithError(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("GET", "testKey").ExpectError(errors.New("Key not in cache"))
-	service := NewRedisService(conn)
+	service := RedisService{conn: conn}
+	defer service.Close()
 	ctx := context.TODO()
 	value, err := service.Get(ctx, "testKey")
 
@@ -81,7 +83,8 @@ func TestRedisGet(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("GET", "testKey").Expect("testValue")
-	service := NewRedisService(conn)
+	service := RedisService{conn: conn}
+	defer service.Close()
 	ctx := context.TODO()
 	value, err := service.Get(ctx, "testKey")
 
@@ -103,7 +106,8 @@ func TestRedisDelete(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("DEL", "testKey").Expect("ok")
-	service := NewRedisService(conn)
+	service := RedisService{conn: conn}
+	defer service.Close()
 	ctx := context.TODO()
 	err := service.Delete(ctx, "testKey")
 

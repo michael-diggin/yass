@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
-	"github.com/gomodule/redigo/redis"
 	pb "github.com/michael-diggin/yass/api"
 	"github.com/michael-diggin/yass/backend/server"
 	"github.com/michael-diggin/yass/backend/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
-
-var cache map[string]string
 
 func main() {
 
@@ -28,9 +26,13 @@ func main() {
 	}
 
 	// set up redis
-	conn, teardown := NewRedisConn(*addr)
-	cache := storage.NewRedisService(conn)
-	defer teardown()
+	username := os.Getenv("REDIS_USER") //defaults to ""
+	password := os.Getenv("REDIS_PASS") //defaults to ""
+	cache, err := storage.NewRedisService(username, password, *addr)
+	if err != nil {
+		logrus.Fatalf("Could not connect to redis cache: %v", err)
+	}
+	defer cache.Close()
 	// set up grpc server
 	s := grpc.NewServer()
 	pb.RegisterCacheServer(s, server.New(cache))
@@ -39,14 +41,4 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Could not serve: %v", err)
 	}
-}
-
-// NewRedisConn returns a new connection and a teardown function to close the conn
-// addr default = localhost:6379
-func NewRedisConn(addr string) (redis.Conn, func()) {
-	conn, err := redis.Dial("tcp", addr)
-	if err != nil {
-		logrus.Fatal(err) // TODO: move this err handle up a level to main.go?
-	}
-	return conn, func() { conn.Close() }
 }
