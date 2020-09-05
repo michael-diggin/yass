@@ -17,14 +17,14 @@ func TestRedisSet(t *testing.T) {
 	service := RedisService{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
-	key, err := service.Set(ctx, "testKey", "testValue")
+	resp := <-service.Set(ctx, "testKey", "testValue")
 
-	if err != nil {
-		t.Fatalf("Failed to set: %v", err)
+	if resp.Err != nil {
+		t.Fatalf("Failed to set: %v", resp.Err)
 	}
 
-	if key != "testKey" {
-		t.Fatalf("Expected 'testKey', got %s", key)
+	if resp.Key != "testKey" {
+		t.Fatalf("Expected 'testKey', got %s", resp.Key)
 	}
 
 	if conn.Stats(cmd) != 1 {
@@ -41,14 +41,14 @@ func TestSetRedisWithError(t *testing.T) {
 	service := RedisService{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
-	key, err := service.Set(ctx, "testKey", "testValue")
+	resp := <-service.Set(ctx, "testKey", "testValue")
 
-	if err.Error() != "Redis Error thrown" {
-		t.Fatalf("Expected 'Key not in cache' got: %v", err)
+	if resp.Err.Error() != "Redis Error thrown" {
+		t.Fatalf("Expected 'Key not in cache' got: %v", resp.Err)
 	}
 
-	if key != "" {
-		t.Fatalf("Expected empty string, got %s", key)
+	if resp.Key != "" {
+		t.Fatalf("Expected empty string, got %s", resp.Key)
 	}
 
 	if conn.Stats(cmd) != 1 {
@@ -64,14 +64,14 @@ func TestGetRedisWithError(t *testing.T) {
 	service := RedisService{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
-	value, err := service.Get(ctx, "testKey")
+	resp := <-service.Get(ctx, "testKey")
 
-	if err.Error() != "Key not in cache" {
-		t.Fatalf("Expected 'Key not in cache' got: %v", err)
+	if resp.Err.Error() != "Key not in cache" {
+		t.Fatalf("Expected 'Key not in cache' got: %v", resp.Err)
 	}
 
-	if value != "" {
-		t.Fatalf("Expected empty string, got %s", value)
+	if resp.Value != "" {
+		t.Fatalf("Expected empty string, got %s", resp.Value)
 	}
 
 	if conn.Stats(cmd) != 1 {
@@ -86,14 +86,14 @@ func TestRedisGet(t *testing.T) {
 	service := RedisService{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
-	value, err := service.Get(ctx, "testKey")
+	resp := <-service.Get(ctx, "testKey")
 
-	if err != nil {
-		t.Fatalf("Failed to set: %v", err)
+	if resp.Err != nil {
+		t.Fatalf("Failed to get: %v", resp.Err)
 	}
 
-	if value != "testValue" {
-		t.Fatalf("Expected 'testKey', got %s", value)
+	if resp.Value != "testValue" {
+		t.Fatalf("Expected 'testKey', got %s", resp.Value)
 	}
 
 	if conn.Stats(cmd) != 1 {
@@ -109,10 +109,10 @@ func TestRedisDelete(t *testing.T) {
 	service := RedisService{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
-	err := service.Delete(ctx, "testKey")
+	resp := <-service.Delete(ctx, "testKey")
 
-	if err != nil {
-		t.Fatalf("Failed to set: %v", err)
+	if resp.Err != nil {
+		t.Fatalf("Failed to set: %v", resp.Err)
 	}
 
 	if conn.Stats(cmd) != 1 {

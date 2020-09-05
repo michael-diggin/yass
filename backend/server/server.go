@@ -26,12 +26,16 @@ func (s Server) Add(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	if pair.Key == "" || pair.Value == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set a zero key or value")
 	}
-	key, err := s.Cache.Set(ctx, pair.Key, pair.Value)
-	if err != nil {
-		return nil, status.Error(codes.AlreadyExists, err.Error())
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case cacheResp := <-s.Cache.Set(ctx, pair.Key, pair.Value):
+		if cacheResp.Err != nil {
+			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
+		}
+		output := &pb.Key{Key: cacheResp.Key}
+		return output, nil
 	}
-	output := &pb.Key{Key: key}
-	return output, nil
 }
 
 // Get returns the value of a key
@@ -40,13 +44,17 @@ func (s Server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	if key.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot get a zero key")
 	}
-	value, err := s.Cache.Get(ctx, key.Key)
-	if err != nil {
-		logrus.Errorf("Tried to get value with not set key: %s", key.Key)
-		return nil, status.Error(codes.NotFound, err.Error())
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case cacheResp := <-s.Cache.Get(ctx, key.Key):
+		if cacheResp.Err != nil {
+			logrus.Errorf("Tried to get value with not set key: %s", key.Key)
+			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
+		}
+		pair := &pb.Pair{Key: key.Key, Value: cacheResp.Value}
+		return pair, nil
 	}
-	pair := &pb.Pair{Key: key.Key, Value: value}
-	return pair, nil
 }
 
 // Delete is the endpoint to delete a key/value if it is already in the cache
@@ -54,10 +62,14 @@ func (s Server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	if key.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}
-	err := s.Cache.Delete(ctx, key.Key)
-	if err != nil {
-		logrus.Errorf("Could not delete key as does not exist: %s", key.Key)
-		return nil, status.Error(codes.NotFound, err.Error())
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case cacheResp := <-s.Cache.Delete(ctx, key.Key):
+		if cacheResp.Err != nil {
+			logrus.Errorf("Could not delete key as does not exist: %s", key.Key)
+			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
+		}
+		return &pb.Null{}, nil
 	}
-	return &pb.Null{}, nil
 }
