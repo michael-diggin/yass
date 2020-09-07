@@ -1,4 +1,4 @@
-package storage
+package redis
 
 import (
 	"context"
@@ -14,7 +14,7 @@ func TestRedisSet(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("SET", "testKey", "testValue").Expect("ok")
-	service := RedisService{conn: conn}
+	service := Service{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
 	resp := <-service.Set(ctx, "testKey", "testValue")
@@ -38,7 +38,7 @@ func TestSetRedisWithError(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("SET", "testKey", "testValue").ExpectError(errors.New("Redis Error thrown"))
-	service := RedisService{conn: conn}
+	service := Service{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
 	resp := <-service.Set(ctx, "testKey", "testValue")
@@ -61,7 +61,7 @@ func TestGetRedisWithError(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("GET", "testKey").ExpectError(errors.New("Key not in cache"))
-	service := RedisService{conn: conn}
+	service := Service{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
 	resp := <-service.Get(ctx, "testKey")
@@ -83,7 +83,7 @@ func TestRedisGet(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("GET", "testKey").Expect("testValue")
-	service := RedisService{conn: conn}
+	service := Service{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
 	resp := <-service.Get(ctx, "testKey")
@@ -106,7 +106,7 @@ func TestRedisDelete(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
 	cmd := conn.Command("DEL", "testKey").Expect("ok")
-	service := RedisService{conn: conn}
+	service := Service{conn: conn}
 	defer service.Close()
 	ctx := context.TODO()
 	resp := <-service.Delete(ctx, "testKey")

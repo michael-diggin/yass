@@ -9,9 +9,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/michael-diggin/yass/backend/pkg/redis"
+
 	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend/server"
-	"github.com/michael-diggin/yass/backend/storage"
+	"github.com/michael-diggin/yass/backend/pkg/server"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -25,7 +26,7 @@ func main() {
 	// set up redis
 	username := os.Getenv("REDIS_USER") //defaults to ""
 	password := os.Getenv("REDIS_PASS") //defaults to ""
-	cache, err := storage.NewRedisService(username, password, *addr)
+	cache, err := redis.New(username, password, *addr)
 	if err != nil {
 		logrus.Fatalf("Could not connect to redis cache: %v", err)
 	}
