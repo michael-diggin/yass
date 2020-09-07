@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/michael-diggin/yass/backend/model"
-
 	pb "github.com/michael-diggin/yass/api"
+	"github.com/michael-diggin/yass/backend"
 	"github.com/michael-diggin/yass/backend/mocks"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -34,8 +33,8 @@ func TestAddtoCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := mocks.TestCache{
-				SetFn: func(ctx context.Context, key, value string) *model.CacheResponse {
-					return &model.CacheResponse{
+				SetFn: func(ctx context.Context, key, value string) *backend.CacheResponse {
+					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
@@ -81,8 +80,8 @@ func TestGetFromCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := mocks.TestCache{
-				GetFn: func(ctx context.Context, key string) *model.CacheResponse {
-					return &model.CacheResponse{
+				GetFn: func(ctx context.Context, key string) *backend.CacheResponse {
+					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
@@ -129,8 +128,8 @@ func TestDeleteKeyValue(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := mocks.TestCache{
-				DelFn: func(ctx context.Context, key string) *model.CacheResponse {
-					return &model.CacheResponse{
+				DelFn: func(ctx context.Context, key string) *backend.CacheResponse {
+					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: "",
 						Err:   status.Error(tc.errCode, "")}

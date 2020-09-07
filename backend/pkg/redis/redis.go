@@ -1,4 +1,4 @@
-package storage
+package redis
 
 import (
 	"context"
@@ -9,27 +9,27 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-// RedisService implements the storage service interface
-type RedisService struct {
+// Service implements the storage service interface
+type Service struct {
 	conn redis.Conn
 }
 
-// NewRedisService returns an instance of the redis service
-func NewRedisService(username, password, addr string) (RedisService, error) {
+// New returns an instance of the redis service
+func New(username, password, addr string) (Service, error) {
 	userOpt := redis.DialUsername(username)
 	passOpt := redis.DialPassword(password)
 	conn, err := redis.Dial("tcp", addr, userOpt, passOpt)
 
-	return RedisService{conn}, err
+	return Service{conn}, err
 }
 
 //Close terminates the connection
-func (r RedisService) Close() error {
+func (r Service) Close() error {
 	return r.conn.Close()
 }
 
 // Set is redis implementation of service set
-func (r RedisService) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
+func (r Service) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
 	respChan := make(chan *backend.CacheResponse, 1)
 	go func() {
 		_, err := r.conn.Do("SET", key, value)
@@ -43,7 +43,7 @@ func (r RedisService) Set(ctx context.Context, key, value string) <-chan *backen
 }
 
 // Get is redis implementation of service get
-func (r RedisService) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (r Service) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
 	respChan := make(chan *backend.CacheResponse, 1)
 	go func() {
 		value, err := redis.String(r.conn.Do("GET", key))
@@ -57,7 +57,7 @@ func (r RedisService) Get(ctx context.Context, key string) <-chan *backend.Cache
 }
 
 // Delete is redis implementation of service delete
-func (r RedisService) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (r Service) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
 	respChan := make(chan *backend.CacheResponse)
 	go func() {
 		_, err := r.conn.Do("DEL", key)
