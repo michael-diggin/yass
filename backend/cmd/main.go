@@ -10,8 +10,8 @@ import (
 	"syscall"
 
 	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend/server"
-	"github.com/michael-diggin/yass/backend/storage"
+	"github.com/michael-diggin/yass/backend/pkg/server"
+	"github.com/michael-diggin/yass/backend/pkg/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
