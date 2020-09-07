@@ -4,20 +4,20 @@ import (
 	"context"
 
 	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend/model"
+	"github.com/michael-diggin/yass/backend"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 // New returns a new instance of the Server object
-func New(cache model.Service) Server {
+func New(cache backend.Service) Server {
 	return Server{Cache: cache}
 }
 
 // Server implements the CacheServer interface
 type Server struct {
-	Cache model.Service
+	Cache backend.Service
 }
 
 // Add takes a key/value pair and adds it to the cache storage

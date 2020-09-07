@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/michael-diggin/yass/backend/model"
+	"github.com/michael-diggin/yass/backend"
 	"github.com/sirupsen/logrus"
 
 	"github.com/gomodule/redigo/redis"
@@ -29,39 +29,39 @@ func (r RedisService) Close() error {
 }
 
 // Set is redis implementation of service set
-func (r RedisService) Set(ctx context.Context, key, value string) <-chan *model.CacheResponse {
-	respChan := make(chan *model.CacheResponse, 1)
+func (r RedisService) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
+	respChan := make(chan *backend.CacheResponse, 1)
 	go func() {
 		_, err := r.conn.Do("SET", key, value)
 		if err != nil {
 			logrus.Errorf("Error trying to set key %s: %v", key, err)
-			respChan <- &model.CacheResponse{Err: err}
+			respChan <- &backend.CacheResponse{Err: err}
 		}
-		respChan <- &model.CacheResponse{Key: key, Err: nil}
+		respChan <- &backend.CacheResponse{Key: key, Err: nil}
 	}()
 	return respChan
 }
 
 // Get is redis implementation of service get
-func (r RedisService) Get(ctx context.Context, key string) <-chan *model.CacheResponse {
-	respChan := make(chan *model.CacheResponse, 1)
+func (r RedisService) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
+	respChan := make(chan *backend.CacheResponse, 1)
 	go func() {
 		value, err := redis.String(r.conn.Do("GET", key))
 		if err != nil {
 			logrus.Errorf("Error trying to get key %s: %v", key, err)
-			respChan <- &model.CacheResponse{Err: err}
+			respChan <- &backend.CacheResponse{Err: err}
 		}
-		respChan <- &model.CacheResponse{Key: key, Value: value}
+		respChan <- &backend.CacheResponse{Key: key, Value: value}
 	}()
 	return respChan
 }
 
 // Delete is redis implementation of service delete
-func (r RedisService) Delete(ctx context.Context, key string) <-chan *model.CacheResponse {
-	respChan := make(chan *model.CacheResponse)
+func (r RedisService) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
+	respChan := make(chan *backend.CacheResponse)
 	go func() {
 		_, err := r.conn.Do("DEL", key)
-		respChan <- &model.CacheResponse{Err: err}
+		respChan <- &backend.CacheResponse{Err: err}
 	}()
 	return respChan
 }
