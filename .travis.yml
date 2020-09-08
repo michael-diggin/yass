@@ -4,4 +4,4 @@ go:
   "1.14.6"
 
 script:
-  make test
+  make unit-test
