@@ -1,3 +1,6 @@
+proto:
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative api/yass.proto
+
 build:
 	docker build -t mdiggin/yass-server:0.1 .
 

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.23.0
 // 	protoc        v3.6.1
-// source: yass.proto
+// source: api/yass.proto
 
 package api
 
@@ -41,7 +41,7 @@ type Pair struct {
 func (x *Pair) Reset() {
 	*x = Pair{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[0]
+		mi := &file_api_yass_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -54,7 +54,7 @@ func (x *Pair) String() string {
 func (*Pair) ProtoMessage() {}
 
 func (x *Pair) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[0]
+	mi := &file_api_yass_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67,7 +67,7 @@ func (x *Pair) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pair.ProtoReflect.Descriptor instead.
 func (*Pair) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{0}
+	return file_api_yass_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Pair) GetKey() string {
@@ -95,7 +95,7 @@ type Key struct {
 func (x *Key) Reset() {
 	*x = Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[1]
+		mi := &file_api_yass_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -108,7 +108,7 @@ func (x *Key) String() string {
 func (*Key) ProtoMessage() {}
 
 func (x *Key) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[1]
+	mi := &file_api_yass_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -121,7 +121,7 @@ func (x *Key) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Key.ProtoReflect.Descriptor instead.
 func (*Key) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{1}
+	return file_api_yass_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Key) GetKey() string {
@@ -140,7 +140,7 @@ type Null struct {
 func (x *Null) Reset() {
 	*x = Null{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[2]
+		mi := &file_api_yass_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -153,7 +153,7 @@ func (x *Null) String() string {
 func (*Null) ProtoMessage() {}
 
 func (x *Null) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[2]
+	mi := &file_api_yass_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -166,53 +166,53 @@ func (x *Null) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Null.ProtoReflect.Descriptor instead.
 func (*Null) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{2}
+	return file_api_yass_proto_rawDescGZIP(), []int{2}
 }
 
-var File_yass_proto protoreflect.FileDescriptor
+var File_api_yass_proto protoreflect.FileDescriptor
 
-var file_yass_proto_rawDesc = []byte{
-	0x0a, 0x0a, 0x79, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x03, 0x61, 0x70,
-	0x69, 0x22, 0x2e, 0x0a, 0x04, 0x50, 0x61, 0x69, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75,
-	0x6c, 0x6c, 0x32, 0x64, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x1c, 0x0a, 0x03, 0x41,
-	0x64, 0x64, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x08, 0x2e,
-	0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1c, 0x0a, 0x03, 0x47, 0x65, 0x74,
-	0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09, 0x2e, 0x61, 0x70, 0x69,
-	0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x1f, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09, 0x2e, 0x61, 0x70,
-	0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x28, 0x5a, 0x26, 0x67, 0x69, 0x74, 0x68,
-	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64,
-	0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x3b, 0x61,
-	0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+var file_api_yass_proto_rawDesc = []byte{
+	0x0a, 0x0e, 0x61, 0x70, 0x69, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x12, 0x03, 0x61, 0x70, 0x69, 0x22, 0x2e, 0x0a, 0x04, 0x50, 0x61, 0x69, 0x72, 0x12, 0x10, 0x0a,
+	0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12,
+	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x06,
+	0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x32, 0x64, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12,
+	0x1c, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69,
+	0x72, 0x1a, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1c, 0x0a,
+	0x03, 0x47, 0x65, 0x74, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x1f, 0x0a, 0x06, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a,
+	0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x28, 0x5a, 0x26,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61,
+	0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x61,
+	0x70, 0x69, 0x3b, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_yass_proto_rawDescOnce sync.Once
-	file_yass_proto_rawDescData = file_yass_proto_rawDesc
+	file_api_yass_proto_rawDescOnce sync.Once
+	file_api_yass_proto_rawDescData = file_api_yass_proto_rawDesc
 )
 
-func file_yass_proto_rawDescGZIP() []byte {
-	file_yass_proto_rawDescOnce.Do(func() {
-		file_yass_proto_rawDescData = protoimpl.X.CompressGZIP(file_yass_proto_rawDescData)
+func file_api_yass_proto_rawDescGZIP() []byte {
+	file_api_yass_proto_rawDescOnce.Do(func() {
+		file_api_yass_proto_rawDescData = protoimpl.X.CompressGZIP(file_api_yass_proto_rawDescData)
 	})
-	return file_yass_proto_rawDescData
+	return file_api_yass_proto_rawDescData
 }
 
-var file_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_yass_proto_goTypes = []interface{}{
+var file_api_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_api_yass_proto_goTypes = []interface{}{
 	(*Pair)(nil), // 0: api.Pair
 	(*Key)(nil),  // 1: api.Key
 	(*Null)(nil), // 2: api.Null
 }
-var file_yass_proto_depIdxs = []int32{
-	0, // 0: api.Cache.Add:input_type -> api.Pair
+var file_api_yass_proto_depIdxs = []int32{
+	0, // 0: api.Cache.Set:input_type -> api.Pair
 	1, // 1: api.Cache.Get:input_type -> api.Key
 	1, // 2: api.Cache.Delete:input_type -> api.Key
-	1, // 3: api.Cache.Add:output_type -> api.Key
+	1, // 3: api.Cache.Set:output_type -> api.Key
 	0, // 4: api.Cache.Get:output_type -> api.Pair
 	2, // 5: api.Cache.Delete:output_type -> api.Null
 	3, // [3:6] is the sub-list for method output_type
@@ -222,13 +222,13 @@ var file_yass_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_yass_proto_init() }
-func file_yass_proto_init() {
-	if File_yass_proto != nil {
+func init() { file_api_yass_proto_init() }
+func file_api_yass_proto_init() {
+	if File_api_yass_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_yass_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_api_yass_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Pair); i {
 			case 0:
 				return &v.state
@@ -240,7 +240,7 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_api_yass_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Key); i {
 			case 0:
 				return &v.state
@@ -252,7 +252,7 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_api_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Null); i {
 			case 0:
 				return &v.state
@@ -269,20 +269,20 @@ func file_yass_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_yass_proto_rawDesc,
+			RawDescriptor: file_api_yass_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_yass_proto_goTypes,
-		DependencyIndexes: file_yass_proto_depIdxs,
-		MessageInfos:      file_yass_proto_msgTypes,
+		GoTypes:           file_api_yass_proto_goTypes,
+		DependencyIndexes: file_api_yass_proto_depIdxs,
+		MessageInfos:      file_api_yass_proto_msgTypes,
 	}.Build()
-	File_yass_proto = out.File
-	file_yass_proto_rawDesc = nil
-	file_yass_proto_goTypes = nil
-	file_yass_proto_depIdxs = nil
+	File_api_yass_proto = out.File
+	file_api_yass_proto_rawDesc = nil
+	file_api_yass_proto_goTypes = nil
+	file_api_yass_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -297,7 +297,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CacheClient interface {
-	Add(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
+	Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
 	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
 	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
 }
@@ -310,9 +310,9 @@ func NewCacheClient(cc grpc.ClientConnInterface) CacheClient {
 	return &cacheClient{cc}
 }
 
-func (c *cacheClient) Add(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
+func (c *cacheClient) Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
 	out := new(Key)
-	err := c.cc.Invoke(ctx, "/api.Cache/Add", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.Cache/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +339,7 @@ func (c *cacheClient) Delete(ctx context.Context, in *Key, opts ...grpc.CallOpti
 
 // CacheServer is the server API for Cache service.
 type CacheServer interface {
-	Add(context.Context, *Pair) (*Key, error)
+	Set(context.Context, *Pair) (*Key, error)
 	Get(context.Context, *Key) (*Pair, error)
 	Delete(context.Context, *Key) (*Null, error)
 }
@@ -348,8 +348,8 @@ type CacheServer interface {
 type UnimplementedCacheServer struct {
 }
 
-func (*UnimplementedCacheServer) Add(context.Context, *Pair) (*Key, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+func (*UnimplementedCacheServer) Set(context.Context, *Pair) (*Key, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
 func (*UnimplementedCacheServer) Get(context.Context, *Key) (*Pair, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
@@ -362,20 +362,20 @@ func RegisterCacheServer(s *grpc.Server, srv CacheServer) {
 	s.RegisterService(&_Cache_serviceDesc, srv)
 }
 
-func _Cache_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Pair)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).Add(ctx, in)
+		return srv.(CacheServer).Set(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.Cache/Add",
+		FullMethod: "/api.Cache/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Add(ctx, req.(*Pair))
+		return srv.(CacheServer).Set(ctx, req.(*Pair))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -421,8 +421,8 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*CacheServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Add",
-			Handler:    _Cache_Add_Handler,
+			MethodName: "Set",
+			Handler:    _Cache_Set_Handler,
 		},
 		{
 			MethodName: "Get",
@@ -434,5 +434,5 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "yass.proto",
+	Metadata: "api/yass.proto",
 }

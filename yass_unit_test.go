@@ -10,7 +10,7 @@ import (
 
 func TestClientSetValue(t *testing.T) {
 	mockgRPC := &mocks.MockCacheClient{}
-	mockgRPC.AddFn = func(ctx context.Context, key, value string) error {
+	mockgRPC.SetFn = func(ctx context.Context, key, value string) error {
 		return nil
 	}
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
@@ -20,7 +20,7 @@ func TestClientSetValue(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Non nil err: %v", err)
 	}
-	if !mockgRPC.AddInvoked {
+	if !mockgRPC.SetInvoked {
 		t.Fatalf("Add method was not invoked")
 	}
 }
