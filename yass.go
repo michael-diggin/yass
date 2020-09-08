@@ -34,7 +34,7 @@ func (c CacheClient) Close() error {
 // SetValue sets a key/value pair in the cache
 func (c *CacheClient) SetValue(ctx context.Context, key, value string) error {
 	pair := &pb.Pair{Key: key, Value: value}
-	_, err := c.grpcClient.Add(ctx, pair)
+	_, err := c.grpcClient.Set(ctx, pair)
 	return err
 }
 

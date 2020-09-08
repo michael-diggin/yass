@@ -10,18 +10,18 @@ import (
 
 // MockCacheClient implements the pb client interface
 type MockCacheClient struct {
-	AddFn      func(context.Context, string, string) error
-	AddInvoked bool
+	SetFn      func(context.Context, string, string) error
+	SetInvoked bool
 	GetFn      func(context.Context, string) (string, error)
 	GetInvoked bool
 	DelFn      func(context.Context, string) error
 	DelInvoked bool
 }
 
-// Add calls the mocked add fn
-func (m *MockCacheClient) Add(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
-	m.AddInvoked = true
-	err := m.AddFn(ctx, in.Key, in.Value)
+// Set calls the mocked set fn
+func (m *MockCacheClient) Set(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
+	m.SetInvoked = true
+	err := m.SetFn(ctx, in.Key, in.Value)
 	return &pb.Key{Key: in.Key}, err
 }
 

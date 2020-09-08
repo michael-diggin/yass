@@ -20,9 +20,9 @@ type Server struct {
 	Cache backend.Service
 }
 
-// Add takes a key/value pair and adds it to the cache storage
+// Set takes a key/value pair and adds it to the cache storage
 // It returns an error if the key is already set
-func (s Server) Add(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
+func (s Server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	if pair.Key == "" || pair.Value == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set a zero key or value")
 	}

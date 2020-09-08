@@ -5,7 +5,7 @@ package api;
 option go_package = "github.com/michael-diggin/yass/api;api";
 
 service Cache{
-    rpc Add(Pair) returns(Key){}
+    rpc Set(Pair) returns(Key){}
     rpc Get(Key) returns(Pair){}
     rpc Delete(Key) returns(Null){}
 }

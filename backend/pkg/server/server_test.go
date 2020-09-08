@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestAddtoCache(t *testing.T) {
+func TestSettoCache(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
 	tt := []struct {
 		name    string
@@ -45,7 +45,7 @@ func TestAddtoCache(t *testing.T) {
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			res, err := srv.Add(ctx, testKV)
+			res, err := srv.Set(ctx, testKV)
 			cancel()
 			if e, ok := status.FromError(err); ok {
 				if e.Code() != tc.errCode {
