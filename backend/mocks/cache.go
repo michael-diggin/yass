@@ -39,3 +39,8 @@ func (c TestCache) Delete(ctx context.Context, key string) <-chan *backend.Cache
 	go func() { resp <- c.DelFn(ctx, key) }()
 	return resp
 }
+
+// Close method so it satisfies the interface
+func (c TestCache) Close() error {
+	return nil
+}

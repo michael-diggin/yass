@@ -15,4 +15,5 @@ type Service interface {
 	Get(context.Context, string) <-chan *CacheResponse
 	Set(context.Context, string, string) <-chan *CacheResponse
 	Delete(context.Context, string) <-chan *CacheResponse
+	Close() error
 }
