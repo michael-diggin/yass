@@ -3,5 +3,14 @@ language: go
 go:
   "1.14.6"
 
+install:
+  go mod download
+
+before_script:
+  docker run --name redis-image -p 6379:6379 -d redis
+
 script:
-  make unit-test
+  make test
+
+after_script:
+  docker rm -f redis-image

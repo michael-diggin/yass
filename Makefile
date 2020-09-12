@@ -12,5 +12,5 @@ redis:
 
 dev-start: build redis run
 
-unit-test:
-	go test ./... --race
+test:
+	go test ./... --race --cover
