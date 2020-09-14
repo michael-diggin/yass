@@ -8,16 +8,25 @@ import (
 
 // TestCache implements the Service interface
 type TestCache struct {
-	SetFn      func(context.Context, string, string) *backend.CacheResponse
-	SetInvoked bool
-	GetFn      func(context.Context, string) *backend.CacheResponse
-	GetInvoked bool
-	DelFn      func(context.Context, string) *backend.CacheResponse
-	DelInvoked bool
+	PingFn      func() error
+	PingInvoked bool
+	SetFn       func(context.Context, string, string) *backend.CacheResponse
+	SetInvoked  bool
+	GetFn       func(context.Context, string) *backend.CacheResponse
+	GetInvoked  bool
+	DelFn       func(context.Context, string) *backend.CacheResponse
+	DelInvoked  bool
+}
+
+// Ping implements ping
+func (c *TestCache) Ping() error {
+	c.PingInvoked = true
+	err := c.PingFn()
+	return err
 }
 
 // Set adds a key value pair to the in memmory cache service
-func (c TestCache) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
+func (c *TestCache) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
 	c.SetInvoked = true
 	resp := make(chan *backend.CacheResponse, 1)
 	go func() { resp <- c.SetFn(ctx, key, value) }()
@@ -25,7 +34,7 @@ func (c TestCache) Set(ctx context.Context, key, value string) <-chan *backend.C
 }
 
 // Get returns the value from a key in the cache service
-func (c TestCache) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
 	c.GetInvoked = true
 	resp := make(chan *backend.CacheResponse)
 	go func() { resp <- c.GetFn(ctx, key) }()
@@ -33,7 +42,7 @@ func (c TestCache) Get(ctx context.Context, key string) <-chan *backend.CacheRes
 }
 
 // Delete removes the key/value from the cache service
-func (c TestCache) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
 	c.DelInvoked = true
 	resp := make(chan *backend.CacheResponse)
 	go func() { resp <- c.DelFn(ctx, key) }()
@@ -41,6 +50,6 @@ func (c TestCache) Delete(ctx context.Context, key string) <-chan *backend.Cache
 }
 
 // Close method so it satisfies the interface
-func (c TestCache) Close() error {
+func (c *TestCache) Close() error {
 	return nil
 }
