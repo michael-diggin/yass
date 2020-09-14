@@ -5,6 +5,7 @@ package api;
 option go_package = "github.com/michael-diggin/yass/api;api";
 
 service Cache{
+    rpc Ping(Null) returns(PingResponse) {}
     rpc Set(Pair) returns(Key){}
     rpc Get(Key) returns(Pair){}
     rpc Delete(Key) returns(Null){}
@@ -21,3 +22,12 @@ message Key {
 }
 
 message Null{}
+
+message PingResponse{
+    enum ServingStatus {
+        UNKNOWN = 0;
+        SERVING = 1;
+        NOT_SERVING = 2;
+      }
+      ServingStatus status = 1;
+}
