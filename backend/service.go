@@ -12,6 +12,7 @@ type CacheResponse struct {
 
 // Service defines the interface for getting and setting cache key/values
 type Service interface {
+	Ping() error
 	Get(context.Context, string) <-chan *CacheResponse
 	Set(context.Context, string, string) <-chan *CacheResponse
 	Delete(context.Context, string) <-chan *CacheResponse

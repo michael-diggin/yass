@@ -10,6 +10,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func TestRedisPing(t *testing.T) {
+	conn := redigomock.NewConn()
+	conn.Clear()
+	cmd := conn.Command("PING").Expect("PONG")
+	service := Service{conn: conn}
+	defer service.Close()
+	err := service.Ping()
+	if err != nil {
+		t.Fatalf("Non nil error pinging mock cache: %v", err)
+	}
+	if conn.Stats(cmd) != 1 {
+		t.Fatal("Command was not called!")
+	}
+}
+
 func TestRedisSet(t *testing.T) {
 	conn := redigomock.NewConn()
 	conn.Clear()
