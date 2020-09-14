@@ -31,6 +31,15 @@ func (c CacheClient) Close() error {
 	return err
 }
 
+// Ping checls if the server and cache are serving
+func (c CacheClient) Ping(ctx context.Context) (bool, error) {
+	resp, err := c.grpcClient.Ping(ctx, &pb.Null{})
+	if resp.Status == pb.PingResponse_SERVING {
+		return true, nil
+	}
+	return false, err
+}
+
 // SetValue sets a key/value pair in the cache
 func (c *CacheClient) SetValue(ctx context.Context, key, value string) error {
 	pair := &pb.Pair{Key: key, Value: value}

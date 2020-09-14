@@ -8,6 +8,36 @@ import (
 	"github.com/michael-diggin/yass/mocks"
 )
 
+func TestClientPing(t *testing.T) {
+	tt := []struct {
+		name    string
+		serving bool
+	}{
+		{"serving", true},
+		{"not serving", false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			mockgRPC := &mocks.MockCacheClient{}
+			mockgRPC.PingFn = func() error {
+				if tc.name == "serving" {
+					return nil
+				}
+				return errors.New("Not serving")
+			}
+			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
+			ok, _ := cc.Ping(context.Background())
+			if ok != tc.serving {
+				t.Fatalf("Serving status wrong")
+			}
+			if !mockgRPC.PingInvoked {
+				t.Fatalf("Ping function never called")
+			}
+		})
+	}
+}
+
 func TestClientSetValue(t *testing.T) {
 	mockgRPC := &mocks.MockCacheClient{}
 	mockgRPC.SetFn = func(ctx context.Context, key, value string) error {

@@ -20,6 +20,18 @@ type Server struct {
 	Cache backend.Service
 }
 
+// Ping serves the healthcheck endpoint for the server
+// It checks if the cache is serving too and responds accordingly
+func (s Server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
+	err := s.Cache.Ping()
+	if err != nil {
+		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
+		return resp, status.Error(codes.Unavailable, err.Error())
+	}
+	resp := &pb.PingResponse{Status: pb.PingResponse_SERVING}
+	return resp, nil
+}
+
 // Set takes a key/value pair and adds it to the cache storage
 // It returns an error if the key is already set
 func (s Server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {

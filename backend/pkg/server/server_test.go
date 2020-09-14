@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -10,9 +11,44 @@ import (
 	"github.com/michael-diggin/yass/backend"
 	"github.com/michael-diggin/yass/backend/mocks"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func TestServerPing(t *testing.T) {
+	tt := []struct {
+		name    string
+		errCode codes.Code
+		status  pb.PingResponse_ServingStatus
+	}{
+		{"serving", codes.OK, pb.PingResponse_SERVING},
+		{"not serving", codes.Unavailable, pb.PingResponse_NOT_SERVING},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			cache := &mocks.TestCache{
+				PingFn: func() error {
+					if tc.name == "serving" {
+						return nil
+					}
+					return errors.New("Cache not reachable")
+				},
+			}
+			srv := New(cache)
+
+			resp, err := srv.Ping(context.Background(), &pb.Null{})
+			if grpc.Code(err) != tc.errCode {
+				t.Fatalf("Expected code %v, got %v", tc.errCode, grpc.Code(err))
+			}
+			if resp.Status != tc.status {
+				t.Fatalf("Incorrect status returned %v", resp.Status)
+			}
+
+		})
+	}
+}
 
 func TestSettoCache(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
@@ -32,7 +68,7 @@ func TestSettoCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := mocks.TestCache{
+			cache := &mocks.TestCache{
 				SetFn: func(ctx context.Context, key, value string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,
@@ -79,7 +115,7 @@ func TestGetFromCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := mocks.TestCache{
+			cache := &mocks.TestCache{
 				GetFn: func(ctx context.Context, key string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,
@@ -127,7 +163,7 @@ func TestDeleteKeyValue(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := mocks.TestCache{
+			cache := &mocks.TestCache{
 				DelFn: func(ctx context.Context, key string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,

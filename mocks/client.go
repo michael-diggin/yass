@@ -6,16 +6,32 @@ import (
 	pb "github.com/michael-diggin/yass/api"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // MockCacheClient implements the pb client interface
 type MockCacheClient struct {
-	SetFn      func(context.Context, string, string) error
-	SetInvoked bool
-	GetFn      func(context.Context, string) (string, error)
-	GetInvoked bool
-	DelFn      func(context.Context, string) error
-	DelInvoked bool
+	PingFn      func() error
+	PingInvoked bool
+	SetFn       func(context.Context, string, string) error
+	SetInvoked  bool
+	GetFn       func(context.Context, string) (string, error)
+	GetInvoked  bool
+	DelFn       func(context.Context, string) error
+	DelInvoked  bool
+}
+
+// Ping implements ping
+func (m *MockCacheClient) Ping(ctx context.Context, in *pb.Null, opts ...grpc.CallOption) (*pb.PingResponse, error) {
+	m.PingInvoked = true
+	err := m.PingFn()
+	if err != nil {
+		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
+		return resp, status.Error(codes.Unavailable, err.Error())
+	}
+	resp := &pb.PingResponse{Status: pb.PingResponse_SERVING}
+	return resp, nil
 }
 
 // Set calls the mocked set fn

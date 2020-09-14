@@ -29,6 +29,55 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type PingResponse_ServingStatus int32
+
+const (
+	PingResponse_UNKNOWN     PingResponse_ServingStatus = 0
+	PingResponse_SERVING     PingResponse_ServingStatus = 1
+	PingResponse_NOT_SERVING PingResponse_ServingStatus = 2
+)
+
+// Enum value maps for PingResponse_ServingStatus.
+var (
+	PingResponse_ServingStatus_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "SERVING",
+		2: "NOT_SERVING",
+	}
+	PingResponse_ServingStatus_value = map[string]int32{
+		"UNKNOWN":     0,
+		"SERVING":     1,
+		"NOT_SERVING": 2,
+	}
+)
+
+func (x PingResponse_ServingStatus) Enum() *PingResponse_ServingStatus {
+	p := new(PingResponse_ServingStatus)
+	*p = x
+	return p
+}
+
+func (x PingResponse_ServingStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PingResponse_ServingStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_yass_proto_enumTypes[0].Descriptor()
+}
+
+func (PingResponse_ServingStatus) Type() protoreflect.EnumType {
+	return &file_api_yass_proto_enumTypes[0]
+}
+
+func (x PingResponse_ServingStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PingResponse_ServingStatus.Descriptor instead.
+func (PingResponse_ServingStatus) EnumDescriptor() ([]byte, []int) {
+	return file_api_yass_proto_rawDescGZIP(), []int{3, 0}
+}
+
 type Pair struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -169,6 +218,53 @@ func (*Null) Descriptor() ([]byte, []int) {
 	return file_api_yass_proto_rawDescGZIP(), []int{2}
 }
 
+type PingResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status PingResponse_ServingStatus `protobuf:"varint,1,opt,name=status,proto3,enum=api.PingResponse_ServingStatus" json:"status,omitempty"`
+}
+
+func (x *PingResponse) Reset() {
+	*x = PingResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_yass_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PingResponse) ProtoMessage() {}
+
+func (x *PingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_yass_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
+func (*PingResponse) Descriptor() ([]byte, []int) {
+	return file_api_yass_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PingResponse) GetStatus() PingResponse_ServingStatus {
+	if x != nil {
+		return x.Status
+	}
+	return PingResponse_UNKNOWN
+}
+
 var File_api_yass_proto protoreflect.FileDescriptor
 
 var file_api_yass_proto_rawDesc = []byte{
@@ -178,16 +274,27 @@ var file_api_yass_proto_rawDesc = []byte{
 	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05,
 	0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x10, 0x0a, 0x03,
 	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x06,
-	0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x32, 0x64, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12,
-	0x1c, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69,
-	0x72, 0x1a, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1c, 0x0a,
-	0x03, 0x47, 0x65, 0x74, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09,
-	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x1f, 0x0a, 0x06, 0x44,
-	0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a,
-	0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x28, 0x5a, 0x26,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61,
-	0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x61,
-	0x70, 0x69, 0x3b, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x83, 0x01, 0x0a, 0x0c, 0x50, 0x69, 0x6e, 0x67, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1f, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x69,
+	0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69,
+	0x6e, 0x67, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x22, 0x3a, 0x0a, 0x0d, 0x53, 0x65, 0x72, 0x76, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x0b,
+	0x0a, 0x07, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x4e,
+	0x4f, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x32, 0x8c, 0x01, 0x0a,
+	0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x26, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x09,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x11, 0x2e, 0x61, 0x70, 0x69, 0x2e,
+	0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x1c,
+	0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x09, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72,
+	0x1a, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x1c, 0x0a, 0x03,
+	0x47, 0x65, 0x74, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09, 0x2e,
+	0x61, 0x70, 0x69, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x1f, 0x0a, 0x06, 0x44, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x12, 0x08, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x09,
+	0x2e, 0x61, 0x70, 0x69, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x28, 0x5a, 0x26, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65,
+	0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x61, 0x70,
+	0x69, 0x3b, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -202,24 +309,30 @@ func file_api_yass_proto_rawDescGZIP() []byte {
 	return file_api_yass_proto_rawDescData
 }
 
-var file_api_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_api_yass_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_yass_proto_goTypes = []interface{}{
-	(*Pair)(nil), // 0: api.Pair
-	(*Key)(nil),  // 1: api.Key
-	(*Null)(nil), // 2: api.Null
+	(PingResponse_ServingStatus)(0), // 0: api.PingResponse.ServingStatus
+	(*Pair)(nil),                    // 1: api.Pair
+	(*Key)(nil),                     // 2: api.Key
+	(*Null)(nil),                    // 3: api.Null
+	(*PingResponse)(nil),            // 4: api.PingResponse
 }
 var file_api_yass_proto_depIdxs = []int32{
-	0, // 0: api.Cache.Set:input_type -> api.Pair
-	1, // 1: api.Cache.Get:input_type -> api.Key
-	1, // 2: api.Cache.Delete:input_type -> api.Key
-	1, // 3: api.Cache.Set:output_type -> api.Key
-	0, // 4: api.Cache.Get:output_type -> api.Pair
-	2, // 5: api.Cache.Delete:output_type -> api.Null
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: api.PingResponse.status:type_name -> api.PingResponse.ServingStatus
+	3, // 1: api.Cache.Ping:input_type -> api.Null
+	1, // 2: api.Cache.Set:input_type -> api.Pair
+	2, // 3: api.Cache.Get:input_type -> api.Key
+	2, // 4: api.Cache.Delete:input_type -> api.Key
+	4, // 5: api.Cache.Ping:output_type -> api.PingResponse
+	2, // 6: api.Cache.Set:output_type -> api.Key
+	1, // 7: api.Cache.Get:output_type -> api.Pair
+	3, // 8: api.Cache.Delete:output_type -> api.Null
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_yass_proto_init() }
@@ -264,19 +377,32 @@ func file_api_yass_proto_init() {
 				return nil
 			}
 		}
+		file_api_yass_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PingResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_yass_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   3,
+			NumEnums:      1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_api_yass_proto_goTypes,
 		DependencyIndexes: file_api_yass_proto_depIdxs,
+		EnumInfos:         file_api_yass_proto_enumTypes,
 		MessageInfos:      file_api_yass_proto_msgTypes,
 	}.Build()
 	File_api_yass_proto = out.File
@@ -297,6 +423,7 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CacheClient interface {
+	Ping(ctx context.Context, in *Null, opts ...grpc.CallOption) (*PingResponse, error)
 	Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
 	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
 	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
@@ -308,6 +435,15 @@ type cacheClient struct {
 
 func NewCacheClient(cc grpc.ClientConnInterface) CacheClient {
 	return &cacheClient{cc}
+}
+
+func (c *cacheClient) Ping(ctx context.Context, in *Null, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, "/api.Cache/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *cacheClient) Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
@@ -339,6 +475,7 @@ func (c *cacheClient) Delete(ctx context.Context, in *Key, opts ...grpc.CallOpti
 
 // CacheServer is the server API for Cache service.
 type CacheServer interface {
+	Ping(context.Context, *Null) (*PingResponse, error)
 	Set(context.Context, *Pair) (*Key, error)
 	Get(context.Context, *Key) (*Pair, error)
 	Delete(context.Context, *Key) (*Null, error)
@@ -348,6 +485,9 @@ type CacheServer interface {
 type UnimplementedCacheServer struct {
 }
 
+func (*UnimplementedCacheServer) Ping(context.Context, *Null) (*PingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (*UnimplementedCacheServer) Set(context.Context, *Pair) (*Key, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
@@ -360,6 +500,24 @@ func (*UnimplementedCacheServer) Delete(context.Context, *Key) (*Null, error) {
 
 func RegisterCacheServer(s *grpc.Server, srv CacheServer) {
 	s.RegisterService(&_Cache_serviceDesc, srv)
+}
+
+func _Cache_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Null)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Cache/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).Ping(ctx, req.(*Null))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -420,6 +578,10 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.Cache",
 	HandlerType: (*CacheServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _Cache_Ping_Handler,
+		},
 		{
 			MethodName: "Set",
 			Handler:    _Cache_Set_Handler,

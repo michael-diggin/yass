@@ -23,9 +23,15 @@ func New(username, password, addr string) (Service, error) {
 	return Service{conn}, err
 }
 
-//Close terminates the connection
+// Close terminates the connection
 func (r Service) Close() error {
 	return r.conn.Close()
+}
+
+// Ping checks if the redis connection is reachable
+func (r Service) Ping() error {
+	_, err := r.conn.Do("PING")
+	return err
 }
 
 // Set is redis implementation of service set
