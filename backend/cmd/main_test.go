@@ -45,3 +45,29 @@ func TestIntegrationServer(t *testing.T) {
 	}
 
 }
+
+func TestRunServer(t *testing.T) {
+	args := []string{"program", "-p", "8080"}
+	envFunc := func(input string) string {
+		return ""
+	}
+
+	go func() {
+		run(args, envFunc)
+	}()
+
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "localhost:8080", grpc.WithInsecure())
+	if err != nil {
+		t.Fatalf("Could not dial server: %err", err)
+	}
+
+	client := pb.NewCacheClient(conn)
+	resp, err := client.Set(ctx, &pb.Pair{Key: "test-key", Value: "test-value"})
+	if err != nil {
+		t.Fatalf("Could not send Set command: %v", err)
+	}
+	if resp.Key != "test-key" {
+		t.Fatalf("Set command returned '%s', not 'test-key'", resp.Key)
+	}
+}
