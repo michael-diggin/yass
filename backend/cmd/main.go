@@ -19,23 +19,33 @@ import (
 
 func main() {
 
-	port := flag.Int("p", 8080, "port for server to listen on")
-	addr := flag.String("r", "localhost:6379", "address of redis cache")
-	flag.Parse()
-
-	// set up redis
-	username := os.Getenv("REDIS_USER") //defaults to ""
-	password := os.Getenv("REDIS_PASS") //defaults to ""
-	cache, err := redis.New(username, password, *addr)
-	if err != nil {
-		logrus.Fatalf("Could not connect to redis cache: %v", err)
+	if err := run(os.Args, os.Getenv); err != nil {
+		logrus.Error(err)
+		os.Exit(1)
 	}
 
-	// set up listener and grpc server
+}
+
+// Run is the entry point of the main function
+func run(args []string, envFunc func(string) string) error {
+	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
+	port := flags.Int("p", 8080, "port for server to listen on")
+	addr := flags.String("r", "localhost:6379", "address of redis cache")
+	if err := flags.Parse(args[1:]); err != nil {
+		return err
+	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		logrus.Fatalf("Could not listen on port %d: %v", *port, err)
+		return err
+	}
+
+	// set up redis
+	username := envFunc("REDIS_USER") //defaults to ""
+	password := envFunc("REDIS_PASS") //defaults to ""
+	cache, err := redis.New(username, password, *addr)
+	if err != nil {
+		return err
 	}
 
 	srv := YassServer{}
@@ -49,9 +59,10 @@ func main() {
 	logrus.Infof("Starting server on port: %d", *port)
 	select {
 	case err = <-srv.SpinUp():
-		logrus.Errorf("Server error: %v", err)
+		return err
 	case sig := <-sigChan:
-		logrus.Infof("Caught interrupt signal: %+v", sig)
+		logrus.Infof("OS signal caught: %+v", sig)
+		return nil
 	}
 }
 
