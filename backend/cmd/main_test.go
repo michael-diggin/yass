@@ -36,14 +36,13 @@ func TestIntegrationServer(t *testing.T) {
 	}
 
 	client := pb.NewCacheClient(conn)
-	resp, err := client.Set(ctx, &pb.Pair{Key: "test-key", Value: "test-value"})
+	resp, err := client.Ping(ctx, &pb.Null{})
 	if err != nil {
-		t.Fatalf("Could not send Set command: %v", err)
+		t.Fatalf("Could not send Ping command: %v", err)
 	}
-	if resp.Key != "test-key" {
-		t.Fatalf("Set command returned '%s', not 'test-key'", resp.Key)
+	if resp.Status != pb.PingResponse_SERVING {
+		t.Fatalf("Server not serving")
 	}
-
 }
 
 func TestRunServer(t *testing.T) {
@@ -63,11 +62,11 @@ func TestRunServer(t *testing.T) {
 	}
 
 	client := pb.NewCacheClient(conn)
-	resp, err := client.Set(ctx, &pb.Pair{Key: "test-key", Value: "test-value"})
+	resp, err := client.Ping(ctx, &pb.Null{})
 	if err != nil {
-		t.Fatalf("Could not send Set command: %v", err)
+		t.Fatalf("Could not send Ping command: %v", err)
 	}
-	if resp.Key != "test-key" {
-		t.Fatalf("Set command returned '%s', not 'test-key'", resp.Key)
+	if resp.Status != pb.PingResponse_SERVING {
+		t.Fatalf("Server not serving")
 	}
 }
