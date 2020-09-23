@@ -8,11 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend"
 	"github.com/michael-diggin/yass/backend/pkg/redis"
 	"github.com/michael-diggin/yass/backend/pkg/server"
-	"google.golang.org/grpc"
 
 	"github.com/sirupsen/logrus"
 )
@@ -48,8 +45,7 @@ func run(args []string, envFunc func(string) string) error {
 		return err
 	}
 
-	srv := YassServer{}
-	srv.Init(lis, cache)
+	srv := server.New(lis, cache)
 	defer srv.ShutDown()
 
 	// Check for a closing signal
@@ -64,42 +60,4 @@ func run(args []string, envFunc func(string) string) error {
 		logrus.Infof("OS signal caught: %+v", sig)
 		return nil
 	}
-}
-
-// YassServer wraps up the listener, grpc server and cache service
-type YassServer struct {
-	lis   net.Listener
-	srv   *grpc.Server
-	cache backend.Service
-}
-
-// Init sets up the server
-func (y *YassServer) Init(lis net.Listener, cache backend.Service) {
-	s := grpc.NewServer()
-	pb.RegisterCacheServer(s, server.New(cache))
-	y.lis = lis
-	y.srv = s
-	y.cache = cache
-}
-
-// SpinUp starts the grpc server
-func (y YassServer) SpinUp() <-chan error {
-	errChan := make(chan error)
-	go func() {
-		err := y.srv.Serve(y.lis)
-		if err != nil {
-			errChan <- err
-			close(errChan)
-		}
-	}()
-	return errChan
-}
-
-// ShutDown closes the server resources
-func (y YassServer) ShutDown() {
-	logrus.Infof("Shutting down server resources")
-	y.cache.Close()
-	logrus.Infof("Redis connection closed")
-	y.srv.GracefulStop()
-	logrus.Infof("gRPC server stopped")
 }

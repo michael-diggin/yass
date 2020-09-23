@@ -36,7 +36,7 @@ func TestServerPing(t *testing.T) {
 					return errors.New("Cache not reachable")
 				},
 			}
-			srv := New(cache)
+			srv := server{cache}
 
 			resp, err := srv.Ping(context.Background(), &pb.Null{})
 			if grpc.Code(err) != tc.errCode {
@@ -76,8 +76,7 @@ func TestSettoCache(t *testing.T) {
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := New(cache)
-
+			srv := server{cache}
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
@@ -123,8 +122,7 @@ func TestGetFromCache(t *testing.T) {
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := New(cache)
-
+			srv := server{cache}
 			testK := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.Get(ctx, testK)
@@ -171,7 +169,7 @@ func TestDeleteKeyValue(t *testing.T) {
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := New(cache)
+			srv := server{cache}
 			testKV := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Delete(ctx, testKV)
