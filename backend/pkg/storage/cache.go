@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/michael-diggin/yass/backend"
+	"github.com/michael-diggin/yass/backend/errors"
 )
 
 // Service implements the backend.Service interface
@@ -20,6 +21,9 @@ func New() *Service {
 
 // Ping performs healthcheck on service
 func (s *Service) Ping() error {
+	if s.cache == nil {
+		return errors.NotServing{}
+	}
 	return nil
 }
 
@@ -38,7 +42,7 @@ func (s *Service) Set(key, value string) <-chan *backend.CacheResponse {
 
 func setValue(cache map[string]string, key, value string) error {
 	if _, ok := cache[key]; ok {
-		return AlreadySetError{key}
+		return errors.AlreadySet{Key: key}
 	}
 	cache[key] = value
 	return nil
@@ -60,7 +64,7 @@ func (s *Service) Get(key string) <-chan *backend.CacheResponse {
 func getValue(cache map[string]string, key string) (string, error) {
 	val, ok := cache[key]
 	if !ok {
-		return "", NotFoundError{key}
+		return "", errors.NotFound{Key: key}
 	}
 	return val, nil
 }

@@ -2,14 +2,27 @@ package storage
 
 import (
 	"testing"
+
+	"github.com/michael-diggin/yass/backend/errors"
 )
 
 func TestPingCache(t *testing.T) {
-	ser := New()
-	defer ser.Close()
-	err := ser.Ping()
-	if err != nil {
-		t.Fatalf("Non nil err: %v", err)
+	tt := []struct {
+		name string
+		ser  *Service
+		err  error
+	}{
+		{"serving", New(), nil},
+		{"not-serving", &Service{}, errors.NotServing{}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			defer tc.ser.Close()
+			err := tc.ser.Ping()
+			if err != tc.err {
+				t.Fatalf("Non nil err: %v", err)
+			}
+		})
 	}
 }
 
@@ -25,7 +38,7 @@ func TestSetInCache(t *testing.T) {
 		err   error
 	}{
 		{"valid", "key", "value", nil},
-		{"already set", "test-key", "test-value", AlreadySetError{key: "test-key"}},
+		{"already set", "test-key", "test-value", errors.AlreadySet{Key: "test-key"}},
 	}
 
 	for _, tc := range tt {
@@ -54,7 +67,7 @@ func TestGetFromCache(t *testing.T) {
 		err   error
 	}{
 		{"valid", "test-key", "test-value", nil},
-		{"not found", "key", "", NotFoundError{"key"}},
+		{"not found", "key", "", errors.NotFound{Key: "key"}},
 	}
 
 	for _, tc := range tt {

@@ -154,7 +154,6 @@ func TestDeleteKeyValue(t *testing.T) {
 		timeout time.Duration
 	}{
 		{"valid case", "testKey", codes.OK, 100 * time.Millisecond},
-		{"key not found", "newKey", codes.NotFound, 100 * time.Millisecond},
 		{"empty key", "", codes.InvalidArgument, 100 * time.Millisecond},
 		{"timeout", "Key", codes.Canceled, 0 * time.Millisecond},
 	}

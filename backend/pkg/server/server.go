@@ -43,12 +43,12 @@ func (y YassServer) SpinUp() <-chan error {
 func (y YassServer) ShutDown() {
 	logrus.Infof("Shutting down server resources")
 	y.cache.Close()
-	logrus.Infof("Redis connection closed")
+	logrus.Infof("Cache closed")
 	y.srv.GracefulStop()
 	logrus.Infof("gRPC server stopped")
 }
 
-// Server implements the CacheServer interface
+// server (unexported) implements the CacheServer interface
 type server struct {
 	Cache backend.Service
 }
@@ -94,7 +94,6 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 		return nil, status.Error(codes.Canceled, "Context timeout")
 	case cacheResp := <-s.Cache.Get(key.Key):
 		if cacheResp.Err != nil {
-			logrus.Errorf("Tried to get value with not set key: %s", key.Key)
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
 		pair := &pb.Pair{Key: key.Key, Value: cacheResp.Value}
@@ -110,11 +109,7 @@ func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Delete(key.Key):
-		if cacheResp.Err != nil {
-			logrus.Errorf("Could not delete key as does not exist: %s", key.Key)
-			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
-		}
+	case <-s.Cache.Delete(key.Key):
 		return &pb.Null{}, nil
 	}
 }
