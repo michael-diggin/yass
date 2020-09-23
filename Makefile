@@ -5,10 +5,13 @@ build:
 	docker build -t yass-server:0.1 .
 
 run:
-	docker run -p 8080:8080 yass-server:0.1
+	docker run -d -p 8080:8080 yass-server:0.1
 
 
 dev-start: build run
 
 test:
 	go test ./... --race --cover
+
+hello:
+	@echo "hello"
