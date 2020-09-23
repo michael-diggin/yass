@@ -16,8 +16,8 @@ type CacheClient struct {
 }
 
 // NewClient returns a new client that connects to the cache server
-func NewClient(addr string) (*CacheClient, error) {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure()) //TODO: add security and credentials
+func NewClient(ctx context.Context, addr string) (*CacheClient, error) {
+	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure()) //TODO: add security and credentials
 	if err != nil {
 		return &CacheClient{}, err
 	}

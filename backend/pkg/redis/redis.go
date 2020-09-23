@@ -44,6 +44,7 @@ func (r Service) Set(ctx context.Context, key, value string) <-chan *backend.Cac
 			respChan <- &backend.CacheResponse{Err: err}
 		}
 		respChan <- &backend.CacheResponse{Key: key, Err: nil}
+		close(respChan)
 	}()
 	return respChan
 }
@@ -58,6 +59,7 @@ func (r Service) Get(ctx context.Context, key string) <-chan *backend.CacheRespo
 			respChan <- &backend.CacheResponse{Err: err}
 		}
 		respChan <- &backend.CacheResponse{Key: key, Value: value}
+		close(respChan)
 	}()
 	return respChan
 }
@@ -68,6 +70,7 @@ func (r Service) Delete(ctx context.Context, key string) <-chan *backend.CacheRe
 	go func() {
 		_, err := r.conn.Do("DEL", key)
 		respChan <- &backend.CacheResponse{Err: err}
+		close(respChan)
 	}()
 	return respChan
 }
