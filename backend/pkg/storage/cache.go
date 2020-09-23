@@ -77,3 +77,8 @@ func (s *Service) Delete(key string) <-chan *backend.CacheResponse {
 	}()
 	return respChan
 }
+
+// Close clears the cache
+func (s *Service) Close() {
+	s = &Service{} // let GC handle the freeing up of memory
+}

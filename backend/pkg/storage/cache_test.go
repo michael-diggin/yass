@@ -6,6 +6,7 @@ import (
 
 func TestPingCache(t *testing.T) {
 	ser := New()
+	defer ser.Close()
 	err := ser.Ping()
 	if err != nil {
 		t.Fatalf("Non nil err: %v", err)
@@ -14,6 +15,7 @@ func TestPingCache(t *testing.T) {
 
 func TestSetInCache(t *testing.T) {
 	ser := New()
+	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
 
 	tt := []struct {
@@ -42,6 +44,7 @@ func TestSetInCache(t *testing.T) {
 
 func TestGetFromCache(t *testing.T) {
 	ser := New()
+	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
 
 	tt := []struct {
@@ -69,6 +72,7 @@ func TestGetFromCache(t *testing.T) {
 }
 func TestDelFromCache(t *testing.T) {
 	ser := New()
+	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
 
 	tt := []struct {

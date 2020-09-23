@@ -19,7 +19,7 @@ func TestRunServer(t *testing.T) {
 		run(args, envFunc)
 	}()
 
-	time.Sleep(50 * time.Millisecond) // Give server time to set up
+	time.Sleep(10 * time.Millisecond) // Give server time to set up
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "localhost:8080", grpc.WithInsecure())
 	if err != nil {

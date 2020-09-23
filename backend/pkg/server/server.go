@@ -74,7 +74,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Set(ctx, pair.Key, pair.Value):
+	case cacheResp := <-s.Cache.Set(pair.Key, pair.Value):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
@@ -92,7 +92,7 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Get(ctx, key.Key):
+	case cacheResp := <-s.Cache.Get(key.Key):
 		if cacheResp.Err != nil {
 			logrus.Errorf("Tried to get value with not set key: %s", key.Key)
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
@@ -110,7 +110,7 @@ func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Delete(ctx, key.Key):
+	case cacheResp := <-s.Cache.Delete(key.Key):
 		if cacheResp.Err != nil {
 			logrus.Errorf("Could not delete key as does not exist: %s", key.Key)
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
