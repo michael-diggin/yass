@@ -5,7 +5,7 @@ build:
 	docker build -t yass-server:0.1 .
 
 run:
-	docker run -d -p 8080:8080 yass-server:0.1
+	docker run -d -p ${PORT}:${PORT} yass-server:0.1 -p ${PORT}
 
 
 dev-start: build run

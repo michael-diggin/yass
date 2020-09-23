@@ -8,7 +8,7 @@ import (
 
 func TestRun(t *testing.T) {
 
-	args := []string{"deploy"}
+	args := []string{"deploy", "8080"}
 	command := "hello"
 	var out bytes.Buffer
 	var outErr bytes.Buffer
@@ -30,7 +30,7 @@ func TestRunWithBadCommand(t *testing.T) {
 	var out bytes.Buffer
 	var outErr bytes.Buffer
 	err := run(args, command, &out, &outErr)
-	if err.Error() != "Incorrect command: usage 'yass deploy'" {
+	if err.Error() != "Incorrect command: usage 'yass deploy PORT'" {
 		t.Fatalf("Unexpected err: %v", err)
 	}
 	if out.String() != "" {
