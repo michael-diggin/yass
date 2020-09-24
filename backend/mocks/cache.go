@@ -1,8 +1,6 @@
 package mocks
 
 import (
-	"context"
-
 	"github.com/michael-diggin/yass/backend"
 )
 
@@ -10,11 +8,11 @@ import (
 type TestCache struct {
 	PingFn      func() error
 	PingInvoked bool
-	SetFn       func(context.Context, string, string) *backend.CacheResponse
+	SetFn       func(string, string) *backend.CacheResponse
 	SetInvoked  bool
-	GetFn       func(context.Context, string) *backend.CacheResponse
+	GetFn       func(string) *backend.CacheResponse
 	GetInvoked  bool
-	DelFn       func(context.Context, string) *backend.CacheResponse
+	DelFn       func(string) *backend.CacheResponse
 	DelInvoked  bool
 }
 
@@ -26,30 +24,30 @@ func (c *TestCache) Ping() error {
 }
 
 // Set adds a key value pair to the in memmory cache service
-func (c *TestCache) Set(ctx context.Context, key, value string) <-chan *backend.CacheResponse {
+func (c *TestCache) Set(key, value string) <-chan *backend.CacheResponse {
 	c.SetInvoked = true
 	resp := make(chan *backend.CacheResponse, 1)
-	go func() { resp <- c.SetFn(ctx, key, value) }()
+	go func() { resp <- c.SetFn(key, value) }()
 	return resp
 }
 
 // Get returns the value from a key in the cache service
-func (c *TestCache) Get(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Get(key string) <-chan *backend.CacheResponse {
 	c.GetInvoked = true
 	resp := make(chan *backend.CacheResponse)
-	go func() { resp <- c.GetFn(ctx, key) }()
+	go func() { resp <- c.GetFn(key) }()
 	return resp
 }
 
 // Delete removes the key/value from the cache service
-func (c *TestCache) Delete(ctx context.Context, key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Delete(key string) <-chan *backend.CacheResponse {
 	c.DelInvoked = true
 	resp := make(chan *backend.CacheResponse)
-	go func() { resp <- c.DelFn(ctx, key) }()
+	go func() { resp <- c.DelFn(key) }()
 	return resp
 }
 
 // Close method so it satisfies the interface
-func (c *TestCache) Close() error {
-	return nil
+func (c *TestCache) Close() {
+
 }

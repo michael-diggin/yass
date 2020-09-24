@@ -69,7 +69,7 @@ func TestSettoCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				SetFn: func(ctx context.Context, key, value string) *backend.CacheResponse {
+				SetFn: func(key, value string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
@@ -115,7 +115,7 @@ func TestGetFromCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				GetFn: func(ctx context.Context, key string) *backend.CacheResponse {
+				GetFn: func(key string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
@@ -162,7 +162,7 @@ func TestDeleteKeyValue(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				DelFn: func(ctx context.Context, key string) *backend.CacheResponse {
+				DelFn: func(key string) *backend.CacheResponse {
 					return &backend.CacheResponse{
 						Key:   tc.key,
 						Value: "",

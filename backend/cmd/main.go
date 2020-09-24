@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/michael-diggin/yass/backend/pkg/redis"
 	"github.com/michael-diggin/yass/backend/pkg/server"
+	"github.com/michael-diggin/yass/backend/pkg/storage"
 
 	"github.com/sirupsen/logrus"
 )
@@ -27,7 +27,6 @@ func main() {
 func run(args []string, envFunc func(string) string) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	port := flags.Int("p", 8080, "port for server to listen on")
-	addr := flags.String("r", "localhost:6379", "address of redis cache")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -37,13 +36,8 @@ func run(args []string, envFunc func(string) string) error {
 		return err
 	}
 
-	// set up redis
-	username := envFunc("REDIS_USER") //defaults to ""
-	password := envFunc("REDIS_PASS") //defaults to ""
-	cache, err := redis.New(username, password, *addr)
-	if err != nil {
-		return err
-	}
+	// set up cache
+	cache := storage.New()
 
 	srv := server.New(lis, cache)
 	defer srv.ShutDown()
