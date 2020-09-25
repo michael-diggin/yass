@@ -6,7 +6,6 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-EXPOSE 8080
 RUN GOOS=linux go build -o /bin/server github.com/michael-diggin/yass/backend/cmd
 
 ENTRYPOINT [ "/bin/server" ]

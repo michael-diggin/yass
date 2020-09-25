@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/michael-diggin/yass/mocks"
+	"github.com/michael-diggin/yass/yass/mocks"
 )
 
 func TestClientPing(t *testing.T) {
