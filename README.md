@@ -26,7 +26,7 @@ This will build a docker image and run the container exposing the specified port
 
 To connect to the cache service and set/get values from it, the client side package exposes a simple API and makes this very easy. 
 
-```
+```golang
 package main
 
 import "github.com/michael-diggin/yass/yass"
