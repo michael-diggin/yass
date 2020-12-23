@@ -1,5 +1,5 @@
 proto:
-	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative api/yass.proto
+	protoc --go_out=plugins=grpc:. --go_opt=paths=source_relative proto/yass.proto
 
 build:
 	docker build -t yass-server:0.1 .
@@ -12,6 +12,3 @@ dev-start: build run
 
 test:
 	go test ./... --race --cover
-
-hello:
-	@echo "hello"

@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/michael-diggin/yass/backend/pkg/server"
-	"github.com/michael-diggin/yass/backend/pkg/storage"
+	"github.com/michael-diggin/yass/server/pkg/core"
+	"github.com/michael-diggin/yass/server/pkg/storage"
 
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +26,7 @@ func main() {
 // Run is the entry point of the main function
 func run(args []string, envFunc func(string) string) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
-	port := flags.Int("p", 8080, "port for server to listen on")
+	port := flags.Int("p", 8080, "port for core to listen on")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -39,14 +39,14 @@ func run(args []string, envFunc func(string) string) error {
 	// set up cache
 	cache := storage.New()
 
-	srv := server.New(lis, cache)
+	srv := core.New(lis, cache)
 	defer srv.ShutDown()
 
 	// Check for a closing signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	logrus.Infof("Starting server on port: %d", *port)
+	logrus.Infof("Starting core on port: %d", *port)
 	select {
 	case err = <-srv.SpinUp():
 		return err

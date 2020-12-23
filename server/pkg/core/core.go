@@ -1,11 +1,11 @@
-package server
+package core
 
 import (
 	"context"
 	"net"
 
-	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend"
+	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,11 +16,11 @@ import (
 type YassServer struct {
 	lis   net.Listener
 	srv   *grpc.Server
-	cache backend.Service
+	cache model.Service
 }
 
 // New sets up the server
-func New(lis net.Listener, cache backend.Service) YassServer {
+func New(lis net.Listener, cache model.Service) YassServer {
 	s := grpc.NewServer()
 	pb.RegisterCacheServer(s, server{Cache: cache})
 	return YassServer{lis: lis, srv: s, cache: cache}
@@ -50,7 +50,7 @@ func (y YassServer) ShutDown() {
 
 // server (unexported) implements the CacheServer interface
 type server struct {
-	Cache backend.Service
+	Cache model.Service
 }
 
 // Ping serves the healthcheck endpoint for the server

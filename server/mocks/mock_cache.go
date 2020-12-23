@@ -1,18 +1,18 @@
 package mocks
 
 import (
-	"github.com/michael-diggin/yass/backend"
+	"github.com/michael-diggin/yass/server/model"
 )
 
 // TestCache implements the Service interface
 type TestCache struct {
 	PingFn      func() error
 	PingInvoked bool
-	SetFn       func(string, string) *backend.CacheResponse
+	SetFn       func(string, string) *model.CacheResponse
 	SetInvoked  bool
-	GetFn       func(string) *backend.CacheResponse
+	GetFn       func(string) *model.CacheResponse
 	GetInvoked  bool
-	DelFn       func(string) *backend.CacheResponse
+	DelFn       func(string) *model.CacheResponse
 	DelInvoked  bool
 }
 
@@ -24,25 +24,25 @@ func (c *TestCache) Ping() error {
 }
 
 // Set adds a key value pair to the in memmory cache service
-func (c *TestCache) Set(key, value string) <-chan *backend.CacheResponse {
+func (c *TestCache) Set(key, value string) <-chan *model.CacheResponse {
 	c.SetInvoked = true
-	resp := make(chan *backend.CacheResponse, 1)
+	resp := make(chan *model.CacheResponse, 1)
 	go func() { resp <- c.SetFn(key, value) }()
 	return resp
 }
 
 // Get returns the value from a key in the cache service
-func (c *TestCache) Get(key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Get(key string) <-chan *model.CacheResponse {
 	c.GetInvoked = true
-	resp := make(chan *backend.CacheResponse)
+	resp := make(chan *model.CacheResponse)
 	go func() { resp <- c.GetFn(key) }()
 	return resp
 }
 
 // Delete removes the key/value from the cache service
-func (c *TestCache) Delete(key string) <-chan *backend.CacheResponse {
+func (c *TestCache) Delete(key string) <-chan *model.CacheResponse {
 	c.DelInvoked = true
-	resp := make(chan *backend.CacheResponse)
+	resp := make(chan *model.CacheResponse)
 	go func() { resp <- c.DelFn(key) }()
 	return resp
 }
