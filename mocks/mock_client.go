@@ -14,9 +14,9 @@ import (
 type MockCacheClient struct {
 	PingFn      func() error
 	PingInvoked bool
-	SetFn       func(context.Context, string, string) error
+	SetFn       func(context.Context, string, []byte) error
 	SetInvoked  bool
-	GetFn       func(context.Context, string) (string, error)
+	GetFn       func(context.Context, string) ([]byte, error)
 	GetInvoked  bool
 	DelFn       func(context.Context, string) error
 	DelInvoked  bool

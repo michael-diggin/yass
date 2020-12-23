@@ -9,13 +9,13 @@ import (
 
 // Service implements the model.Service interface
 type Service struct {
-	cache map[string]string
+	cache map[string]interface{}
 	mu    sync.RWMutex
 }
 
 // New returns an instance of Service
 func New() *Service {
-	cache := make(map[string]string)
+	cache := make(map[string]interface{})
 	return &Service{cache: cache}
 }
 
@@ -28,7 +28,7 @@ func (s *Service) Ping() error {
 }
 
 // Set adds a key/value pair to the cache
-func (s *Service) Set(key, value string) <-chan *model.CacheResponse {
+func (s *Service) Set(key string, value interface{}) <-chan *model.CacheResponse {
 	respChan := make(chan *model.CacheResponse, 1)
 	go func() {
 		s.mu.Lock()
@@ -40,7 +40,7 @@ func (s *Service) Set(key, value string) <-chan *model.CacheResponse {
 	return respChan
 }
 
-func setValue(cache map[string]string, key, value string) error {
+func setValue(cache map[string]interface{}, key string, value interface{}) error {
 	if _, ok := cache[key]; ok {
 		return errors.AlreadySet{Key: key}
 	}
@@ -61,7 +61,7 @@ func (s *Service) Get(key string) <-chan *model.CacheResponse {
 	return respChan
 }
 
-func getValue(cache map[string]string, key string) (string, error) {
+func getValue(cache map[string]interface{}, key string) (interface{}, error) {
 	val, ok := cache[key]
 	if !ok {
 		return "", errors.NotFound{Key: key}

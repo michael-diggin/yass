@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 
 	pb "github.com/michael-diggin/yass/proto"
@@ -68,13 +69,18 @@ func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
 // Set takes a key/value pair and adds it to the cache storage
 // It returns an error if the key is already set
 func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
-	if pair.Key == "" || pair.Value == "" {
-		return nil, status.Error(codes.InvalidArgument, "Cannot set a zero key or value")
+	if pair.Key == "" || len(pair.Value) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "Cannot set an empty key or value")
+	}
+	var value interface{}
+	err := json.Unmarshal(pair.Value, &value)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "failed to unmarshal value")
 	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Set(pair.Key, pair.Value):
+	case cacheResp := <-s.Cache.Set(pair.Key, value):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
@@ -87,7 +93,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 // It returns an error if the key is not in the cache
 func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	if key.Key == "" {
-		return nil, status.Error(codes.InvalidArgument, "Cannot get a zero key")
+		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
 	}
 	select {
 	case <-ctx.Done():
@@ -96,7 +102,11 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
-		pair := &pb.Pair{Key: key.Key, Value: cacheResp.Value}
+		value, err := json.Marshal(cacheResp.Value)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "failed to marshal data")
+		}
+		pair := &pb.Pair{Key: key.Key, Value: value}
 		return pair, nil
 	}
 }

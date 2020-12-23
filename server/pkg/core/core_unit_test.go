@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -55,21 +57,21 @@ func TestSettoCache(t *testing.T) {
 	tt := []struct {
 		name    string
 		key     string
-		value   string
+		value   []byte
 		errCode codes.Code
 		timeout time.Duration
 	}{
-		{"valid case", "newKey", "newValue", codes.OK, 100 * time.Millisecond},
-		{"already set key", "testKey", "testVal", codes.AlreadyExists, 100 * time.Millisecond},
-		{"empty key", "", "emptyVal", codes.InvalidArgument, 100 * time.Millisecond},
-		{"empty value", "key", "", codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "newKey", "newValue", codes.Canceled, 0 * time.Millisecond},
+		{"valid case", "newKey", []byte(`"newValue"`), codes.OK, 100 * time.Millisecond},
+		{"already set key", "testKey", []byte(`"testVal"`), codes.AlreadyExists, 100 * time.Millisecond},
+		{"empty key", "", []byte(`"emptyVal"`), codes.InvalidArgument, 100 * time.Millisecond},
+		{"empty value", "key", []byte{}, codes.InvalidArgument, 100 * time.Millisecond},
+		{"timeout", "newKey", []byte(`"newValue"`), codes.Canceled, 0 * time.Millisecond},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				SetFn: func(key, value string) *model.CacheResponse {
+				SetFn: func(key string, value interface{}) *model.CacheResponse {
 					return &model.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
@@ -102,14 +104,14 @@ func TestGetFromCache(t *testing.T) {
 	tt := []struct {
 		name    string
 		key     string
-		value   string
+		value   []byte
 		errCode codes.Code
 		timeout time.Duration
 	}{
-		{"valid case", "testKey", "testValue", codes.OK, 100 * time.Millisecond},
-		{"key not found", "newKey", "", codes.NotFound, 100 * time.Millisecond},
-		{"empty key", "", "", codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "newKey", "newValue", codes.Canceled, 0 * time.Millisecond},
+		{"valid case", "testKey", []byte(`"testValue"`), codes.OK, 100 * time.Millisecond},
+		{"key not found", "newKey", []byte{}, codes.NotFound, 100 * time.Millisecond},
+		{"empty key", "", []byte{}, codes.InvalidArgument, 100 * time.Millisecond},
+		{"timeout", "newKey", []byte(`"newValue"`), codes.Canceled, 0 * time.Millisecond},
 	}
 
 	for _, tc := range tt {
@@ -136,8 +138,9 @@ func TestGetFromCache(t *testing.T) {
 			}
 
 			if res != nil {
-				if res.Value != tc.value {
-					t.Fatalf("Expected %s, got %s", tc.value, res.Key)
+				expectedBytes, _ := json.Marshal(tc.value)
+				if !bytes.Equal(expectedBytes, res.Value) {
+					t.Fatalf("Expected %s, got %s", expectedBytes, res.Value)
 				}
 			}
 
