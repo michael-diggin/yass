@@ -1,4 +1,4 @@
-package server
+package core
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend"
-	"github.com/michael-diggin/yass/backend/mocks"
+	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/server/mocks"
+	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -69,8 +69,8 @@ func TestSettoCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				SetFn: func(key, value string) *backend.CacheResponse {
-					return &backend.CacheResponse{
+				SetFn: func(key, value string) *model.CacheResponse {
+					return &model.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
@@ -115,8 +115,8 @@ func TestGetFromCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				GetFn: func(key string) *backend.CacheResponse {
-					return &backend.CacheResponse{
+				GetFn: func(key string) *model.CacheResponse {
+					return &model.CacheResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
@@ -161,8 +161,8 @@ func TestDeleteKeyValue(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := &mocks.TestCache{
-				DelFn: func(key string) *backend.CacheResponse {
-					return &backend.CacheResponse{
+				DelFn: func(key string) *model.CacheResponse {
+					return &model.CacheResponse{
 						Key:   tc.key,
 						Value: "",
 						Err:   status.Error(tc.errCode, "")}

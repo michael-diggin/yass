@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/michael-diggin/yass/backend/errors"
+	"github.com/michael-diggin/yass/server/errors"
 )
 
 func TestPingCache(t *testing.T) {

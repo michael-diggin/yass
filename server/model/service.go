@@ -1,4 +1,4 @@
-package backend
+package model
 
 // CacheResponse encodes key/values and the errors from the cache
 type CacheResponse struct {

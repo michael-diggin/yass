@@ -1,12 +1,12 @@
-package server
+package core
 
 import (
 	"context"
 	"net"
 	"testing"
 
-	pb "github.com/michael-diggin/yass/api"
-	"github.com/michael-diggin/yass/backend/mocks"
+	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/server/mocks"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )

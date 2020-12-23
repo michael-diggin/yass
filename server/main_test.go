@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/michael-diggin/yass/api"
+	pb "github.com/michael-diggin/yass/proto"
 	"google.golang.org/grpc"
 )
 
