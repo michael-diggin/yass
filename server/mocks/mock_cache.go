@@ -8,7 +8,7 @@ import (
 type TestCache struct {
 	PingFn      func() error
 	PingInvoked bool
-	SetFn       func(string, string) *model.CacheResponse
+	SetFn       func(string, interface{}) *model.CacheResponse
 	SetInvoked  bool
 	GetFn       func(string) *model.CacheResponse
 	GetInvoked  bool
@@ -24,7 +24,7 @@ func (c *TestCache) Ping() error {
 }
 
 // Set adds a key value pair to the in memmory cache service
-func (c *TestCache) Set(key, value string) <-chan *model.CacheResponse {
+func (c *TestCache) Set(key string, value interface{}) <-chan *model.CacheResponse {
 	c.SetInvoked = true
 	resp := make(chan *model.CacheResponse, 1)
 	go func() { resp <- c.SetFn(key, value) }()

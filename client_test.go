@@ -40,13 +40,13 @@ func TestClientPing(t *testing.T) {
 
 func TestClientSetValue(t *testing.T) {
 	mockgRPC := &mocks.MockCacheClient{}
-	mockgRPC.SetFn = func(ctx context.Context, key, value string) error {
+	mockgRPC.SetFn = func(ctx context.Context, key string, value []byte) error {
 		return nil
 	}
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
 	key := "test"
 	val := "value"
-	err := cc.SetValue(context.TODO(), key, val)
+	err := cc.SetValue(context.Background(), key, val)
 	if err != nil {
 		t.Fatalf("Non nil err: %v", err)
 	}
@@ -71,14 +71,14 @@ func TestClientGetValue(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			mockgRPC := &mocks.MockCacheClient{}
-			mockgRPC.GetFn = func(ctx context.Context, key string) (string, error) {
+			mockgRPC.GetFn = func(ctx context.Context, key string) ([]byte, error) {
 				if key == "test" {
-					return "value", nil
+					return []byte(`"value"`), nil
 				}
-				return "", errTest
+				return []byte{}, errTest
 			}
 			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-			val, err := cc.GetValue(context.TODO(), tc.key)
+			val, err := cc.GetValue(context.Background(), tc.key)
 			if err != tc.err {
 				t.Fatalf("Unexpected err: %v", err)
 			}
