@@ -1,9 +1,12 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: yass-server-deployment
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: yass-server
   template:
     metadata:
       labels:
@@ -11,7 +14,7 @@ spec:
     spec:
       containers:
       - name: yass-server
-        image: docker.io/mdiggin/yass-server
+        image: docker.io/mdiggin/yass-server:latest
         ports:
         - containerPort: 8080
 ---
