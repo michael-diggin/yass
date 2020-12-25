@@ -26,7 +26,7 @@ func main() {
 // Run is the entry point of the main function
 func run(args []string, envFunc func(string) string) error {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
-	port := flags.Int("p", 8080, "port for core to listen on")
+	port := flags.Int("p", 8080, "port for cache server to listen on")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func run(args []string, envFunc func(string) string) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	logrus.Infof("Starting core on port: %d", *port)
+	logrus.Infof("Starting cache server on port: %d", *port)
 	select {
 	case err = <-srv.SpinUp():
 		return err
