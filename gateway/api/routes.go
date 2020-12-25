@@ -15,7 +15,11 @@ type kv struct {
 
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
-	logrus.Infof("Serving Get request")
+	if g.Client == nil {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+		return
+	}
+	logrus.Debug("Serving Get request")
 	vars := mux.Vars(r)
 	key, ok := vars["key"]
 	if !ok {
@@ -37,6 +41,10 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 // Set handles the Setting of a key value pair
 func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
+	if g.Client == nil {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+		return
+	}
 	logrus.Debug("Serving Set request")
 	decoder := json.NewDecoder(r.Body)
 	var data kv
@@ -60,6 +68,10 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the removal of a value for a given key
 func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
+	if g.Client == nil {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+		return
+	}
 	logrus.Debug("Serving Delete request")
 	vars := mux.Vars(r)
 	key, ok := vars["key"]

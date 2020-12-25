@@ -21,7 +21,7 @@ type CacheClient struct {
 func NewClient(ctx context.Context, addr string) (*CacheClient, error) {
 	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure()) //TODO: add security and credentials
 	if err != nil {
-		return &CacheClient{}, err
+		return nil, err
 	}
 	client := pb.NewCacheClient(conn)
 	return &CacheClient{grpcClient: client, conn: conn}, nil
@@ -29,8 +29,7 @@ func NewClient(ctx context.Context, addr string) (*CacheClient, error) {
 
 //Close tears down the underlying connection to the server
 func (c CacheClient) Close() error {
-	err := c.conn.Close()
-	return err
+	return c.conn.Close()
 }
 
 // Ping checls if the server and cache are serving

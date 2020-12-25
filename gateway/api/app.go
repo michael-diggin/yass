@@ -17,15 +17,16 @@ type Gateway struct {
 func NewGateway(grpcClient GrpcClient) *Gateway {
 	g := Gateway{}
 	g.Router = mux.NewRouter()
-	g.initializeRoutes()
+	g.initializeAPIRoutes()
 	g.Client = grpcClient
 	return &g
 }
 
-func (g *Gateway) initializeRoutes() {
+func (g *Gateway) initializeAPIRoutes() {
 	g.Router.HandleFunc("/get/{key}", g.Get).Methods("GET")
 	g.Router.HandleFunc("/set", g.Set).Methods("POST")
 	g.Router.HandleFunc("/delete/{key}", g.Delete).Methods("DELETE")
+	g.Router.HandleFunc("/register", g.RegisterCacheServer).Methods("POST")
 }
 
 //Run will start the application
