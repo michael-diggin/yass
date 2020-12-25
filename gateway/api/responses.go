@@ -4,11 +4,23 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func respondWithError(w http.ResponseWriter, code int, message string) {
+func respondWithError(w http.ResponseWriter, err error) {
+	logrus.Errorf("encountered error: %v", err)
+	if e, ok := status.FromError(err); ok {
+		code, message := grpcToHTTP(e)
+		respondWithErrorCode(w, code, message)
+		return
+	}
+	respondWithErrorCode(w, http.StatusInternalServerError, err.Error())
+	return
+}
+
+func respondWithErrorCode(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
