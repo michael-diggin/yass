@@ -17,7 +17,8 @@ import (
 
 func TestGatewaySet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(mockClient)
+	g := NewGateway()
+	g.Client = mockClient
 
 	t.Run("success", func(t *testing.T) {
 
@@ -74,7 +75,8 @@ func TestGatewaySet(t *testing.T) {
 
 func TestGatewayGet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(mockClient)
+	g := NewGateway()
+	g.Client = mockClient
 
 	t.Run("success", func(t *testing.T) {
 
@@ -137,7 +139,8 @@ func TestGatewayGet(t *testing.T) {
 
 func TestGatewayDelete(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(mockClient)
+	g := NewGateway()
+	g.Client = mockClient
 
 	t.Run("success", func(t *testing.T) {
 

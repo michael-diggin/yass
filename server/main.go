@@ -21,26 +21,13 @@ import (
 )
 
 func main() {
-
-	if err := run(os.Args, os.Getenv); err != nil {
-		logrus.Error(err)
-		os.Exit(1)
-	}
-
-}
-
-// Run is the entry point of the main function
-func run(args []string, envFunc func(string) string) error {
-	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
-	port := flags.Int("p", 8080, "port for cache server to listen on")
-	gateway := flags.String("g", "localhost:8010", "location of the gateway server")
-	if err := flags.Parse(args[1:]); err != nil {
-		return err
-	}
+	port := flag.Int("p", 8080, "port for cache server to listen on")
+	gateway := flag.String("g", "localhost:8010", "location of the gateway server")
+	flag.Parse()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		return err
+		logrus.Fatalf("Cannot listen on port: %v", err)
 	}
 
 	// set up cache
@@ -75,23 +62,30 @@ func run(args []string, envFunc func(string) string) error {
 		}
 	}()
 
-	// register cache server with the gateway
-	localIP, err := GetLocalIP()
-	if err != nil {
-		logrus.Fatalf("Could not get local IP: %v", err)
-	}
-
-	addr := location{IP: localIP, Port: fmt.Sprintf("%d", *port)}
-	payload, err := json.Marshal(addr)
-	if err != nil {
-		logrus.Fatalf("could not convert local address to json")
-	}
-	resp, err := http.Post("http://"+*gateway+"/register", "application/json", bytes.NewBuffer(payload))
-	if err != nil || resp.StatusCode != http.StatusCreated {
+	logrus.Info("Registering cache server with api gateway")
+	if err := RegisterServerWithGateway(*gateway, *port); err != nil {
 		logrus.Fatalf("could not register server with gateway: %v", err)
 	}
 
 	wg.Wait()
+}
+
+// RegisterServerWithGateway will register the cache server with the api gateway so it can accept requests
+func RegisterServerWithGateway(gateway string, port int) error {
+	localIP, err := GetLocalIP()
+	if err != nil {
+		return err
+	}
+
+	addr := location{IP: localIP, Port: fmt.Sprintf("%d", port)}
+	payload, err := json.Marshal(addr)
+	if err != nil {
+		return err
+	}
+	resp, err := http.Post("http://"+gateway+"/register", "application/json", bytes.NewBuffer(payload))
+	if err != nil || resp.StatusCode != http.StatusCreated {
+		return err
+	}
 	return nil
 }
 
@@ -100,8 +94,7 @@ type location struct {
 	Port string `json:"port"`
 }
 
-// GetLocalIP returns the non loopback local IP of the host
-// Used for debugging in docker/wsl
+// GetLocalIP returns the first non loopback local IP of the host
 func GetLocalIP() (string, error) {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {

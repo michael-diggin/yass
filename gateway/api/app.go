@@ -14,11 +14,11 @@ type Gateway struct {
 }
 
 // NewGateway will initialize the application
-func NewGateway(grpcClient GrpcClient) *Gateway {
+func NewGateway() *Gateway {
 	g := Gateway{}
 	g.Router = mux.NewRouter()
 	g.initializeAPIRoutes()
-	g.Client = grpcClient
+	g.Client = nil
 	return &g
 }
 
