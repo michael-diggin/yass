@@ -34,7 +34,7 @@ func TestSetInCache(t *testing.T) {
 	tt := []struct {
 		name  string
 		key   string
-		value string
+		value interface{}
 		err   error
 	}{
 		{"valid", "key", "value", nil},
@@ -63,11 +63,11 @@ func TestGetFromCache(t *testing.T) {
 	tt := []struct {
 		name  string
 		key   string
-		value string
+		value interface{}
 		err   error
 	}{
 		{"valid", "test-key", "test-value", nil},
-		{"not found", "key", "", errors.NotFound{Key: "key"}},
+		{"not found", "key", nil, errors.NotFound{Key: "key"}},
 	}
 
 	for _, tc := range tt {

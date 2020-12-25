@@ -48,7 +48,7 @@ func run(args []string, envFunc func(string) string) error {
 
 	logrus.Infof("Starting cache server on port: %d", *port)
 	select {
-	case err = <-srv.SpinUp():
+	case err = <-srv.Start():
 		return err
 	case sig := <-sigChan:
 		logrus.Infof("OS signal caught: %+v", sig)

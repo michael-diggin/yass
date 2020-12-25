@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 
 	"github.com/michael-diggin/yass"
 	"github.com/michael-diggin/yass/gateway/api"
@@ -18,7 +17,7 @@ func main() {
 
 	grpcClient, err := yass.NewClient(context.Background(), *cacheLocation)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("failed to connect to grpc client: %v", err)
 	}
 	defer grpcClient.Close()
 

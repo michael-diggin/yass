@@ -27,8 +27,8 @@ func New(lis net.Listener, cache model.Service) YassServer {
 	return YassServer{lis: lis, srv: s, cache: cache}
 }
 
-// SpinUp starts the grpc server
-func (y YassServer) SpinUp() <-chan error {
+// Start starts the grpc server
+func (y YassServer) Start() <-chan error {
 	errChan := make(chan error)
 	go func() {
 		err := y.srv.Serve(y.lis)
@@ -57,6 +57,7 @@ type server struct {
 // Ping serves the healthcheck endpoint for the server
 // It checks if the cache is serving too and responds accordingly
 func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
+	logrus.Debug("Serving Ping request")
 	err := s.Cache.Ping()
 	if err != nil {
 		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
@@ -69,6 +70,7 @@ func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
 // Set takes a key/value pair and adds it to the cache storage
 // It returns an error if the key is already set
 func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
+	logrus.Debug("Serving Set request")
 	if pair.Key == "" || len(pair.Value) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set an empty key or value")
 	}
@@ -85,6 +87,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
 		output := &pb.Key{Key: cacheResp.Key}
+		logrus.Debug("Set request succeeded")
 		return output, nil
 	}
 }
@@ -92,6 +95,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 // Get returns the value of a key
 // It returns an error if the key is not in the cache
 func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
+	logrus.Debug("Serving Get request")
 	if key.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
 	}
@@ -107,12 +111,14 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 			return nil, status.Error(codes.Internal, "failed to marshal data")
 		}
 		pair := &pb.Pair{Key: key.Key, Value: value}
+		logrus.Debug("Get request succeeded")
 		return pair, nil
 	}
 }
 
 // Delete is the endpoint to delete a key/value if it is already in the cache
 func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
+	logrus.Info("Serving Delete request")
 	if key.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}

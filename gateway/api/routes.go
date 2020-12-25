@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"google.golang.org/grpc/status"
-
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type kv struct {
@@ -16,28 +15,21 @@ type kv struct {
 
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
+	logrus.Infof("Serving Get request")
 	vars := mux.Vars(r)
 	key, ok := vars["key"]
 	if !ok {
-		respondWithError(w, http.StatusBadRequest, "No key supplied with request")
+		respondWithErrorCode(w, http.StatusBadRequest, "No key supplied with request")
 		return
 	}
 
 	value, err := g.Client.GetValue(r.Context(), key)
 	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			code, message := grpcToHTTP(e)
-			respondWithError(w, code, message)
-			return
-		}
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, err)
 		return
 	}
 
-	resp := map[string]interface{}{
-		"key":   key,
-		"value": value,
-	}
+	resp := kv{Key: key, Value: value}
 
 	respondWithJSON(w, http.StatusOK, resp)
 	return
@@ -45,11 +37,12 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 // Set handles the Setting of a key value pair
 func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
+	logrus.Debug("Serving Set request")
 	decoder := json.NewDecoder(r.Body)
 	var data kv
 	err := decoder.Decode(&data)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "data could not be decoded")
+		respondWithErrorCode(w, http.StatusBadRequest, "data could not be decoded")
 		return
 	}
 
@@ -58,12 +51,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 	err = g.Client.SetValue(r.Context(), key, value)
 	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			code, message := grpcToHTTP(e)
-			respondWithError(w, code, message)
-			return
-		}
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, err)
 		return
 	}
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
@@ -72,21 +60,17 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the removal of a value for a given key
 func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
+	logrus.Debug("Serving Delete request")
 	vars := mux.Vars(r)
 	key, ok := vars["key"]
 	if !ok {
-		respondWithError(w, http.StatusBadRequest, "no key supplied with request")
+		respondWithErrorCode(w, http.StatusBadRequest, "no key supplied with request")
 		return
 	}
 
 	err := g.Client.DelValue(r.Context(), key)
 	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			code, message := grpcToHTTP(e)
-			respondWithError(w, code, message)
-			return
-		}
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		respondWithError(w, err)
 		return
 	}
 

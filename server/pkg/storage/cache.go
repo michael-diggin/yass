@@ -64,7 +64,7 @@ func (s *Service) Get(key string) <-chan *model.CacheResponse {
 func getValue(cache map[string]interface{}, key string) (interface{}, error) {
 	val, ok := cache[key]
 	if !ok {
-		return "", errors.NotFound{Key: key}
+		return nil, errors.NotFound{Key: key}
 	}
 	return val, nil
 }

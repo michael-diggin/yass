@@ -26,7 +26,7 @@ func TestRunAndPingServer(t *testing.T) {
 	}
 
 	srv := New(lis, cache)
-	srv.SpinUp()
+	srv.Start()
 	defer srv.ShutDown()
 
 	ctx := context.Background()

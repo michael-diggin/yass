@@ -1,10 +1,10 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 // Gateway holds the router and the grpc clients
@@ -30,7 +30,7 @@ func (g *Gateway) initializeRoutes() {
 
 //Run will start the application
 func (g *Gateway) Run(addr string) {
-	log.Fatal(http.ListenAndServe(addr, g.Router))
+	logrus.Fatal(http.ListenAndServe(addr, g))
 }
 
 //ServeHTTP will serve and route a request
