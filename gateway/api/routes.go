@@ -49,7 +49,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	var data kv
 	err := decoder.Decode(&data)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Data could not be decoded")
+		respondWithError(w, http.StatusBadRequest, "data could not be decoded")
 		return
 	}
 
