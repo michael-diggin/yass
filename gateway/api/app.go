@@ -5,17 +5,16 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/michael-diggin/yass"
 )
 
 // Gateway holds the router and the grpc clients
 type Gateway struct {
 	Router *mux.Router
-	Client *yass.CacheClient
+	Client GrpcClient
 }
 
 // NewGateway will initialize the application
-func NewGateway(grpcClient *yass.CacheClient) *Gateway {
+func NewGateway(grpcClient GrpcClient) *Gateway {
 	g := Gateway{}
 	g.Router = mux.NewRouter()
 	g.initializeRoutes()

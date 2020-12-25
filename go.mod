@@ -9,7 +9,7 @@ require (
 	github.com/michael-diggin/workout v0.0.0-20200813084445-19839cceeec3
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.5.1 // indirect
+	github.com/stretchr/testify v1.5.1
 	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a // indirect
 	google.golang.org/grpc v1.31.0
