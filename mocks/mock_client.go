@@ -12,14 +12,18 @@ import (
 
 // MockCacheClient implements the pb client interface
 type MockCacheClient struct {
-	PingFn      func() error
-	PingInvoked bool
-	SetFn       func(context.Context, string, []byte) error
-	SetInvoked  bool
-	GetFn       func(context.Context, string) ([]byte, error)
-	GetInvoked  bool
-	DelFn       func(context.Context, string) error
-	DelInvoked  bool
+	PingFn             func() error
+	PingInvoked        bool
+	SetFn              func(context.Context, string, []byte) error
+	SetInvoked         bool
+	GetFn              func(context.Context, string) ([]byte, error)
+	GetInvoked         bool
+	DelFn              func(context.Context, string) error
+	DelInvoked         bool
+	DelFollowerFn      func(context.Context, string) error
+	DelFollowerInvoked bool
+	SetFollowerFn      func(context.Context, string, []byte) error
+	SetFollowerInvoked bool
 }
 
 // Ping implements ping
@@ -51,6 +55,20 @@ func (m *MockCacheClient) Get(ctx context.Context, in *pb.Key, opts ...grpc.Call
 // Delete calls the mocked delete fn
 func (m *MockCacheClient) Delete(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
 	m.DelInvoked = true
+	err := m.DelFn(ctx, in.Key)
+	return &pb.Null{}, err
+}
+
+// SetFollower calls the mocked set follower fn
+func (m *MockCacheClient) SetFollower(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
+	m.SetFollowerInvoked = true
+	err := m.SetFollowerFn(ctx, in.Key, in.Value)
+	return &pb.Key{Key: in.Key}, err
+}
+
+// DeleteFollower calls the mocked delete follower fn
+func (m *MockCacheClient) DeleteFollower(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
+	m.DelFollowerInvoked = true
 	err := m.DelFn(ctx, in.Key)
 	return &pb.Null{}, err
 }

@@ -7,7 +7,6 @@ build:
 run:
 	docker run -d -p ${PORT}:${PORT} yass-server:0.1 -p ${PORT}
 
-
 dev-start: build run
 
 test:

@@ -51,7 +51,8 @@ func (y YassServer) ShutDown() {
 
 // server (unexported) implements the CacheServer interface
 type server struct {
-	Cache model.Service
+	Cache    model.Service
+	Follower model.Service
 }
 
 // Ping serves the healthcheck endpoint for the server
