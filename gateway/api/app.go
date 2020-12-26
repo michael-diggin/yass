@@ -34,12 +34,25 @@ func (g *Gateway) initializeAPIRoutes() {
 	g.Router.HandleFunc("/register", g.RegisterCacheServer).Methods("POST")
 }
 
-//Run will start the application
-func (g *Gateway) Run(addr string) {
-	logrus.Fatal(http.ListenAndServe(addr, g))
+//Serve will start the application
+func (g *Gateway) Serve(addr string) <-chan error {
+	errChan := make(chan error, 1)
+	errChan <- http.ListenAndServe(addr, g)
+	return errChan
 }
 
 //ServeHTTP will serve and route a request
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	g.Router.ServeHTTP(w, r)
+}
+
+// ShutDown will close all grpc connections the gateway holds
+func (g *Gateway) ShutDown() {
+	logrus.Infof("Closing connections to storage servers")
+	g.mu.Lock()
+	for num, client := range g.Clients {
+		serverNum := num
+		client.Close()
+		delete(g.Clients, serverNum)
+	}
 }

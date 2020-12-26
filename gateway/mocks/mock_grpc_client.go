@@ -31,3 +31,8 @@ func (m MockGrpcClient) DelValue(ctx context.Context, key string) error {
 	m.DelInvoked = true
 	return m.DelFn(ctx, key)
 }
+
+// Close will terminate the client connection
+func (m MockGrpcClient) Close() error {
+	return nil
+}
