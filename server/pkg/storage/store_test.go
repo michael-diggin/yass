@@ -6,7 +6,7 @@ import (
 	"github.com/michael-diggin/yass/server/errors"
 )
 
-func TestPingCache(t *testing.T) {
+func TestPingStorage(t *testing.T) {
 	tt := []struct {
 		name string
 		ser  *Service

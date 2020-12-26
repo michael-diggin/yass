@@ -19,13 +19,18 @@ func getBufDialer(listener *bufconn.Listener) func(context.Context, string) (net
 
 func TestRunAndPingServer(t *testing.T) {
 	lis := bufconn.Listen(1024 * 1024)
-	cache := &mocks.TestCache{
+	l := &mocks.TestStorage{
+		PingFn: func() error {
+			return nil
+		},
+	}
+	f := &mocks.TestStorage{
 		PingFn: func() error {
 			return nil
 		},
 	}
 
-	srv := New(lis, cache)
+	srv := New(lis, l, f)
 	srv.Start()
 	defer srv.ShutDown()
 
@@ -43,7 +48,7 @@ func TestRunAndPingServer(t *testing.T) {
 	if resp.Status != pb.PingResponse_SERVING {
 		t.Fatalf("Server not serving")
 	}
-	if !cache.PingInvoked {
+	if !l.PingInvoked {
 		t.Fatalf("mock cache ping fn not callled")
 	}
 }

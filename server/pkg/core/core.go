@@ -15,16 +15,15 @@ import (
 
 // YassServer wraps up the listener, grpc server and cache service
 type YassServer struct {
-	lis   net.Listener
-	srv   *grpc.Server
-	cache model.Service
+	lis net.Listener
+	srv *grpc.Server
 }
 
 // New sets up the server
-func New(lis net.Listener, cache model.Service) YassServer {
+func New(lis net.Listener, leader, follower model.Service) YassServer {
 	s := grpc.NewServer()
-	pb.RegisterCacheServer(s, server{Cache: cache})
-	return YassServer{lis: lis, srv: s, cache: cache}
+	pb.RegisterCacheServer(s, server{Leader: leader, Follower: follower})
+	return YassServer{lis: lis, srv: s}
 }
 
 // Start starts the grpc server
@@ -43,23 +42,26 @@ func (y YassServer) Start() <-chan error {
 // ShutDown closes the server resources
 func (y YassServer) ShutDown() {
 	logrus.Infof("Shutting down server resources")
-	y.cache.Close()
-	logrus.Infof("Cache closed")
 	y.srv.GracefulStop()
 	logrus.Infof("gRPC server stopped")
 }
 
 // server (unexported) implements the CacheServer interface
 type server struct {
-	Cache    model.Service
+	Leader   model.Service
 	Follower model.Service
 }
 
 // Ping serves the healthcheck endpoint for the server
-// It checks if the cache is serving too and responds accordingly
+// It checks if the storage is serving and responds accordingly
 func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
 	logrus.Debug("Serving Ping request")
-	err := s.Cache.Ping()
+	err := s.Leader.Ping()
+	if err != nil {
+		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
+		return resp, status.Error(codes.Unavailable, err.Error())
+	}
+	err = s.Follower.Ping()
 	if err != nil {
 		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
 		return resp, status.Error(codes.Unavailable, err.Error())
@@ -68,7 +70,7 @@ func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
 	return resp, nil
 }
 
-// Set takes a key/value pair and adds it to the cache storage
+// Set takes a key/value pair and adds it to the storage
 // It returns an error if the key is already set
 func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	logrus.Debug("Serving Set request")
@@ -83,7 +85,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Set(pair.Key, value):
+	case cacheResp := <-s.Leader.Set(pair.Key, value):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
@@ -94,7 +96,7 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 }
 
 // Get returns the value of a key
-// It returns an error if the key is not in the cache
+// It returns an error if the key is not in the storage
 func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	logrus.Debug("Serving Get request")
 	if key.Key == "" {
@@ -103,7 +105,7 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Cache.Get(key.Key):
+	case cacheResp := <-s.Leader.Get(key.Key):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
@@ -117,7 +119,7 @@ func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
 	}
 }
 
-// Delete is the endpoint to delete a key/value if it is already in the cache
+// Delete is the endpoint to delete a key/value if it is already in the storage
 func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	logrus.Info("Serving Delete request")
 	if key.Key == "" {
@@ -126,7 +128,7 @@ func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case <-s.Cache.Delete(key.Key):
+	case <-s.Leader.Delete(key.Key):
 		return &pb.Null{}, nil
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// SetFollower takes a key/value pair and adds it to the cache storage
+// SetFollower takes a key/value pair and adds it to the storage
 // It returns an error if the key is already set
 func (s server) SetFollower(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 	logrus.Debug("Serving Set request")
@@ -35,7 +35,7 @@ func (s server) SetFollower(ctx context.Context, pair *pb.Pair) (*pb.Key, error)
 	}
 }
 
-// DeleteFollower is the endpoint to delete a key/value if it is already in the cache
+// DeleteFollower is the endpoint to delete a key/value if it is already in the storage
 func (s server) DeleteFollower(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	logrus.Info("Serving Delete request")
 	if key.Key == "" {

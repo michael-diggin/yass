@@ -30,15 +30,15 @@ func TestServerPing(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
+			l := &mocks.TestStorage{
 				PingFn: func() error {
 					if tc.name == "serving" {
 						return nil
 					}
-					return errors.New("Cache not reachable")
+					return errors.New("Leader Storage not reachable")
 				},
 			}
-			srv := server{Cache: cache}
+			srv := server{Leader: l, Follower: l}
 
 			resp, err := srv.Ping(context.Background(), &pb.Null{})
 			if grpc.Code(err) != tc.errCode {
@@ -52,7 +52,7 @@ func TestServerPing(t *testing.T) {
 	}
 }
 
-func TestSettoCache(t *testing.T) {
+func TestSettoStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
 	tt := []struct {
 		name    string
@@ -70,15 +70,15 @@ func TestSettoCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				SetFn: func(key string, value interface{}) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				SetFn: func(key string, value interface{}) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{Cache: cache}
+			srv := server{Leader: l}
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
@@ -99,7 +99,7 @@ func TestSettoCache(t *testing.T) {
 	}
 }
 
-func TestGetFromCache(t *testing.T) {
+func TestGetFromStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
 	tt := []struct {
 		name    string
@@ -116,15 +116,15 @@ func TestGetFromCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				GetFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				GetFn: func(key string) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{Cache: cache}
+			srv := server{Leader: l}
 			testK := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.Get(ctx, testK)
@@ -163,115 +163,18 @@ func TestDeleteKeyValue(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				DelFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				DelFn: func(key string) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: "",
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{Cache: cache}
+			srv := server{Leader: l}
 			testKV := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Delete(ctx, testKV)
-			cancel()
-			e, ok := status.FromError(err)
-			if !ok {
-				t.Errorf("Could not get code from error: %v", err)
-			}
-			if e.Code() != tc.errCode {
-				t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-			}
-
-		})
-	}
-}
-
-func TestSettoFollower(t *testing.T) {
-	tt := []struct {
-		name    string
-		key     string
-		value   []byte
-		errCode codes.Code
-		timeout time.Duration
-	}{
-		{"valid case", "newKey", []byte(`"newValue"`), codes.OK, 100 * time.Millisecond},
-		{"already set key", "testKey", []byte(`"testVal"`), codes.AlreadyExists, 100 * time.Millisecond},
-		{"empty key", "", []byte(`"emptyVal"`), codes.InvalidArgument, 100 * time.Millisecond},
-		{"empty value", "key", []byte{}, codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "newKey", []byte(`"newValue"`), codes.Canceled, 0 * time.Millisecond},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				SetFn: func(key string, value interface{}) *model.CacheResponse {
-					return &model.CacheResponse{
-						Err: errors.New("hit wrong storage")}
-				},
-			}
-			follower := &mocks.TestCache{
-				SetFn: func(key string, value interface{}) *model.CacheResponse {
-					return &model.CacheResponse{
-						Key:   tc.key,
-						Value: tc.value,
-						Err:   status.Error(tc.errCode, "")}
-				},
-			}
-			srv := server{Cache: cache, Follower: follower}
-			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
-
-			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			res, err := srv.SetFollower(ctx, testKV)
-			cancel()
-			if e, ok := status.FromError(err); ok {
-				if e.Code() != tc.errCode {
-					t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-				}
-			}
-			if res != nil {
-				if res.Key != testKV.Key {
-					t.Fatalf("Expected %s, got %s", testKV.Key, res.Key)
-				}
-			}
-
-		})
-	}
-}
-
-func TestDeleteFollowerKeyValue(t *testing.T) {
-	tt := []struct {
-		name    string
-		key     string
-		errCode codes.Code
-		timeout time.Duration
-	}{
-		{"valid case", "testKey", codes.OK, 100 * time.Millisecond},
-		{"empty key", "", codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "Key", codes.Canceled, 0 * time.Millisecond},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				DelFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
-						Err: errors.New("hit wrong storage")}
-				},
-			}
-			follower := &mocks.TestCache{
-				DelFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
-						Key:   tc.key,
-						Value: "",
-						Err:   status.Error(tc.errCode, "")}
-				},
-			}
-			srv := server{Cache: cache, Follower: follower}
-			testKV := &pb.Key{Key: tc.key}
-			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			_, err := srv.DeleteFollower(ctx, testKV)
 			cancel()
 			e, ok := status.FromError(err)
 			if !ok {
