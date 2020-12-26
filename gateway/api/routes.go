@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"hash/fnv"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,8 +16,8 @@ type kv struct {
 
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
-	if g.Client == nil {
-		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+	if len(g.Clients) != g.numServers {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
 	logrus.Debug("Serving Get request")
@@ -27,7 +28,13 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	value, err := g.Client.GetValue(r.Context(), key)
+	hash := getHashOfKey(key)
+	serverNum := hash % g.numServers
+	g.mu.RLock()
+	client := g.Clients[serverNum]
+	g.mu.RUnlock()
+
+	value, err := client.GetValue(r.Context(), key)
 	if err != nil {
 		respondWithError(w, err)
 		return
@@ -41,8 +48,8 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 // Set handles the Setting of a key value pair
 func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
-	if g.Client == nil {
-		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+	if len(g.Clients) != g.numServers {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
 	logrus.Debug("Serving Set request")
@@ -57,19 +64,24 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	key := data.Key
 	value := data.Value
 
-	err = g.Client.SetValue(r.Context(), key, value)
+	hash := getHashOfKey(key)
+	serverNum := hash % g.numServers
+	g.mu.RLock()
+	client := g.Clients[serverNum]
+	g.mu.RUnlock()
+	err = client.SetValue(r.Context(), key, value)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
+	respondWithJSON(w, http.StatusCreated, "key and value successfully added")
 	return
 }
 
 // Delete handles the removal of a value for a given key
 func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
-	if g.Client == nil {
-		respondWithErrorCode(w, http.StatusServiceUnavailable, "cache server is not ready yet")
+	if len(g.Clients) != g.numServers {
+		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
 	logrus.Debug("Serving Delete request")
@@ -80,7 +92,12 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := g.Client.DelValue(r.Context(), key)
+	hash := getHashOfKey(key)
+	serverNum := hash % g.numServers
+	g.mu.RLock()
+	client := g.Clients[serverNum]
+	g.mu.RUnlock()
+	err := client.DelValue(r.Context(), key)
 	if err != nil {
 		respondWithError(w, err)
 		return
@@ -88,4 +105,10 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, "key deleted")
 	return
+}
+
+func getHashOfKey(key string) int {
+	h := fnv.New32a()
+	h.Write([]byte(key))
+	return int(h.Sum32())
 }
