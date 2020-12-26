@@ -37,7 +37,10 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, err)
 		return
 	}
-	g.Client = client
+	g.mu.Lock()
+	currentNumber := len(g.Clients)
+	g.Clients[currentNumber] = client
+	g.mu.Unlock()
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
 	return
 }

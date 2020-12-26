@@ -17,8 +17,8 @@ import (
 
 func TestGatewaySet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway()
-	g.Client = mockClient
+	g := NewGateway(1)
+	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
 
@@ -75,8 +75,8 @@ func TestGatewaySet(t *testing.T) {
 
 func TestGatewayGet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway()
-	g.Client = mockClient
+	g := NewGateway(1)
+	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
 
@@ -139,8 +139,8 @@ func TestGatewayGet(t *testing.T) {
 
 func TestGatewayDelete(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway()
-	g.Client = mockClient
+	g := NewGateway(1)
+	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
 
@@ -194,5 +194,35 @@ func TestGatewayDelete(t *testing.T) {
 		var resp map[string]interface{}
 		json.Unmarshal(rec.Body.Bytes(), &resp)
 		require.Contains(t, resp["error"], "network")
+	})
+}
+
+func TestGatewayDeleteWithMultipleClients(t *testing.T) {
+	mockClientOne := &mocks.MockGrpcClient{}
+	mockClientTwo := &mocks.MockGrpcClient{}
+	g := NewGateway(2)
+	g.Clients[0] = mockClientOne
+	g.Clients[1] = mockClientTwo
+
+	t.Run("success", func(t *testing.T) {
+
+		mockClientTwo.DelFn = func(ctx context.Context, key string) error {
+			return nil
+		}
+		mockClientOne.DelFn = func(ctx context.Context, key string) error {
+			return errors.New("Hit the wrong storage server")
+		}
+
+		key := "test-key"
+		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		g.ServeHTTP(rec, req)
+
+		require.Equal(t, rec.Code, http.StatusOK)
+
+		var resp string
+		json.Unmarshal(rec.Body.Bytes(), &resp)
+		require.Contains(t, resp, "deleted")
 	})
 }

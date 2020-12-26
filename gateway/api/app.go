@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -9,16 +10,20 @@ import (
 
 // Gateway holds the router and the grpc clients
 type Gateway struct {
-	Router *mux.Router
-	Client GrpcClient
+	Router     *mux.Router
+	Clients    map[int]GrpcClient
+	numServers int
+	mu         sync.RWMutex
 }
 
 // NewGateway will initialize the application
-func NewGateway() *Gateway {
+func NewGateway(numServers int) *Gateway {
 	g := Gateway{}
 	g.Router = mux.NewRouter()
 	g.initializeAPIRoutes()
-	g.Client = nil
+	g.Clients = make(map[int]GrpcClient)
+	g.numServers = numServers
+	g.mu = sync.RWMutex{}
 	return &g
 }
 
