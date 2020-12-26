@@ -1,30 +1,23 @@
-[![Build Status](https://travis-ci.org/michael-diggin/yass.svg?branch=master)](https://travis-ci.org/michael-diggin/yass)
+[![Build Status](https://github.com/michael-diggin/yass/workflows/Build/badge.svg?branch=main)](https://github.com/michael-diggin/yass/actions)
 
 # yass (Yet Another Storage Solution)
-A distributed key-value cache service written in golang using gRPC.
+A distributed key-value storage service written in golang.
 
-This was a simple side project for me to get some understanding of basic distributed systems/gRPC.
-
-The main branch uses an in-memory cache service, the redis-branch uses a redis connection as the key-value store. 
+The underlying data structure is a simple golang `map` 
 
 ## Structure of the application
 
-This codebase contains both the server/cache side code (contained in /backend), as well as a client side package to connect to the server and cache (contained in /yass). 
+This codebase contains both the the storage server code, the api gateway code, as well as the gRPC client code. 
 
 
-## How to Use
+## How to Use (WIP)
 
 This is a go-gettable package so to include in your Go project run:
 
- `go get github.com/michael-diggin/yass/...` 
+ `go get github.com/michael-diggin/yass/` 
 
-From the command line the cache service can be spun up using the command (PORT is a required field)
 
-`yass deploy PORT`
-
-This will build a docker image and run the container exposing the specified port. 
-
-To connect to the cache service and set/get values from it, the client side package exposes a simple API and makes this very easy. 
+To connect to the storage service and set/get values from it, the client side package exposes a simple API and makes this very easy. It can also be accessed via a REST endpoint.
 
 ```golang
 package main
