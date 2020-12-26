@@ -25,6 +25,9 @@ func TestGatewaySet(t *testing.T) {
 		mockClient.SetFn = func(ctx context.Context, key string, value interface{}) error {
 			return nil
 		}
+		mockClient.SetFollowerFn = func(ctx context.Context, key string, value interface{}) error {
+			return nil
+		}
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -147,6 +150,9 @@ func TestGatewayDelete(t *testing.T) {
 		mockClient.DelFn = func(ctx context.Context, key string) error {
 			return nil
 		}
+		mockClient.DelFollowerFn = func(ctx context.Context, key string) error {
+			return nil
+		}
 
 		key := "test-key"
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
@@ -209,8 +215,8 @@ func TestGatewayDeleteWithMultipleClients(t *testing.T) {
 		mockClientTwo.DelFn = func(ctx context.Context, key string) error {
 			return nil
 		}
-		mockClientOne.DelFn = func(ctx context.Context, key string) error {
-			return errors.New("Hit the wrong storage server")
+		mockClientOne.DelFollowerFn = func(ctx context.Context, key string) error {
+			return nil
 		}
 
 		key := "test-key"

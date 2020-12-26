@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// MockCacheClient implements the pb client interface
-type MockCacheClient struct {
+// MockClient implements the pb client interface
+type MockClient struct {
 	PingFn             func() error
 	PingInvoked        bool
 	SetFn              func(context.Context, string, []byte) error
@@ -27,7 +27,7 @@ type MockCacheClient struct {
 }
 
 // Ping implements ping
-func (m *MockCacheClient) Ping(ctx context.Context, in *pb.Null, opts ...grpc.CallOption) (*pb.PingResponse, error) {
+func (m *MockClient) Ping(ctx context.Context, in *pb.Null, opts ...grpc.CallOption) (*pb.PingResponse, error) {
 	m.PingInvoked = true
 	err := m.PingFn()
 	if err != nil {
@@ -39,36 +39,36 @@ func (m *MockCacheClient) Ping(ctx context.Context, in *pb.Null, opts ...grpc.Ca
 }
 
 // Set calls the mocked set fn
-func (m *MockCacheClient) Set(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
+func (m *MockClient) Set(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
 	m.SetInvoked = true
 	err := m.SetFn(ctx, in.Key, in.Value)
 	return &pb.Key{Key: in.Key}, err
 }
 
 // Get calls the mocked get fn
-func (m *MockCacheClient) Get(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Pair, error) {
+func (m *MockClient) Get(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Pair, error) {
 	m.GetInvoked = true
 	val, err := m.GetFn(ctx, in.Key)
 	return &pb.Pair{Key: in.Key, Value: val}, err
 }
 
 // Delete calls the mocked delete fn
-func (m *MockCacheClient) Delete(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
+func (m *MockClient) Delete(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
 	m.DelInvoked = true
 	err := m.DelFn(ctx, in.Key)
 	return &pb.Null{}, err
 }
 
 // SetFollower calls the mocked set follower fn
-func (m *MockCacheClient) SetFollower(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
+func (m *MockClient) SetFollower(ctx context.Context, in *pb.Pair, opts ...grpc.CallOption) (*pb.Key, error) {
 	m.SetFollowerInvoked = true
 	err := m.SetFollowerFn(ctx, in.Key, in.Value)
 	return &pb.Key{Key: in.Key}, err
 }
 
 // DeleteFollower calls the mocked delete follower fn
-func (m *MockCacheClient) DeleteFollower(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
+func (m *MockClient) DeleteFollower(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Null, error) {
 	m.DelFollowerInvoked = true
-	err := m.DelFn(ctx, in.Key)
+	err := m.DelFollowerFn(ctx, in.Key)
 	return &pb.Null{}, err
 }
