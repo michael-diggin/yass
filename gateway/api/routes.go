@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"hash/fnv"
 	"net/http"
@@ -30,18 +31,48 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 	hash := getHashOfKey(key)
 	server := hash % g.numServers
+	follower := (server + 1) % g.numServers
 	g.mu.RLock()
 	client := g.Clients[server]
+	followerClient := g.Clients[follower]
 	g.mu.RUnlock()
 
-	value, err := client.GetValue(r.Context(), key)
-	if err != nil {
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+	var err error
+	var value interface{}
+
+	type internalResponse struct {
+		value interface{}
+		err   error
+	}
+
+	resps := make(chan internalResponse, 2)
+	go func() {
+		val, err := client.GetValue(ctx, key)
+		resps <- internalResponse{value: val, err: err}
+	}()
+	go func() {
+		val, err := followerClient.GetFollowerValue(ctx, key)
+		resps <- internalResponse{value: val, err: err}
+	}()
+
+	for i := 0; i < 2; i++ {
+		r := <-resps
+		if r.value != nil {
+			value = r.value
+			cancel()
+			break
+		}
+		err = r.err
+	}
+
+	if value == nil && err != nil {
 		respondWithError(w, err)
 		return
 	}
 
 	resp := kv{Key: key, Value: value}
-
 	respondWithJSON(w, http.StatusOK, resp)
 	return
 }

@@ -35,6 +35,30 @@ func (s server) SetFollower(ctx context.Context, pair *pb.Pair) (*pb.Key, error)
 	}
 }
 
+// GetFollower returns the value of a key
+// It returns an error if the key is not in the storage
+func (s server) GetFollower(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
+	logrus.Debug("Serving GetFollower request")
+	if key.Key == "" {
+		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
+	}
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case cacheResp := <-s.Follower.Get(key.Key):
+		if cacheResp.Err != nil {
+			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
+		}
+		value, err := json.Marshal(cacheResp.Value)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "failed to marshal data")
+		}
+		pair := &pb.Pair{Key: key.Key, Value: value}
+		logrus.Debug("Get request succeeded")
+		return pair, nil
+	}
+}
+
 // DeleteFollower is the endpoint to delete a key/value if it is already in the storage
 func (s server) DeleteFollower(ctx context.Context, key *pb.Key) (*pb.Null, error) {
 	logrus.Info("Serving Delete request")

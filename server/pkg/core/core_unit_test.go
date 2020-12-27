@@ -5,20 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"testing"
 	"time"
 
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
-	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func TestServerPing(t *testing.T) {
+	r := require.New(t)
 	tt := []struct {
 		name    string
 		errCode codes.Code
@@ -41,19 +41,14 @@ func TestServerPing(t *testing.T) {
 			srv := server{Leader: l, Follower: l}
 
 			resp, err := srv.Ping(context.Background(), &pb.Null{})
-			if grpc.Code(err) != tc.errCode {
-				t.Fatalf("Expected code %v, got %v", tc.errCode, grpc.Code(err))
-			}
-			if resp.Status != tc.status {
-				t.Fatalf("Incorrect status returned %v", resp.Status)
-			}
-
+			r.Equal(tc.errCode, grpc.Code(err))
+			r.Equal(tc.status, resp.Status)
 		})
 	}
 }
 
 func TestSettoStorage(t *testing.T) {
-	logrus.SetOutput(ioutil.Discard) // Discard log output for test
+	r := require.New(t)
 	tt := []struct {
 		name    string
 		key     string
@@ -85,22 +80,17 @@ func TestSettoStorage(t *testing.T) {
 			res, err := srv.Set(ctx, testKV)
 			cancel()
 			if e, ok := status.FromError(err); ok {
-				if e.Code() != tc.errCode {
-					t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-				}
+				r.Equal(tc.errCode, e.Code())
 			}
 			if res != nil {
-				if res.Key != testKV.Key {
-					t.Fatalf("Expected %s, got %s", testKV.Key, res.Key)
-				}
+				r.Equal(testKV.Key, res.Key)
 			}
-
 		})
 	}
 }
 
 func TestGetFromStorage(t *testing.T) {
-	logrus.SetOutput(ioutil.Discard) // Discard log output for test
+	r := require.New(t)
 	tt := []struct {
 		name    string
 		key     string
@@ -130,26 +120,19 @@ func TestGetFromStorage(t *testing.T) {
 			res, err := srv.Get(ctx, testK)
 			cancel()
 			e, ok := status.FromError(err)
-			if !ok {
-				t.Errorf("Could not get code from error: %v", err)
-			}
-			if e.Code() != tc.errCode {
-				t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-			}
+			r.True(ok)
+			r.Equal(tc.errCode, e.Code())
 
 			if res != nil {
 				expectedBytes, _ := json.Marshal(tc.value)
-				if !bytes.Equal(expectedBytes, res.Value) {
-					t.Fatalf("Expected %s, got %s", expectedBytes, res.Value)
-				}
+				r.True(bytes.Equal(expectedBytes, res.Value))
 			}
-
 		})
 	}
 }
 
 func TestDeleteKeyValue(t *testing.T) {
-	logrus.SetOutput(ioutil.Discard) // Discard log output for test
+	r := require.New(t)
 	tt := []struct {
 		name    string
 		key     string
@@ -177,12 +160,8 @@ func TestDeleteKeyValue(t *testing.T) {
 			_, err := srv.Delete(ctx, testKV)
 			cancel()
 			e, ok := status.FromError(err)
-			if !ok {
-				t.Errorf("Could not get code from error: %v", err)
-			}
-			if e.Code() != tc.errCode {
-				t.Fatalf("Expected error '%v', got: '%v'", tc.errCode, err)
-			}
+			r.True(ok)
+			r.Equal(tc.errCode, e.Code())
 
 		})
 	}
