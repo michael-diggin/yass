@@ -106,3 +106,24 @@ func (c *CacheClient) DelFollowerValue(ctx context.Context, key string) error {
 	_, err := c.grpcClient.DeleteFollower(ctx, pbKey)
 	return err
 }
+
+// BatchSet sets a batch of data into the storage server
+func (c *CacheClient) BatchSet(ctx context.Context, replica int, data interface{}) error {
+	reqData, ok := data.([]*pb.Pair)
+	if !ok {
+		return errors.New("invalid input")
+	}
+	req := &pb.BatchSetRequest{Replica: int32(replica), Data: reqData}
+	_, err := c.grpcClient.BatchSet(ctx, req)
+	return err
+}
+
+// BatchGet returns a batch of data
+func (c *CacheClient) BatchGet(ctx context.Context, replica int) (interface{}, error) {
+	req := &pb.BatchGetRequest{Replica: int32(replica)}
+	resp, err := c.grpcClient.BatchGet(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}

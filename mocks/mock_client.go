@@ -26,6 +26,11 @@ type MockClient struct {
 	GetFollowerInvoked bool
 	DelFollowerFn      func(context.Context, string) error
 	DelFollowerInvoked bool
+
+	BatchSetFn      func(context.Context, []*pb.Pair) error
+	BatchSetInvoked bool
+	BatchGetFn      func(context.Context) ([]*pb.Pair, error)
+	BatchGetInvoked bool
 }
 
 // Ping implements ping
@@ -80,4 +85,18 @@ func (m *MockClient) DeleteFollower(ctx context.Context, in *pb.Key, opts ...grp
 	m.DelFollowerInvoked = true
 	err := m.DelFollowerFn(ctx, in.Key)
 	return &pb.Null{}, err
+}
+
+// BatchSet calls the mocked set fn
+func (m *MockClient) BatchSet(ctx context.Context, in *pb.BatchSetRequest, opts ...grpc.CallOption) (*pb.Null, error) {
+	m.BatchSetInvoked = true
+	err := m.BatchSetFn(ctx, in.Data)
+	return &pb.Null{}, err
+}
+
+// BatchGet calls the mocked get fn
+func (m *MockClient) BatchGet(ctx context.Context, in *pb.BatchGetRequest, opts ...grpc.CallOption) (*pb.BatchGetResponse, error) {
+	m.BatchGetInvoked = true
+	data, err := m.BatchGetFn(ctx)
+	return &pb.BatchGetResponse{Replica: in.Replica, Data: data}, err
 }

@@ -86,3 +86,37 @@ func (s *Service) Delete(key string) <-chan *model.StorageResponse {
 func (s *Service) Close() {
 	s = &Service{} // let GC handle the freeing up of memory
 }
+
+// BatchGet returns all of the stored data
+func (s *Service) BatchGet() <-chan map[string]interface{} {
+	resp := make(chan map[string]interface{})
+	go func() {
+		data := make(map[string]interface{})
+		s.mu.RLock()
+		for k, v := range s.store {
+			data[k] = v
+		}
+		s.mu.RUnlock()
+		resp <- data
+		close(resp)
+	}()
+	return resp
+}
+
+// BatchSet sets all of the passed data to the data store
+func (s *Service) BatchSet(data map[string]interface{}) <-chan error {
+	resp := make(chan error)
+	go func() {
+		s.mu.Lock()
+		for key, val := range data {
+			if _, ok := s.store[key]; ok {
+				continue
+			}
+			s.store[key] = val
+		}
+		s.mu.Unlock()
+		resp <- nil
+		close(resp)
+	}()
+	return resp
+}
