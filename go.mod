@@ -3,6 +3,7 @@ module github.com/michael-diggin/yass
 go 1.14
 
 require (
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/gorilla/mux v1.8.0
 	github.com/kr/pretty v0.1.0 // indirect
