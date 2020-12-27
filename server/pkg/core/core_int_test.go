@@ -7,6 +7,7 @@ import (
 
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -36,19 +37,11 @@ func TestRunAndPingServer(t *testing.T) {
 
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(getBufDialer(lis)), grpc.WithInsecure())
-	if err != nil {
-		t.Fatalf("Could not dial server: %err", err)
-	}
+	require.NoError(t, err)
 
 	client := pb.NewCacheClient(conn)
 	resp, err := client.Ping(ctx, &pb.Null{})
-	if err != nil {
-		t.Fatalf("Could not send Ping command: %v", err)
-	}
-	if resp.Status != pb.PingResponse_SERVING {
-		t.Fatalf("Server not serving")
-	}
-	if !l.PingInvoked {
-		t.Fatalf("mock cache ping fn not callled")
-	}
+	require.NoError(t, err)
+	require.Equal(t, pb.PingResponse_SERVING, resp.Status)
+	require.True(t, l.PingInvoked)
 }

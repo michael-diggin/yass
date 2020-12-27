@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/michael-diggin/yass/server/errors"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPingStorage(t *testing.T) {
@@ -19,14 +20,13 @@ func TestPingStorage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			defer tc.ser.Close()
 			err := tc.ser.Ping()
-			if err != tc.err {
-				t.Fatalf("Non nil err: %v", err)
-			}
+			require.Equal(t, tc.err, err)
 		})
 	}
 }
 
 func TestSetInCache(t *testing.T) {
+	r := require.New(t)
 	ser := New()
 	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
@@ -45,17 +45,14 @@ func TestSetInCache(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 
 			resp := <-ser.Set(tc.key, tc.value)
-			if resp.Err != tc.err {
-				t.Fatalf("Unexpected err: %v", resp.Err)
-			}
-			if resp.Key != tc.key {
-				t.Fatalf("Expected '%s', got '%s'", tc.key, resp.Key)
-			}
+			r.Equal(tc.err, resp.Err)
+			r.Equal(tc.key, resp.Key)
 		})
 	}
 }
 
 func TestGetFromCache(t *testing.T) {
+	r := require.New(t)
 	ser := New()
 	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
@@ -73,17 +70,14 @@ func TestGetFromCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			resp := <-ser.Get(tc.key)
-			if resp.Err != tc.err {
-				t.Fatalf("Unexpected err: %v", resp.Err)
-			}
-			if resp.Value != tc.value {
-				t.Fatalf("Expected '%s', got '%s'", tc.value, resp.Value)
-			}
+			r.Equal(tc.err, resp.Err)
+			r.Equal(tc.value, resp.Value)
 		})
 	}
 
 }
 func TestDelFromCache(t *testing.T) {
+	r := require.New(t)
 	ser := New()
 	defer ser.Close()
 	_ = <-ser.Set("test-key", "test-value")
@@ -100,9 +94,7 @@ func TestDelFromCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			resp := <-ser.Delete(tc.key)
-			if resp.Err != tc.err {
-				t.Fatalf("Unexpected err: %v", resp.Err)
-			}
+			r.Equal(tc.err, resp.Err)
 		})
 	}
 }

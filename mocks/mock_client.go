@@ -20,10 +20,12 @@ type MockClient struct {
 	GetInvoked         bool
 	DelFn              func(context.Context, string) error
 	DelInvoked         bool
-	DelFollowerFn      func(context.Context, string) error
-	DelFollowerInvoked bool
 	SetFollowerFn      func(context.Context, string, []byte) error
 	SetFollowerInvoked bool
+	GetFollowerFn      func(context.Context, string) ([]byte, error)
+	GetFollowerInvoked bool
+	DelFollowerFn      func(context.Context, string) error
+	DelFollowerInvoked bool
 }
 
 // Ping implements ping
@@ -64,6 +66,13 @@ func (m *MockClient) SetFollower(ctx context.Context, in *pb.Pair, opts ...grpc.
 	m.SetFollowerInvoked = true
 	err := m.SetFollowerFn(ctx, in.Key, in.Value)
 	return &pb.Key{Key: in.Key}, err
+}
+
+// GetFollower calls the mocked get fn
+func (m *MockClient) GetFollower(ctx context.Context, in *pb.Key, opts ...grpc.CallOption) (*pb.Pair, error) {
+	m.GetFollowerInvoked = true
+	val, err := m.GetFollowerFn(ctx, in.Key)
+	return &pb.Pair{Key: in.Key, Value: val}, err
 }
 
 // DeleteFollower calls the mocked delete follower fn

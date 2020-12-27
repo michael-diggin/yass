@@ -85,6 +85,21 @@ func (c *CacheClient) SetFollowerValue(ctx context.Context, key string, value in
 	return err
 }
 
+// GetFollowerValue returns the value of a given key
+func (c *CacheClient) GetFollowerValue(ctx context.Context, key string) (interface{}, error) {
+	pbKey := &pb.Key{Key: key}
+	pbPair, err := c.grpcClient.GetFollower(ctx, pbKey)
+	if err != nil {
+		return "", err
+	}
+	var value interface{}
+	err = json.Unmarshal(pbPair.Value, &value)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal result")
+	}
+	return value, nil
+}
+
 // DelFollowerValue deletes a key/value pair
 func (c *CacheClient) DelFollowerValue(ctx context.Context, key string) error {
 	pbKey := &pb.Key{Key: key}
