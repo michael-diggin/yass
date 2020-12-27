@@ -14,6 +14,8 @@ type MockGrpcClient struct {
 	DelInvoked         bool
 	SetFollowerFn      func(context.Context, string, interface{}) error
 	SetFollowerInvoked bool
+	GetFollowerFn      func(context.Context, string) (interface{}, error)
+	GetFollowerInvoked bool
 	DelFollowerFn      func(context.Context, string) error
 	DelFollowerInvoked bool
 }
@@ -45,6 +47,12 @@ func (m MockGrpcClient) Close() error {
 func (m MockGrpcClient) SetFollowerValue(ctx context.Context, key string, value interface{}) error {
 	m.SetFollowerInvoked = true
 	return m.SetFollowerFn(ctx, key, value)
+}
+
+// GetFollowerValue calls the mocked get fn
+func (m MockGrpcClient) GetFollowerValue(ctx context.Context, key string) (interface{}, error) {
+	m.GetFollowerInvoked = true
+	return m.GetFollowerFn(ctx, key)
 }
 
 // DelFollowerValue calls the mocked delete fn

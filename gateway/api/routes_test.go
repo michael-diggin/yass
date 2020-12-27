@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/michael-diggin/yass/gateway/mocks"
 	"github.com/stretchr/testify/require"
@@ -76,68 +77,121 @@ func TestGatewaySet(t *testing.T) {
 	})
 }
 
-func TestGatewayGet(t *testing.T) {
-	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1, &http.Server{})
-	g.Clients[0] = mockClient
+func TestGatewayGetSuccess(t *testing.T) {
+	mockClientOne := &mocks.MockGrpcClient{}
+	mockClientTwo := &mocks.MockGrpcClient{}
+	g := NewGateway(2, &http.Server{})
+	g.Clients[0] = mockClientOne
+	g.Clients[1] = mockClientTwo
 
-	t.Run("success", func(t *testing.T) {
-
-		mockClient.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-			if key == "test-key" {
-				return "test-value", nil
-			}
-			return nil, errors.New("wrong key")
+	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
+		if key == "test-get-key" {
+			return "test-value", nil
 		}
-
-		key := "test-key"
-		req, _ := http.NewRequest("GET", "/get/"+key, nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
-
-		require.Equal(t, rec.Code, http.StatusOK)
-
-		var resp map[string]interface{}
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp["key"], "test-key")
-		require.Contains(t, resp["value"], "test-value")
-	})
-
-	t.Run("not found", func(t *testing.T) {
-		mockClient.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-			return nil, status.Error(codes.NotFound, "key not found in cache")
+		return nil, errors.New("wrong key")
+	}
+	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
+		if key == "test-get-key" {
+			return "test-value", nil
 		}
+		return nil, errors.New("wrong key")
+	}
 
-		req, _ := http.NewRequest("GET", "/get/"+"test-key", nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+	key := "test-get-key"
+	req, _ := http.NewRequest("GET", "/get/"+key, nil)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	g.ServeHTTP(rec, req)
 
-		require.Equal(t, rec.Code, http.StatusNotFound)
+	require.Equal(t, rec.Code, http.StatusOK)
 
-		var resp map[string]interface{}
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp["error"], "not found")
-	})
+	var resp map[string]interface{}
+	json.Unmarshal(rec.Body.Bytes(), &resp)
+	require.Contains(t, resp["key"], "test-get-key")
+	require.Contains(t, resp["value"], "test-value")
 
-	t.Run("timeout", func(t *testing.T) {
+}
+func TestGatewayGetNotFound(t *testing.T) {
+	mockClientOne := &mocks.MockGrpcClient{}
+	mockClientTwo := &mocks.MockGrpcClient{}
+	g := NewGateway(2, &http.Server{})
+	g.Clients[0] = mockClientOne
+	g.Clients[1] = mockClientTwo
 
-		mockClient.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-			return nil, status.Error(codes.Canceled, "request timed out")
-		}
+	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
+		return nil, status.Error(codes.NotFound, "key not found in cache")
+	}
+	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
+		return nil, status.Error(codes.NotFound, "key not found in cache")
+	}
 
-		req, _ := http.NewRequest("GET", "/get/"+"test-key", nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	g.ServeHTTP(rec, req)
 
-		require.Equal(t, rec.Code, http.StatusRequestTimeout)
+	require.Equal(t, rec.Code, http.StatusNotFound)
 
-		var resp map[string]interface{}
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp["error"], "cancelled")
-	})
+	var resp map[string]interface{}
+	json.Unmarshal(rec.Body.Bytes(), &resp)
+	require.Contains(t, resp["error"], "not found")
+
+}
+
+func TestGatewayGetTimeout(t *testing.T) {
+	mockClientOne := &mocks.MockGrpcClient{}
+	mockClientTwo := &mocks.MockGrpcClient{}
+	g := NewGateway(2, &http.Server{})
+	g.Clients[0] = mockClientOne
+	g.Clients[1] = mockClientTwo
+
+	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
+		return nil, status.Error(codes.Canceled, "request timed out")
+	}
+	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
+		return nil, status.Error(codes.Canceled, "request timed out")
+	}
+
+	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	g.ServeHTTP(rec, req)
+
+	require.Equal(t, rec.Code, http.StatusRequestTimeout)
+
+	var resp map[string]interface{}
+	json.Unmarshal(rec.Body.Bytes(), &resp)
+	require.Contains(t, resp["error"], "cancelled")
+
+}
+
+func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
+	mockClientOne := &mocks.MockGrpcClient{}
+	mockClientTwo := &mocks.MockGrpcClient{}
+	g := NewGateway(2, &http.Server{})
+	g.Clients[0] = mockClientOne
+	g.Clients[1] = mockClientTwo
+
+	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
+		return nil, status.Error(codes.Canceled, "request timed out")
+	}
+	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
+		time.Sleep(500 * time.Millisecond)
+		return "test-value", nil
+	}
+
+	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	g.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	var resp map[string]interface{}
+	json.Unmarshal(rec.Body.Bytes(), &resp)
+	require.Contains(t, resp["key"], "test-get-key")
+	require.Contains(t, resp["value"], "test-value")
+
 }
 
 func TestGatewayDelete(t *testing.T) {
