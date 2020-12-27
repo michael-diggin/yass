@@ -283,7 +283,7 @@ var file_proto_yass_proto_rawDesc = []byte{
 	0x67, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f,
 	0x57, 0x4e, 0x10, 0x00, 0x12, 0x0b, 0x0a, 0x07, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10,
 	0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x4e, 0x4f, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47,
-	0x10, 0x02, 0x32, 0x9c, 0x01, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x2a, 0x0a, 0x04,
+	0x10, 0x02, 0x32, 0xf3, 0x01, 0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x2a, 0x0a, 0x04,
 	0x50, 0x69, 0x6e, 0x67, 0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c,
 	0x6c, 0x1a, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x20, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12,
@@ -293,10 +293,15 @@ var file_proto_yass_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x23, 0x0a, 0x06,
 	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b,
 	0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22,
-	0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79,
-	0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x00, 0x12, 0x28, 0x0a, 0x0b, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x72,
+	0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x0a, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x2b, 0x0a, 0x0e, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x72, 0x12, 0x0a, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64,
+	0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -326,12 +331,16 @@ var file_proto_yass_proto_depIdxs = []int32{
 	1, // 2: proto.Cache.Set:input_type -> proto.Pair
 	2, // 3: proto.Cache.Get:input_type -> proto.Key
 	2, // 4: proto.Cache.Delete:input_type -> proto.Key
-	4, // 5: proto.Cache.Ping:output_type -> proto.PingResponse
-	2, // 6: proto.Cache.Set:output_type -> proto.Key
-	1, // 7: proto.Cache.Get:output_type -> proto.Pair
-	3, // 8: proto.Cache.Delete:output_type -> proto.Null
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
+	1, // 5: proto.Cache.SetFollower:input_type -> proto.Pair
+	2, // 6: proto.Cache.DeleteFollower:input_type -> proto.Key
+	4, // 7: proto.Cache.Ping:output_type -> proto.PingResponse
+	2, // 8: proto.Cache.Set:output_type -> proto.Key
+	1, // 9: proto.Cache.Get:output_type -> proto.Pair
+	3, // 10: proto.Cache.Delete:output_type -> proto.Null
+	2, // 11: proto.Cache.SetFollower:output_type -> proto.Key
+	3, // 12: proto.Cache.DeleteFollower:output_type -> proto.Null
+	7, // [7:13] is the sub-list for method output_type
+	1, // [1:7] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -429,6 +438,8 @@ type CacheClient interface {
 	Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
 	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
 	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
+	SetFollower(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
+	DeleteFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
 }
 
 type cacheClient struct {
@@ -475,12 +486,32 @@ func (c *cacheClient) Delete(ctx context.Context, in *Key, opts ...grpc.CallOpti
 	return out, nil
 }
 
+func (c *cacheClient) SetFollower(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
+	out := new(Key)
+	err := c.cc.Invoke(ctx, "/proto.Cache/SetFollower", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cacheClient) DeleteFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/proto.Cache/DeleteFollower", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CacheServer is the server API for Cache service.
 type CacheServer interface {
 	Ping(context.Context, *Null) (*PingResponse, error)
 	Set(context.Context, *Pair) (*Key, error)
 	Get(context.Context, *Key) (*Pair, error)
 	Delete(context.Context, *Key) (*Null, error)
+	SetFollower(context.Context, *Pair) (*Key, error)
+	DeleteFollower(context.Context, *Key) (*Null, error)
 }
 
 // UnimplementedCacheServer can be embedded to have forward compatible implementations.
@@ -498,6 +529,12 @@ func (*UnimplementedCacheServer) Get(context.Context, *Key) (*Pair, error) {
 }
 func (*UnimplementedCacheServer) Delete(context.Context, *Key) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedCacheServer) SetFollower(context.Context, *Pair) (*Key, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetFollower not implemented")
+}
+func (*UnimplementedCacheServer) DeleteFollower(context.Context, *Key) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFollower not implemented")
 }
 
 func RegisterCacheServer(s *grpc.Server, srv CacheServer) {
@@ -576,6 +613,42 @@ func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Cache_SetFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Pair)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).SetFollower(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Cache/SetFollower",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).SetFollower(ctx, req.(*Pair))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Cache_DeleteFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Key)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).DeleteFollower(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Cache/DeleteFollower",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).DeleteFollower(ctx, req.(*Key))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Cache_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Cache",
 	HandlerType: (*CacheServer)(nil),
@@ -595,6 +668,14 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _Cache_Delete_Handler,
+		},
+		{
+			MethodName: "SetFollower",
+			Handler:    _Cache_SetFollower_Handler,
+		},
+		{
+			MethodName: "DeleteFollower",
+			Handler:    _Cache_DeleteFollower_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

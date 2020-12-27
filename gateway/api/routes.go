@@ -29,9 +29,9 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hash := getHashOfKey(key)
-	serverNum := hash % g.numServers
+	server := hash % g.numServers
 	g.mu.RLock()
-	client := g.Clients[serverNum]
+	client := g.Clients[server]
 	g.mu.RUnlock()
 
 	value, err := client.GetValue(r.Context(), key)
@@ -65,15 +65,24 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	value := data.Value
 
 	hash := getHashOfKey(key)
-	serverNum := hash % g.numServers
+	server := hash % g.numServers
+	follower := (server + 1) % g.numServers
 	g.mu.RLock()
-	client := g.Clients[serverNum]
+	client := g.Clients[server]
+	followerClient := g.Clients[follower]
 	g.mu.RUnlock()
+
 	err = client.SetValue(r.Context(), key, value)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
+	err = followerClient.SetFollowerValue(r.Context(), key, value)
+	if err != nil {
+		respondWithError(w, err)
+		return
+	}
+
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added")
 	return
 }
@@ -93,11 +102,21 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hash := getHashOfKey(key)
-	serverNum := hash % g.numServers
+	server := hash % g.numServers
+	follower := (server + 1) % g.numServers
 	g.mu.RLock()
-	client := g.Clients[serverNum]
+	client := g.Clients[server]
+	followerClient := g.Clients[follower]
 	g.mu.RUnlock()
-	err := client.DelValue(r.Context(), key)
+
+	ctx := r.Context()
+
+	err := client.DelValue(ctx, key)
+	if err != nil {
+		respondWithError(w, err)
+		return
+	}
+	err = followerClient.DelFollowerValue(ctx, key)
 	if err != nil {
 		respondWithError(w, err)
 		return

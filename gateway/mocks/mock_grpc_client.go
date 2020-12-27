@@ -6,12 +6,16 @@ import (
 
 // MockGrpcClient implements the pb client interface
 type MockGrpcClient struct {
-	SetFn      func(context.Context, string, interface{}) error
-	SetInvoked bool
-	GetFn      func(context.Context, string) (interface{}, error)
-	GetInvoked bool
-	DelFn      func(context.Context, string) error
-	DelInvoked bool
+	SetFn              func(context.Context, string, interface{}) error
+	SetInvoked         bool
+	GetFn              func(context.Context, string) (interface{}, error)
+	GetInvoked         bool
+	DelFn              func(context.Context, string) error
+	DelInvoked         bool
+	SetFollowerFn      func(context.Context, string, interface{}) error
+	SetFollowerInvoked bool
+	DelFollowerFn      func(context.Context, string) error
+	DelFollowerInvoked bool
 }
 
 // SetValue calls the mocked set fn
@@ -35,4 +39,16 @@ func (m MockGrpcClient) DelValue(ctx context.Context, key string) error {
 // Close will terminate the client connection
 func (m MockGrpcClient) Close() error {
 	return nil
+}
+
+// SetFollowerValue calls the mocked set fn
+func (m MockGrpcClient) SetFollowerValue(ctx context.Context, key string, value interface{}) error {
+	m.SetFollowerInvoked = true
+	return m.SetFollowerFn(ctx, key, value)
+}
+
+// DelFollowerValue calls the mocked delete fn
+func (m MockGrpcClient) DelFollowerValue(ctx context.Context, key string) error {
+	m.DelFollowerInvoked = true
+	return m.DelFollowerFn(ctx, key)
 }

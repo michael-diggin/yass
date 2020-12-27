@@ -9,6 +9,8 @@ service Cache{
     rpc Set(Pair) returns(Key){}
     rpc Get(Key) returns(Pair){}
     rpc Delete(Key) returns(Null){}
+    rpc SetFollower(Pair) returns(Key){}
+    rpc DeleteFollower(Key) returns(Null){}
 }
 
 

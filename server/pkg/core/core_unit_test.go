@@ -30,15 +30,15 @@ func TestServerPing(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
+			l := &mocks.TestStorage{
 				PingFn: func() error {
 					if tc.name == "serving" {
 						return nil
 					}
-					return errors.New("Cache not reachable")
+					return errors.New("Leader Storage not reachable")
 				},
 			}
-			srv := server{cache}
+			srv := server{Leader: l, Follower: l}
 
 			resp, err := srv.Ping(context.Background(), &pb.Null{})
 			if grpc.Code(err) != tc.errCode {
@@ -52,7 +52,7 @@ func TestServerPing(t *testing.T) {
 	}
 }
 
-func TestSettoCache(t *testing.T) {
+func TestSettoStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
 	tt := []struct {
 		name    string
@@ -70,15 +70,15 @@ func TestSettoCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				SetFn: func(key string, value interface{}) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				SetFn: func(key string, value interface{}) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{cache}
+			srv := server{Leader: l}
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
@@ -99,7 +99,7 @@ func TestSettoCache(t *testing.T) {
 	}
 }
 
-func TestGetFromCache(t *testing.T) {
+func TestGetFromStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // Discard log output for test
 	tt := []struct {
 		name    string
@@ -116,15 +116,15 @@ func TestGetFromCache(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				GetFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				GetFn: func(key string) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: tc.value,
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{cache}
+			srv := server{Leader: l}
 			testK := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.Get(ctx, testK)
@@ -163,15 +163,15 @@ func TestDeleteKeyValue(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cache := &mocks.TestCache{
-				DelFn: func(key string) *model.CacheResponse {
-					return &model.CacheResponse{
+			l := &mocks.TestStorage{
+				DelFn: func(key string) *model.StorageResponse {
+					return &model.StorageResponse{
 						Key:   tc.key,
 						Value: "",
 						Err:   status.Error(tc.errCode, "")}
 				},
 			}
-			srv := server{cache}
+			srv := server{Leader: l}
 			testKV := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Delete(ctx, testKV)

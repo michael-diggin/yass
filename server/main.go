@@ -31,9 +31,10 @@ func main() {
 	}
 
 	// set up cache
-	cache := storage.New()
+	leader := storage.New()
+	follower := storage.New()
 
-	srv := core.New(lis, cache)
+	srv := core.New(lis, leader, follower)
 	defer srv.ShutDown()
 
 	ctx, cancel := context.WithCancel(context.Background())

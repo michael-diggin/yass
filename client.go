@@ -73,3 +73,21 @@ func (c *CacheClient) DelValue(ctx context.Context, key string) error {
 	_, err := c.grpcClient.Delete(ctx, pbKey)
 	return err
 }
+
+// SetFollowerValue sets a key/value pair in the follower partition
+func (c *CacheClient) SetFollowerValue(ctx context.Context, key string, value interface{}) error {
+	bytesValue, err := json.Marshal(value)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal value")
+	}
+	pair := &pb.Pair{Key: key, Value: bytesValue}
+	_, err = c.grpcClient.SetFollower(ctx, pair)
+	return err
+}
+
+// DelFollowerValue deletes a key/value pair
+func (c *CacheClient) DelFollowerValue(ctx context.Context, key string) error {
+	pbKey := &pb.Key{Key: key}
+	_, err := c.grpcClient.DeleteFollower(ctx, pbKey)
+	return err
+}
