@@ -1,6 +1,6 @@
 package model
 
-// StorageResponse encodes key/values and the errors from the cache
+// StorageResponse encodes key/values and the errors from the storage layer
 type StorageResponse struct {
 	Key   string
 	Value interface{}
@@ -13,5 +13,9 @@ type Service interface {
 	Get(string) <-chan *StorageResponse
 	Set(string, interface{}) <-chan *StorageResponse
 	Delete(string) <-chan *StorageResponse
+
+	BatchGet() <-chan map[string]interface{}
+	BatchSet(map[string]interface{}) <-chan error
+
 	Close()
 }

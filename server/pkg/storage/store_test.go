@@ -98,3 +98,32 @@ func TestDelFromCache(t *testing.T) {
 		})
 	}
 }
+
+func TestBatchGet(t *testing.T) {
+	r := require.New(t)
+	ser := New()
+	defer ser.Close()
+	ser.store["test-key-1"] = "value-1"
+	ser.store["test-key-2"] = 2
+
+	data := <-ser.BatchGet()
+	r.Len(data, 2)
+	r.Equal(data["test-key-1"], "value-1")
+	r.Equal(data["test-key-2"], 2)
+}
+
+func TestBatchSet(t *testing.T) {
+	r := require.New(t)
+	ser := New()
+	defer ser.Close()
+
+	data := make(map[string]interface{})
+	data["test-key-1"] = "value-1"
+	data["test-key-2"] = 2
+
+	err := <-ser.BatchSet(data)
+	r.NoError(err)
+	r.Len(ser.store, 2)
+	r.Equal(ser.store["test-key-1"], "value-1")
+	r.Equal(ser.store["test-key-2"], 2)
+}

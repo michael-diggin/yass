@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/michael-diggin/yass/mocks"
+	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -152,4 +153,22 @@ func TestClientDelFollowerValue(t *testing.T) {
 
 	require.NoError(t, err)
 	require.True(t, mockgRPC.DelFollowerInvoked)
+}
+
+func TestBatchGet(t *testing.T) {
+	mockgRPC := &mocks.MockClient{}
+	testPair := &pb.Pair{Key: "test-key", Value: []byte(`"value"`)}
+	mockgRPC.BatchGetFn = func(ctx context.Context) ([]*pb.Pair, error) {
+		return []*pb.Pair{testPair}, nil
+	}
+	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
+	resp, err := cc.BatchGet(context.Background(), 0)
+	require.NoError(t, err)
+	require.True(t, mockgRPC.BatchGetInvoked)
+
+	respData, ok := resp.([]*pb.Pair)
+	require.True(t, ok)
+
+	require.Len(t, respData, 1)
+	require.Equal(t, respData[0], testPair)
 }
