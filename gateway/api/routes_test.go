@@ -17,7 +17,7 @@ import (
 
 func TestGatewaySet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1)
+	g := NewGateway(1, &http.Server{})
 	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestGatewaySet(t *testing.T) {
 
 func TestGatewayGet(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1)
+	g := NewGateway(1, &http.Server{})
 	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
@@ -142,7 +142,7 @@ func TestGatewayGet(t *testing.T) {
 
 func TestGatewayDelete(t *testing.T) {
 	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1)
+	g := NewGateway(1, &http.Server{})
 	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
@@ -206,7 +206,7 @@ func TestGatewayDelete(t *testing.T) {
 func TestGatewayDeleteWithMultipleClients(t *testing.T) {
 	mockClientOne := &mocks.MockGrpcClient{}
 	mockClientTwo := &mocks.MockGrpcClient{}
-	g := NewGateway(2)
+	g := NewGateway(2, &http.Server{})
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
 
