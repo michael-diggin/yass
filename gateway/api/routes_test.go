@@ -102,8 +102,8 @@ func TestGatewayGetSuccess(t *testing.T) {
 	key := "test-get-key"
 	value := "test-value"
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(value, nil)
-	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(value, nil)
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(value, nil).AnyTimes()
+	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(value, nil).AnyTimes()
 
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
