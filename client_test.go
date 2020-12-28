@@ -45,7 +45,8 @@ func TestClientSetValue(t *testing.T) {
 	val := "value"
 
 	mockgRPC := mocks.NewMockCacheClient(ctrl)
-	mockgRPC.EXPECT().Set(gomock.Any(), &pb.Pair{Key: key, Value: []byte(`"value"`)}).Return(nil, nil)
+	pair := &pb.Pair{Key: key, Value: []byte(`"value"`)}
+	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pair}).Return(nil, nil)
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
 
 	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Value: val})
@@ -70,7 +71,7 @@ func TestClientGetValue(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockgRPC := mocks.NewMockCacheClient(ctrl)
-			mockgRPC.EXPECT().Get(gomock.Any(), &pb.Key{Key: tc.key}).
+			mockgRPC.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: pb.Replica_MAIN, Key: tc.key}).
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
 			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
@@ -89,7 +90,8 @@ func TestClientDelValue(t *testing.T) {
 	defer ctrl.Finish()
 	mockgRPC := mocks.NewMockCacheClient(ctrl)
 	key := "test"
-	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.Key{Key: key}).Return(&pb.Null{}, nil)
+	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: key}).
+		Return(&pb.Null{}, nil)
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
 	err := cc.DelValue(context.TODO(), key)
 

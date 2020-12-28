@@ -48,14 +48,15 @@ func (c *CacheClient) SetValue(ctx context.Context, pair *models.Pair) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.grpcClient.Set(ctx, pbPair)
+	req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pbPair}
+	_, err = c.grpcClient.Set(ctx, req)
 	return err
 }
 
 // GetValue returns the value of a given key
 func (c *CacheClient) GetValue(ctx context.Context, key string) (*models.Pair, error) {
-	pbKey := &pb.Key{Key: key}
-	pbPair, err := c.grpcClient.Get(ctx, pbKey)
+	req := &pb.GetRequest{Replica: pb.Replica_MAIN, Key: key}
+	pbPair, err := c.grpcClient.Get(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +65,8 @@ func (c *CacheClient) GetValue(ctx context.Context, key string) (*models.Pair, e
 
 // DelValue deletes a key/value pair
 func (c *CacheClient) DelValue(ctx context.Context, key string) error {
-	pbKey := &pb.Key{Key: key}
-	_, err := c.grpcClient.Delete(ctx, pbKey)
+	req := &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: key}
+	_, err := c.grpcClient.Delete(ctx, req)
 	return err
 }
 

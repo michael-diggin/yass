@@ -76,7 +76,7 @@ func (mr *MockCacheClientMockRecorder) BatchSet(arg0, arg1 interface{}, arg2 ...
 }
 
 // Delete mocks base method
-func (m *MockCacheClient) Delete(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Null, error) {
+func (m *MockCacheClient) Delete(arg0 context.Context, arg1 *proto.DeleteRequest, arg2 ...grpc.CallOption) (*proto.Null, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -116,7 +116,7 @@ func (mr *MockCacheClientMockRecorder) DeleteFollower(arg0, arg1 interface{}, ar
 }
 
 // Get mocks base method
-func (m *MockCacheClient) Get(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Pair, error) {
+func (m *MockCacheClient) Get(arg0 context.Context, arg1 *proto.GetRequest, arg2 ...grpc.CallOption) (*proto.Pair, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
@@ -176,14 +176,14 @@ func (mr *MockCacheClientMockRecorder) Ping(arg0, arg1 interface{}, arg2 ...inte
 }
 
 // Set mocks base method
-func (m *MockCacheClient) Set(arg0 context.Context, arg1 *proto.Pair, arg2 ...grpc.CallOption) (*proto.Key, error) {
+func (m *MockCacheClient) Set(arg0 context.Context, arg1 *proto.SetRequest, arg2 ...grpc.CallOption) (*proto.Null, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Set", varargs...)
-	ret0, _ := ret[0].(*proto.Key)
+	ret0, _ := ret[0].(*proto.Null)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

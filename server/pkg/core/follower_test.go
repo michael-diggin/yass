@@ -35,7 +35,7 @@ func TestSettoFollower(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockFollower := mocks.NewMockService(ctrl)
+			mockBackup := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -45,10 +45,10 @@ func TestSettoFollower(t *testing.T) {
 			close(resp)
 
 			if tc.key != "" && tc.value != nil {
-				mockFollower.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
+				mockBackup.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
 			}
 
-			srv := server{Follower: mockFollower}
+			srv := server{BackupReplica: mockBackup}
 
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
@@ -84,7 +84,7 @@ func TestGetFollowerFromStorage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockFollower := mocks.NewMockService(ctrl)
+			mockBackup := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -94,10 +94,10 @@ func TestGetFollowerFromStorage(t *testing.T) {
 			close(resp)
 
 			if tc.key != "" && tc.value != nil {
-				mockFollower.EXPECT().Get(tc.key).Return(resp)
+				mockBackup.EXPECT().Get(tc.key).Return(resp)
 			}
 
-			srv := server{Follower: mockFollower}
+			srv := server{BackupReplica: mockBackup}
 			testK := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.GetFollower(ctx, testK)
@@ -130,7 +130,7 @@ func TestDeleteFollowerKeyValue(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockFollower := mocks.NewMockService(ctrl)
+			mockBackup := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -139,10 +139,10 @@ func TestDeleteFollowerKeyValue(t *testing.T) {
 			close(resp)
 
 			if tc.key != "" {
-				mockFollower.EXPECT().Delete(tc.key).Return(resp)
+				mockBackup.EXPECT().Delete(tc.key).Return(resp)
 			}
 
-			srv := server{Follower: mockFollower}
+			srv := server{BackupReplica: mockBackup}
 			testKV := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.DeleteFollower(ctx, testKV)

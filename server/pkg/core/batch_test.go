@@ -15,12 +15,12 @@ func TestBatchSettoStorage(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockLeader := mocks.NewMockService(ctrl)
+	mockStore := mocks.NewMockService(ctrl)
 	resp := make(chan error, 1)
 	resp <- nil
 	close(resp)
 
-	mockLeader.EXPECT().BatchSet(gomock.Any()).
+	mockStore.EXPECT().BatchSet(gomock.Any()).
 		DoAndReturn(func(data map[string]interface{}) <-chan error {
 			if len(data) == 2 {
 				return resp
@@ -29,7 +29,7 @@ func TestBatchSettoStorage(t *testing.T) {
 			return nil
 		})
 
-	srv := server{Leader: mockLeader}
+	srv := server{MainReplica: mockStore}
 
 	dataOne := &pb.Pair{Key: "key-1", Value: []byte(`"value-1"`)}
 	dataTwo := &pb.Pair{Key: "key-2", Value: []byte(`2`)}
@@ -45,7 +45,7 @@ func TestBatchGetFromStorage(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockFollower := mocks.NewMockService(ctrl)
+	mockBackup := mocks.NewMockService(ctrl)
 	resp := make(chan map[string]interface{}, 1)
 	data := map[string]interface{}{
 		"key-1": "value-1",
@@ -54,9 +54,9 @@ func TestBatchGetFromStorage(t *testing.T) {
 	resp <- data
 	close(resp)
 
-	mockFollower.EXPECT().BatchGet().Return(resp)
+	mockBackup.EXPECT().BatchGet().Return(resp)
 
-	srv := server{Follower: mockFollower}
+	srv := server{BackupReplica: mockBackup}
 
 	req := &pb.BatchGetRequest{Replica: 1}
 

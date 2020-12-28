@@ -25,7 +25,7 @@ func (s server) SetFollower(ctx context.Context, pair *pb.Pair) (*pb.Key, error)
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Follower.Set(pair.Key, value):
+	case cacheResp := <-s.BackupReplica.Set(pair.Key, value):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
@@ -45,7 +45,7 @@ func (s server) GetFollower(ctx context.Context, key *pb.Key) (*pb.Pair, error) 
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Follower.Get(key.Key):
+	case cacheResp := <-s.BackupReplica.Get(key.Key):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
@@ -68,7 +68,7 @@ func (s server) DeleteFollower(ctx context.Context, key *pb.Key) (*pb.Null, erro
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case <-s.Follower.Delete(key.Key):
+	case <-s.BackupReplica.Delete(key.Key):
 		return &pb.Null{}, nil
 	}
 }

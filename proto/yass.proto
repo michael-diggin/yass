@@ -6,9 +6,9 @@ option go_package = "github.com/michael-diggin/yass/proto;proto";
 
 service Cache{
     rpc Ping(Null) returns(PingResponse) {}
-    rpc Set(Pair) returns(Key){}
-    rpc Get(Key) returns(Pair){}
-    rpc Delete(Key) returns(Null){}
+    rpc Set(SetRequest) returns(Null){}
+    rpc Get(GetRequest) returns(Pair){}
+    rpc Delete(DeleteRequest) returns(Null){}
     rpc SetFollower(Pair) returns(Key){}
     rpc GetFollower(Key) returns(Pair){}
     rpc DeleteFollower(Key) returns(Null){}
@@ -17,6 +17,25 @@ service Cache{
     rpc BatchSet(BatchSetRequest) returns(Null){}
 }
 
+enum Replica {
+    MAIN = 0;
+    BACKUP = 1;
+}
+
+message SetRequest {
+    Replica replica = 1;
+    Pair pair = 2;
+}
+
+message GetRequest {
+    Replica replica = 1;
+    string key = 2;
+}
+
+message DeleteRequest {
+    Replica replica = 1;
+    string key = 2;
+}
 
 message Pair {
     string key = 1;
