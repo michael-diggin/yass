@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/michael-diggin/yass/gateway/mocks"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -17,18 +17,19 @@ import (
 )
 
 func TestGatewaySet(t *testing.T) {
-	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1, &http.Server{})
-	g.Clients[0] = mockClient
+	key := "test"
+	value := "test-value"
 
 	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-		mockClient.SetFn = func(ctx context.Context, key string, value interface{}) error {
-			return nil
-		}
-		mockClient.SetFollowerFn = func(ctx context.Context, key string, value interface{}) error {
-			return nil
-		}
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
+
+		mockClient.EXPECT().SetValue(gomock.Any(), key, value).Return(nil)
+		mockClient.EXPECT().SetFollowerValue(gomock.Any(), key, value).Return(nil)
+		g.Clients[0] = mockClient
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -44,9 +45,15 @@ func TestGatewaySet(t *testing.T) {
 	})
 
 	t.Run("already exists", func(t *testing.T) {
-		mockClient.SetFn = func(ctx context.Context, key string, value interface{}) error {
-			return status.Error(codes.AlreadyExists, "key in cache already")
-		}
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
+
+		errMock := status.Error(codes.AlreadyExists, "key in cache already")
+		mockClient.EXPECT().SetValue(gomock.Any(), key, value).Return(errMock)
+		g.Clients[0] = mockClient
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -62,6 +69,13 @@ func TestGatewaySet(t *testing.T) {
 	})
 
 	t.Run("bad data", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
+
+		g.Clients[0] = mockClient
 
 		payload := []byte{}
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -78,26 +92,22 @@ func TestGatewaySet(t *testing.T) {
 }
 
 func TestGatewayGetSuccess(t *testing.T) {
-	mockClientOne := &mocks.MockGrpcClient{}
-	mockClientTwo := &mocks.MockGrpcClient{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := mocks.NewMockGrpcClient(ctrl)
+	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 	g := NewGateway(2, &http.Server{})
+
+	key := "test-get-key"
+	value := "test-value"
+
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(value, nil).AnyTimes()
+	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(value, nil).AnyTimes()
+
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
 
-	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-		if key == "test-get-key" {
-			return "test-value", nil
-		}
-		return nil, errors.New("wrong key")
-	}
-	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
-		if key == "test-get-key" {
-			return "test-value", nil
-		}
-		return nil, errors.New("wrong key")
-	}
-
-	key := "test-get-key"
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -107,25 +117,28 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 	var resp map[string]interface{}
 	json.Unmarshal(rec.Body.Bytes(), &resp)
-	require.Contains(t, resp["key"], "test-get-key")
-	require.Contains(t, resp["value"], "test-value")
+	require.Contains(t, resp["key"], key)
+	require.Contains(t, resp["value"], value)
 
 }
 func TestGatewayGetNotFound(t *testing.T) {
-	mockClientOne := &mocks.MockGrpcClient{}
-	mockClientTwo := &mocks.MockGrpcClient{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := mocks.NewMockGrpcClient(ctrl)
+	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 	g := NewGateway(2, &http.Server{})
+
+	key := "test-get-key"
+	errMock := status.Error(codes.NotFound, "key not found in cache")
+
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(nil, errMock)
+	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(nil, errMock)
+
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
 
-	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-		return nil, status.Error(codes.NotFound, "key not found in cache")
-	}
-	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
-		return nil, status.Error(codes.NotFound, "key not found in cache")
-	}
-
-	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
+	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	g.ServeHTTP(rec, req)
@@ -139,18 +152,21 @@ func TestGatewayGetNotFound(t *testing.T) {
 }
 
 func TestGatewayGetTimeout(t *testing.T) {
-	mockClientOne := &mocks.MockGrpcClient{}
-	mockClientTwo := &mocks.MockGrpcClient{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := mocks.NewMockGrpcClient(ctrl)
+	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 	g := NewGateway(2, &http.Server{})
+
+	key := "test-get-key"
+	errMock := status.Error(codes.Canceled, "request timed out")
+
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(nil, errMock)
+	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(nil, errMock)
+
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
-
-	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-		return nil, status.Error(codes.Canceled, "request timed out")
-	}
-	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
-		return nil, status.Error(codes.Canceled, "request timed out")
-	}
 
 	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -166,21 +182,29 @@ func TestGatewayGetTimeout(t *testing.T) {
 }
 
 func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
-	mockClientOne := &mocks.MockGrpcClient{}
-	mockClientTwo := &mocks.MockGrpcClient{}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := mocks.NewMockGrpcClient(ctrl)
+	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 	g := NewGateway(2, &http.Server{})
+
+	key := "test-get-key"
+	value := "test-value"
+	errMock := status.Error(codes.Canceled, "request timed out")
+
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(nil, errMock)
+	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).
+		DoAndReturn(func(...interface{}) (interface{}, error) {
+			time.Sleep(500 * time.Millisecond)
+			return value, nil
+		})
+
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
 
-	mockClientOne.GetFn = func(ctx context.Context, key string) (interface{}, error) {
-		return nil, status.Error(codes.Canceled, "request timed out")
-	}
-	mockClientTwo.GetFollowerFn = func(ctx context.Context, key string) (interface{}, error) {
-		time.Sleep(500 * time.Millisecond)
-		return "test-value", nil
-	}
-
-	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
+	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	g.ServeHTTP(rec, req)
@@ -189,26 +213,26 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 
 	var resp map[string]interface{}
 	json.Unmarshal(rec.Body.Bytes(), &resp)
-	require.Contains(t, resp["key"], "test-get-key")
-	require.Contains(t, resp["value"], "test-value")
+	require.Contains(t, resp["key"], key)
+	require.Contains(t, resp["value"], value)
 
 }
 
 func TestGatewayDelete(t *testing.T) {
-	mockClient := &mocks.MockGrpcClient{}
-	g := NewGateway(1, &http.Server{})
-	g.Clients[0] = mockClient
 
 	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-		mockClient.DelFn = func(ctx context.Context, key string) error {
-			return nil
-		}
-		mockClient.DelFollowerFn = func(ctx context.Context, key string) error {
-			return nil
-		}
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
 
 		key := "test-key"
+
+		mockClient.EXPECT().DelValue(gomock.Any(), key).Return(nil)
+		mockClient.EXPECT().DelFollowerValue(gomock.Any(), key).Return(nil)
+		g.Clients[0] = mockClient
+
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
@@ -222,11 +246,19 @@ func TestGatewayDelete(t *testing.T) {
 	})
 
 	t.Run("internal error", func(t *testing.T) {
-		mockClient.DelFn = func(ctx context.Context, key string) error {
-			return status.Error(codes.Internal, "internal server error")
-		}
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-		req, _ := http.NewRequest("DELETE", "/delete/"+"test-key", nil)
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
+
+		key := "test-key"
+		errMock := status.Error(codes.Internal, "internal server error")
+
+		mockClient.EXPECT().DelValue(gomock.Any(), key).Return(errMock)
+		g.Clients[0] = mockClient
+
+		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
 		g.ServeHTTP(rec, req)
@@ -239,12 +271,19 @@ func TestGatewayDelete(t *testing.T) {
 	})
 
 	t.Run("non grpc error", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-		mockClient.DelFn = func(ctx context.Context, key string) error {
-			return errors.New("network issues")
-		}
+		mockClient := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(1, &http.Server{})
 
-		req, _ := http.NewRequest("DELETE", "/delete/"+"test-key", nil)
+		key := "test-key"
+		errMock := errors.New("network issues")
+
+		mockClient.EXPECT().DelValue(gomock.Any(), key).Return(errMock)
+		g.Clients[0] = mockClient
+
+		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
 		g.ServeHTTP(rec, req)
@@ -258,22 +297,23 @@ func TestGatewayDelete(t *testing.T) {
 }
 
 func TestGatewayDeleteWithMultipleClients(t *testing.T) {
-	mockClientOne := &mocks.MockGrpcClient{}
-	mockClientTwo := &mocks.MockGrpcClient{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := mocks.NewMockGrpcClient(ctrl)
+	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 	g := NewGateway(2, &http.Server{})
+
+	key := "test-get-key"
+
+	mockClientOne.EXPECT().DelValue(gomock.Any(), key).Return(nil)
+	mockClientTwo.EXPECT().DelFollowerValue(gomock.Any(), key).Return(nil)
+
 	g.Clients[0] = mockClientOne
 	g.Clients[1] = mockClientTwo
 
 	t.Run("success", func(t *testing.T) {
 
-		mockClientTwo.DelFn = func(ctx context.Context, key string) error {
-			return nil
-		}
-		mockClientOne.DelFollowerFn = func(ctx context.Context, key string) error {
-			return nil
-		}
-
-		key := "test-key"
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
