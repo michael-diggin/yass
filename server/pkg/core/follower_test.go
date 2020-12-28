@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -27,21 +28,28 @@ func TestSettoFollower(t *testing.T) {
 		{"valid case", "newKey", []byte(`"newValue"`), codes.OK, 100 * time.Millisecond},
 		{"already set key", "testKey", []byte(`"testVal"`), codes.AlreadyExists, 100 * time.Millisecond},
 		{"empty key", "", []byte(`"emptyVal"`), codes.InvalidArgument, 100 * time.Millisecond},
-		{"empty value", "key", []byte{}, codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "newKey", []byte(`"newValue"`), codes.Canceled, 0 * time.Millisecond},
+		{"empty value", "key", nil, codes.InvalidArgument, 100 * time.Millisecond},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			follower := &mocks.TestStorage{
-				SetFn: func(key string, value interface{}) *model.StorageResponse {
-					return &model.StorageResponse{
-						Key:   tc.key,
-						Value: tc.value,
-						Err:   status.Error(tc.errCode, "")}
-				},
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockFollower := mocks.NewMockService(ctrl)
+			resp := make(chan *model.StorageResponse, 1)
+
+			resp <- &model.StorageResponse{
+				Key:   tc.key,
+				Value: tc.value,
+				Err:   status.Error(tc.errCode, "")}
+			close(resp)
+
+			if tc.key != "" && tc.value != nil {
+				mockFollower.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
 			}
-			srv := server{Follower: follower}
+
+			srv := server{Follower: mockFollower}
+
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
@@ -69,21 +77,27 @@ func TestGetFollowerFromStorage(t *testing.T) {
 	}{
 		{"valid case", "testKey", []byte(`"testValue"`), codes.OK, 100 * time.Millisecond},
 		{"key not found", "newKey", []byte{}, codes.NotFound, 100 * time.Millisecond},
-		{"empty key", "", []byte{}, codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "newKey", []byte(`"newValue"`), codes.Canceled, 0 * time.Millisecond},
+		{"empty key", "", nil, codes.InvalidArgument, 100 * time.Millisecond},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			f := &mocks.TestStorage{
-				GetFn: func(key string) *model.StorageResponse {
-					return &model.StorageResponse{
-						Key:   tc.key,
-						Value: tc.value,
-						Err:   status.Error(tc.errCode, "")}
-				},
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockFollower := mocks.NewMockService(ctrl)
+			resp := make(chan *model.StorageResponse, 1)
+
+			resp <- &model.StorageResponse{
+				Key:   tc.key,
+				Value: tc.value,
+				Err:   status.Error(tc.errCode, "")}
+			close(resp)
+
+			if tc.key != "" && tc.value != nil {
+				mockFollower.EXPECT().Get(tc.key).Return(resp)
 			}
-			srv := server{Follower: f}
+
+			srv := server{Follower: mockFollower}
 			testK := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.GetFollower(ctx, testK)
@@ -110,20 +124,25 @@ func TestDeleteFollowerKeyValue(t *testing.T) {
 	}{
 		{"valid case", "testKey", codes.OK, 100 * time.Millisecond},
 		{"empty key", "", codes.InvalidArgument, 100 * time.Millisecond},
-		{"timeout", "Key", codes.Canceled, 0 * time.Millisecond},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			follower := &mocks.TestStorage{
-				DelFn: func(key string) *model.StorageResponse {
-					return &model.StorageResponse{
-						Key:   tc.key,
-						Value: "",
-						Err:   status.Error(tc.errCode, "")}
-				},
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockFollower := mocks.NewMockService(ctrl)
+			resp := make(chan *model.StorageResponse, 1)
+
+			resp <- &model.StorageResponse{
+				Key: tc.key,
+				Err: status.Error(tc.errCode, "")}
+			close(resp)
+
+			if tc.key != "" {
+				mockFollower.EXPECT().Delete(tc.key).Return(resp)
 			}
-			srv := server{Follower: follower}
+
+			srv := server{Follower: mockFollower}
 			testKV := &pb.Key{Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.DeleteFollower(ctx, testKV)
