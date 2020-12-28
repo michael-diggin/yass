@@ -7,6 +7,7 @@ package mocks
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
+	models "github.com/michael-diggin/yass/models"
 	reflect "reflect"
 )
 
@@ -91,10 +92,10 @@ func (mr *MockGrpcClientMockRecorder) GetFollowerValue(arg0, arg1 interface{}) *
 }
 
 // GetValue mocks base method
-func (m *MockGrpcClient) GetValue(arg0 context.Context, arg1 string) (interface{}, error) {
+func (m *MockGrpcClient) GetValue(arg0 context.Context, arg1 string) (*models.Pair, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetValue", arg0, arg1)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(*models.Pair)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -120,15 +121,15 @@ func (mr *MockGrpcClientMockRecorder) SetFollowerValue(arg0, arg1, arg2 interfac
 }
 
 // SetValue mocks base method
-func (m *MockGrpcClient) SetValue(arg0 context.Context, arg1 string, arg2 interface{}) error {
+func (m *MockGrpcClient) SetValue(arg0 context.Context, arg1 *models.Pair) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetValue", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "SetValue", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetValue indicates an expected call of SetValue
-func (mr *MockGrpcClientMockRecorder) SetValue(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockGrpcClientMockRecorder) SetValue(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetValue", reflect.TypeOf((*MockGrpcClient)(nil).SetValue), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetValue", reflect.TypeOf((*MockGrpcClient)(nil).SetValue), arg0, arg1)
 }

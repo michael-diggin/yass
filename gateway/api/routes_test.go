@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/michael-diggin/yass/gateway/mocks"
+	"github.com/michael-diggin/yass/models"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,6 +20,7 @@ import (
 func TestGatewaySet(t *testing.T) {
 	key := "test"
 	value := "test-value"
+	pair := &models.Pair{Key: key, Value: value}
 
 	t.Run("success", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
@@ -27,7 +29,7 @@ func TestGatewaySet(t *testing.T) {
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
 
-		mockClient.EXPECT().SetValue(gomock.Any(), key, value).Return(nil)
+		mockClient.EXPECT().SetValue(gomock.Any(), pair).Return(nil)
 		mockClient.EXPECT().SetFollowerValue(gomock.Any(), key, value).Return(nil)
 		g.Clients[0] = mockClient
 
@@ -52,7 +54,7 @@ func TestGatewaySet(t *testing.T) {
 		g := NewGateway(1, &http.Server{})
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
-		mockClient.EXPECT().SetValue(gomock.Any(), key, value).Return(errMock)
+		mockClient.EXPECT().SetValue(gomock.Any(), pair).Return(errMock)
 		g.Clients[0] = mockClient
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
@@ -101,8 +103,9 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 	key := "test-get-key"
 	value := "test-value"
+	pair := &models.Pair{Key: key, Value: value}
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(value, nil).AnyTimes()
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key).Return(pair, nil).AnyTimes()
 	mockClientTwo.EXPECT().GetFollowerValue(gomock.Any(), key).Return(value, nil).AnyTimes()
 
 	g.Clients[0] = mockClientOne

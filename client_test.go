@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/michael-diggin/yass/mocks"
+	"github.com/michael-diggin/yass/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"
 )
@@ -47,7 +48,7 @@ func TestClientSetValue(t *testing.T) {
 	mockgRPC.EXPECT().Set(gomock.Any(), &pb.Pair{Key: key, Value: []byte(`"value"`)}).Return(nil, nil)
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
 
-	err := cc.SetValue(context.Background(), key, val)
+	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Value: val})
 	require.NoError(t, err)
 }
 
@@ -57,11 +58,11 @@ func TestClientGetValue(t *testing.T) {
 	tt := []struct {
 		name  string
 		key   string
-		value string
+		value interface{}
 		err   error
 	}{
 		{"valid case", "test", "value", nil},
-		{"err case", "bad", "", errTest},
+		{"err case", "bad", nil, errTest},
 	}
 
 	for _, tc := range tt {
@@ -73,10 +74,12 @@ func TestClientGetValue(t *testing.T) {
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
 			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-			val, err := cc.GetValue(context.Background(), tc.key)
+			resp, err := cc.GetValue(context.Background(), tc.key)
 
 			require.Equal(t, err, tc.err)
-			require.Equal(t, tc.value, val)
+			if tc.value != nil {
+				require.Equal(t, tc.value, resp.Value)
+			}
 		})
 	}
 }

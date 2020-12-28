@@ -2,9 +2,9 @@ package core
 
 import (
 	"context"
-	"encoding/json"
 	"net"
 
+	"github.com/michael-diggin/yass/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
@@ -72,20 +72,19 @@ func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
 
 // Set takes a key/value pair and adds it to the storage
 // It returns an error if the key is already set
-func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
+func (s server) Set(ctx context.Context, req *pb.Pair) (*pb.Key, error) {
 	logrus.Debug("Serving Set request")
-	if pair.Key == "" || len(pair.Value) == 0 {
+	if req.Key == "" || len(req.Value) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set an empty key or value")
 	}
-	var value interface{}
-	err := json.Unmarshal(pair.Value, &value)
+	pair, err := req.ToModel()
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "failed to unmarshal value")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Leader.Set(pair.Key, value):
+	case cacheResp := <-s.Leader.Set(pair.Key, pair.Value):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}
@@ -97,38 +96,37 @@ func (s server) Set(ctx context.Context, pair *pb.Pair) (*pb.Key, error) {
 
 // Get returns the value of a key
 // It returns an error if the key is not in the storage
-func (s server) Get(ctx context.Context, key *pb.Key) (*pb.Pair, error) {
+func (s server) Get(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 	logrus.Debug("Serving Get request")
-	if key.Key == "" {
+	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
 	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-s.Leader.Get(key.Key):
+	case cacheResp := <-s.Leader.Get(req.Key):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
-		value, err := json.Marshal(cacheResp.Value)
+		pair, err := pb.ToPair(&models.Pair{Key: req.Key, Value: cacheResp.Value})
 		if err != nil {
 			return nil, status.Error(codes.Internal, "failed to marshal data")
 		}
-		pair := &pb.Pair{Key: key.Key, Value: value}
 		logrus.Debug("Get request succeeded")
 		return pair, nil
 	}
 }
 
 // Delete is the endpoint to delete a key/value if it is already in the storage
-func (s server) Delete(ctx context.Context, key *pb.Key) (*pb.Null, error) {
+func (s server) Delete(ctx context.Context, req *pb.Key) (*pb.Null, error) {
 	logrus.Info("Serving Delete request")
-	if key.Key == "" {
+	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case <-s.Leader.Delete(key.Key):
+	case <-s.Leader.Delete(req.Key):
 		return &pb.Null{}, nil
 	}
 }

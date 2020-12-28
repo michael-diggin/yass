@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/michael-diggin/yass/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -42,29 +43,23 @@ func (c CacheClient) Ping(ctx context.Context) (bool, error) {
 }
 
 // SetValue sets a key/value pair in the cache
-func (c *CacheClient) SetValue(ctx context.Context, key string, value interface{}) error {
-	bytesValue, err := json.Marshal(value)
+func (c *CacheClient) SetValue(ctx context.Context, pair *models.Pair) error {
+	pbPair, err := pb.ToPair(pair)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal value")
+		return err
 	}
-	pair := &pb.Pair{Key: key, Value: bytesValue}
-	_, err = c.grpcClient.Set(ctx, pair)
+	_, err = c.grpcClient.Set(ctx, pbPair)
 	return err
 }
 
 // GetValue returns the value of a given key
-func (c *CacheClient) GetValue(ctx context.Context, key string) (interface{}, error) {
+func (c *CacheClient) GetValue(ctx context.Context, key string) (*models.Pair, error) {
 	pbKey := &pb.Key{Key: key}
 	pbPair, err := c.grpcClient.Get(ctx, pbKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var value interface{}
-	err = json.Unmarshal(pbPair.Value, &value)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal result")
-	}
-	return value, nil
+	return pbPair.ToModel()
 }
 
 // DelValue deletes a key/value pair

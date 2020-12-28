@@ -41,7 +41,7 @@ func (s *Service) Set(key string, value interface{}) <-chan *model.StorageRespon
 }
 
 func setValue(store map[string]interface{}, key string, value interface{}) error {
-	if _, ok := store[key]; ok {
+	if val, ok := store[key]; ok && val == value {
 		return errors.AlreadySet{Key: key}
 	}
 	store[key] = value
