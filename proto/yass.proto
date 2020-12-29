@@ -4,8 +4,7 @@ package proto;
 
 option go_package = "github.com/michael-diggin/yass/proto;proto";
 
-service Cache{
-    rpc Ping(Null) returns(PingResponse) {}
+service Storage {
     rpc Set(SetRequest) returns(Null){}
     rpc Get(GetRequest) returns(Pair){}
     rpc Delete(DeleteRequest) returns(Null){}

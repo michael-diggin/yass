@@ -5,9 +5,10 @@ import (
 	"net"
 	"testing"
 
+	"google.golang.org/grpc/health/grpc_health_v1"
+
 	"github.com/golang/mock/gomock"
 
-	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -38,8 +39,9 @@ func TestRunAndPingServer(t *testing.T) {
 	conn, err := grpc.DialContext(ctx, "", grpc.WithContextDialer(getBufDialer(lis)), grpc.WithInsecure())
 	require.NoError(t, err)
 
-	client := pb.NewCacheClient(conn)
-	resp, err := client.Ping(ctx, &pb.Null{})
+	health := grpc_health_v1.NewHealthClient(conn)
+
+	resp, err := health.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: "Storage"})
 	require.NoError(t, err)
-	require.Equal(t, pb.PingResponse_SERVING, resp.Status)
+	require.Equal(t, grpc_health_v1.HealthCheckResponse_SERVING, resp.Status)
 }
