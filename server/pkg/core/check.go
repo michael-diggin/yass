@@ -11,7 +11,7 @@ import (
 
 // Check is the health check endpoint
 func (s *server) Check(ctx context.Context, req *grpc_health_v1.HealthCheckRequest) (*grpc_health_v1.HealthCheckResponse, error) {
-	logrus.Debug("Serving the Check request for health check")
+	logrus.Info("Serving the Check request for health check")
 
 	errMain := s.MainReplica.Ping()
 	errBackup := s.BackupReplica.Ping()

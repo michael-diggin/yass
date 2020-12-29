@@ -38,6 +38,9 @@ func (c StorageClient) Close() error {
 // Check performs a health check on the server
 func (c StorageClient) Check(ctx context.Context) (bool, error) {
 	resp, err := c.healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: "Cache"})
+	if resp == nil || err != nil {
+		return false, err
+	}
 	if resp.Status == grpc_health_v1.HealthCheckResponse_SERVING {
 		return true, nil
 	}

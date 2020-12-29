@@ -11,11 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type kv struct {
-	Key   string      `json:"key"`
-	Value interface{} `json:"value"`
-}
-
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	if len(g.Clients) != g.numServers {
@@ -81,7 +76,7 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := kv{Key: key, Value: value}
+	resp := models.Pair{Key: key, Value: value}
 	respondWithJSON(w, http.StatusOK, resp)
 	return
 }
