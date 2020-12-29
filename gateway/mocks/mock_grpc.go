@@ -34,6 +34,21 @@ func (m *MockGrpcClient) EXPECT() *MockGrpcClientMockRecorder {
 	return m.recorder
 }
 
+// Check mocks base method
+func (m *MockGrpcClient) Check(arg0 context.Context) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Check", arg0)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Check indicates an expected call of Check
+func (mr *MockGrpcClientMockRecorder) Check(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockGrpcClient)(nil).Check), arg0)
+}
+
 // Close mocks base method
 func (m *MockGrpcClient) Close() error {
 	m.ctrl.T.Helper()

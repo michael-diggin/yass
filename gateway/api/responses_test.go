@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/michael-diggin/yass/models"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,7 +50,7 @@ func TestRespondWithJson(t *testing.T) {
 	respondWithJSON(w, code, payload)
 
 	require.Equal(t, w.Code, code)
-	var result kv
+	var result models.Pair
 	json.Unmarshal(w.Body.Bytes(), &result)
 	require.Equal(t, result.Key, "test-key")
 	require.Equal(t, result.Value, "test-value")

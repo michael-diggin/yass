@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -22,7 +23,9 @@ type YassServer struct {
 // New sets up the server
 func New(lis net.Listener, main, backup model.Service) YassServer {
 	s := grpc.NewServer()
-	pb.RegisterCacheServer(s, server{MainReplica: main, BackupReplica: backup})
+	srv := server{MainReplica: main, BackupReplica: backup}
+	pb.RegisterStorageServer(s, srv)
+	grpc_health_v1.RegisterHealthServer(s, &srv)
 	return YassServer{lis: lis, srv: s}
 }
 
@@ -50,24 +53,6 @@ func (y YassServer) ShutDown() {
 type server struct {
 	MainReplica   model.Service
 	BackupReplica model.Service
-}
-
-// Ping serves the healthcheck endpoint for the server
-// It checks if the storage is serving and responds accordingly
-func (s server) Ping(context.Context, *pb.Null) (*pb.PingResponse, error) {
-	logrus.Debug("Serving Ping request")
-	err := s.MainReplica.Ping()
-	if err != nil {
-		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
-		return resp, status.Error(codes.Unavailable, err.Error())
-	}
-	err = s.BackupReplica.Ping()
-	if err != nil {
-		resp := &pb.PingResponse{Status: pb.PingResponse_NOT_SERVING}
-		return resp, status.Error(codes.Unavailable, err.Error())
-	}
-	resp := &pb.PingResponse{Status: pb.PingResponse_SERVING}
-	return resp, nil
 }
 
 // Set takes a key/value pair and adds it to the storage

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"testing"
 	"time"
 
@@ -13,42 +12,9 @@ import (
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-func TestServerPing(t *testing.T) {
-	r := require.New(t)
-	tt := []struct {
-		name    string
-		errCode codes.Code
-		status  pb.PingResponse_ServingStatus
-	}{
-		{"serving", codes.OK, pb.PingResponse_SERVING},
-		{"not serving", codes.Unavailable, pb.PingResponse_NOT_SERVING},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			mockMainStore := mocks.NewMockService(ctrl)
-			mockMainStore.EXPECT().Ping().DoAndReturn(func() error {
-				if tc.name == "serving" {
-					return nil
-				}
-				return errors.New("MainReplica Storage not reachable")
-			}).AnyTimes()
-
-			srv := server{MainReplica: mockMainStore, BackupReplica: mockMainStore}
-
-			resp, err := srv.Ping(context.Background(), &pb.Null{})
-			r.Equal(tc.errCode, grpc.Code(err))
-			r.Equal(tc.status, resp.Status)
-		})
-	}
-}
 
 func TestSettoStorage(t *testing.T) {
 	r := require.New(t)

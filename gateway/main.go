@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -38,6 +39,11 @@ func main() {
 		}
 	}()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go gateway.PingStorageServers(ctx, 30*time.Second)
+
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
@@ -49,5 +55,5 @@ func main() {
 		wg.Done()
 	}()
 
-	wg.Wait() // wait for sever go routine to exit
+	wg.Wait() // wait for server go routine to exit
 }

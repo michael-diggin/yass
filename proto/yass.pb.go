@@ -680,29 +680,27 @@ var file_proto_yass_proto_rawDesc = []byte{
 	0x0a, 0x07, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x4e,
 	0x4f, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x2a, 0x1f, 0x0a, 0x07,
 	0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x08, 0x0a, 0x04, 0x4d, 0x41, 0x49, 0x4e, 0x10,
-	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x41, 0x43, 0x4b, 0x55, 0x50, 0x10, 0x01, 0x32, 0xa6, 0x02,
-	0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x2a, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12,
-	0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x13, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x03,
-	0x47, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50,
-	0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12,
-	0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75,
-	0x6c, 0x6c, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74,
-	0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65,
-	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x00, 0x12, 0x31, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x12,
-	0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67,
-	0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x41, 0x43, 0x4b, 0x55, 0x50, 0x10, 0x01, 0x32, 0xfc, 0x01,
+	0x0a, 0x07, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x27, 0x0a, 0x03, 0x53, 0x65, 0x74,
+	0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c,
+	0x22, 0x00, 0x12, 0x27, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x06, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x08, 0x42, 0x61,
+	0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42,
+	0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x31, 0x0a, 0x08, 0x42, 0x61, 0x74,
+	0x63, 0x68, 0x53, 0x65, 0x74, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61,
+	0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61,
+	0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -741,20 +739,18 @@ var file_proto_yass_proto_depIdxs = []int32{
 	5,  // 4: proto.BatchSetRequest.data:type_name -> proto.Pair
 	5,  // 5: proto.BatchGetResponse.data:type_name -> proto.Pair
 	1,  // 6: proto.PingResponse.status:type_name -> proto.PingResponse.ServingStatus
-	7,  // 7: proto.Cache.Ping:input_type -> proto.Null
-	2,  // 8: proto.Cache.Set:input_type -> proto.SetRequest
-	3,  // 9: proto.Cache.Get:input_type -> proto.GetRequest
-	4,  // 10: proto.Cache.Delete:input_type -> proto.DeleteRequest
-	9,  // 11: proto.Cache.BatchGet:input_type -> proto.BatchGetRequest
-	8,  // 12: proto.Cache.BatchSet:input_type -> proto.BatchSetRequest
-	11, // 13: proto.Cache.Ping:output_type -> proto.PingResponse
-	7,  // 14: proto.Cache.Set:output_type -> proto.Null
-	5,  // 15: proto.Cache.Get:output_type -> proto.Pair
-	7,  // 16: proto.Cache.Delete:output_type -> proto.Null
-	10, // 17: proto.Cache.BatchGet:output_type -> proto.BatchGetResponse
-	7,  // 18: proto.Cache.BatchSet:output_type -> proto.Null
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
+	2,  // 7: proto.Storage.Set:input_type -> proto.SetRequest
+	3,  // 8: proto.Storage.Get:input_type -> proto.GetRequest
+	4,  // 9: proto.Storage.Delete:input_type -> proto.DeleteRequest
+	9,  // 10: proto.Storage.BatchGet:input_type -> proto.BatchGetRequest
+	8,  // 11: proto.Storage.BatchSet:input_type -> proto.BatchSetRequest
+	7,  // 12: proto.Storage.Set:output_type -> proto.Null
+	5,  // 13: proto.Storage.Get:output_type -> proto.Pair
+	7,  // 14: proto.Storage.Delete:output_type -> proto.Null
+	10, // 15: proto.Storage.BatchGet:output_type -> proto.BatchGetResponse
+	7,  // 16: proto.Storage.BatchSet:output_type -> proto.Null
+	12, // [12:17] is the sub-list for method output_type
+	7,  // [7:12] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -916,11 +912,10 @@ var _ grpc.ClientConnInterface
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion6
 
-// CacheClient is the client API for Cache service.
+// StorageClient is the client API for Storage service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type CacheClient interface {
-	Ping(ctx context.Context, in *Null, opts ...grpc.CallOption) (*PingResponse, error)
+type StorageClient interface {
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error)
@@ -928,71 +923,61 @@ type CacheClient interface {
 	BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error)
 }
 
-type cacheClient struct {
+type storageClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCacheClient(cc grpc.ClientConnInterface) CacheClient {
-	return &cacheClient{cc}
+func NewStorageClient(cc grpc.ClientConnInterface) StorageClient {
+	return &storageClient{cc}
 }
 
-func (c *cacheClient) Ping(ctx context.Context, in *Null, opts ...grpc.CallOption) (*PingResponse, error) {
-	out := new(PingResponse)
-	err := c.cc.Invoke(ctx, "/proto.Cache/Ping", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error) {
+func (c *storageClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error) {
 	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Cache/Set", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Storage/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cacheClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error) {
+func (c *storageClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error) {
 	out := new(Pair)
-	err := c.cc.Invoke(ctx, "/proto.Cache/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Storage/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error) {
+func (c *storageClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error) {
 	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Cache/Delete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Storage/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cacheClient) BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error) {
+func (c *storageClient) BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error) {
 	out := new(BatchGetResponse)
-	err := c.cc.Invoke(ctx, "/proto.Cache/BatchGet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Storage/BatchGet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cacheClient) BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error) {
+func (c *storageClient) BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error) {
 	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Cache/BatchSet", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Storage/BatchSet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CacheServer is the server API for Cache service.
-type CacheServer interface {
-	Ping(context.Context, *Null) (*PingResponse, error)
+// StorageServer is the server API for Storage service.
+type StorageServer interface {
 	Set(context.Context, *SetRequest) (*Null, error)
 	Get(context.Context, *GetRequest) (*Pair, error)
 	Delete(context.Context, *DeleteRequest) (*Null, error)
@@ -1000,168 +985,143 @@ type CacheServer interface {
 	BatchSet(context.Context, *BatchSetRequest) (*Null, error)
 }
 
-// UnimplementedCacheServer can be embedded to have forward compatible implementations.
-type UnimplementedCacheServer struct {
+// UnimplementedStorageServer can be embedded to have forward compatible implementations.
+type UnimplementedStorageServer struct {
 }
 
-func (*UnimplementedCacheServer) Ping(context.Context, *Null) (*PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
-}
-func (*UnimplementedCacheServer) Set(context.Context, *SetRequest) (*Null, error) {
+func (*UnimplementedStorageServer) Set(context.Context, *SetRequest) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (*UnimplementedCacheServer) Get(context.Context, *GetRequest) (*Pair, error) {
+func (*UnimplementedStorageServer) Get(context.Context, *GetRequest) (*Pair, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (*UnimplementedCacheServer) Delete(context.Context, *DeleteRequest) (*Null, error) {
+func (*UnimplementedStorageServer) Delete(context.Context, *DeleteRequest) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
-func (*UnimplementedCacheServer) BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error) {
+func (*UnimplementedStorageServer) BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGet not implemented")
 }
-func (*UnimplementedCacheServer) BatchSet(context.Context, *BatchSetRequest) (*Null, error) {
+func (*UnimplementedStorageServer) BatchSet(context.Context, *BatchSetRequest) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchSet not implemented")
 }
 
-func RegisterCacheServer(s *grpc.Server, srv CacheServer) {
-	s.RegisterService(&_Cache_serviceDesc, srv)
+func RegisterStorageServer(s *grpc.Server, srv StorageServer) {
+	s.RegisterService(&_Storage_serviceDesc, srv)
 }
 
-func _Cache_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Null)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CacheServer).Ping(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Cache/Ping",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Ping(ctx, req.(*Null))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).Set(ctx, in)
+		return srv.(StorageServer).Set(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Cache/Set",
+		FullMethod: "/proto.Storage/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Set(ctx, req.(*SetRequest))
+		return srv.(StorageServer).Set(ctx, req.(*SetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Cache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).Get(ctx, in)
+		return srv.(StorageServer).Get(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Cache/Get",
+		FullMethod: "/proto.Storage/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Get(ctx, req.(*GetRequest))
+		return srv.(StorageServer).Get(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).Delete(ctx, in)
+		return srv.(StorageServer).Delete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Cache/Delete",
+		FullMethod: "/proto.Storage/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Delete(ctx, req.(*DeleteRequest))
+		return srv.(StorageServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Cache_BatchGet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_BatchGet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BatchGetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).BatchGet(ctx, in)
+		return srv.(StorageServer).BatchGet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Cache/BatchGet",
+		FullMethod: "/proto.Storage/BatchGet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).BatchGet(ctx, req.(*BatchGetRequest))
+		return srv.(StorageServer).BatchGet(ctx, req.(*BatchGetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Cache_BatchSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_BatchSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BatchSetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CacheServer).BatchSet(ctx, in)
+		return srv.(StorageServer).BatchSet(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Cache/BatchSet",
+		FullMethod: "/proto.Storage/BatchSet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).BatchSet(ctx, req.(*BatchSetRequest))
+		return srv.(StorageServer).BatchSet(ctx, req.(*BatchSetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Cache_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.Cache",
-	HandlerType: (*CacheServer)(nil),
+var _Storage_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.Storage",
+	HandlerType: (*StorageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Ping",
-			Handler:    _Cache_Ping_Handler,
-		},
-		{
 			MethodName: "Set",
-			Handler:    _Cache_Set_Handler,
+			Handler:    _Storage_Set_Handler,
 		},
 		{
 			MethodName: "Get",
-			Handler:    _Cache_Get_Handler,
+			Handler:    _Storage_Get_Handler,
 		},
 		{
 			MethodName: "Delete",
-			Handler:    _Cache_Delete_Handler,
+			Handler:    _Storage_Delete_Handler,
 		},
 		{
 			MethodName: "BatchGet",
-			Handler:    _Cache_BatchGet_Handler,
+			Handler:    _Storage_BatchGet_Handler,
 		},
 		{
 			MethodName: "BatchSet",
-			Handler:    _Cache_BatchSet_Handler,
+			Handler:    _Storage_BatchSet_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
