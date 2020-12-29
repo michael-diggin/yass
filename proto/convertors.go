@@ -31,3 +31,11 @@ func ToPair(p *models.Pair) (*Pair, error) {
 	}
 	return &Pair{Key: p.Key, Value: val}, nil
 }
+
+// ToReplica converts to a proto replica enum
+func ToReplica(r models.Replica) Replica {
+	if r == models.BackupReplica {
+		return Replica_BACKUP
+	}
+	return Replica_MAIN
+}

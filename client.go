@@ -43,19 +43,21 @@ func (c CacheClient) Ping(ctx context.Context) (bool, error) {
 }
 
 // SetValue sets a key/value pair in the cache
-func (c *CacheClient) SetValue(ctx context.Context, pair *models.Pair) error {
+func (c *CacheClient) SetValue(ctx context.Context, pair *models.Pair, rep models.Replica) error {
 	pbPair, err := pb.ToPair(pair)
 	if err != nil {
 		return err
 	}
-	req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pbPair}
+	replica := pb.ToReplica(rep)
+	req := &pb.SetRequest{Replica: replica, Pair: pbPair}
 	_, err = c.grpcClient.Set(ctx, req)
 	return err
 }
 
 // GetValue returns the value of a given key
-func (c *CacheClient) GetValue(ctx context.Context, key string) (*models.Pair, error) {
-	req := &pb.GetRequest{Replica: pb.Replica_MAIN, Key: key}
+func (c *CacheClient) GetValue(ctx context.Context, key string, rep models.Replica) (*models.Pair, error) {
+	replica := pb.ToReplica(rep)
+	req := &pb.GetRequest{Replica: replica, Key: key}
 	pbPair, err := c.grpcClient.Get(ctx, req)
 	if err != nil {
 		return nil, err
@@ -64,8 +66,9 @@ func (c *CacheClient) GetValue(ctx context.Context, key string) (*models.Pair, e
 }
 
 // DelValue deletes a key/value pair
-func (c *CacheClient) DelValue(ctx context.Context, key string) error {
-	req := &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: key}
+func (c *CacheClient) DelValue(ctx context.Context, key string, rep models.Replica) error {
+	replica := pb.ToReplica(rep)
+	req := &pb.DeleteRequest{Replica: replica, Key: key}
 	_, err := c.grpcClient.Delete(ctx, req)
 	return err
 }

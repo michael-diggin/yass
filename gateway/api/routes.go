@@ -50,7 +50,7 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 	resps := make(chan internalResponse, 2)
 	go func() {
-		pair, err := client.GetValue(ctx, key)
+		pair, err := client.GetValue(ctx, key, models.MainReplica)
 		if err != nil {
 			resps <- internalResponse{err: err}
 			return
@@ -58,8 +58,12 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		resps <- internalResponse{value: pair.Value, err: err}
 	}()
 	go func() {
-		val, err := followerClient.GetFollowerValue(ctx, key)
-		resps <- internalResponse{value: val, err: err}
+		pair, err := followerClient.GetValue(ctx, key, models.BackupReplica)
+		if err != nil {
+			resps <- internalResponse{err: err}
+			return
+		}
+		resps <- internalResponse{value: pair.Value, err: err}
 	}()
 
 	for i := 0; i < 2; i++ {
@@ -105,12 +109,13 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	followerClient := g.Clients[follower]
 	g.mu.RUnlock()
 
-	err = client.SetValue(r.Context(), &pair)
+	err = client.SetValue(r.Context(), &pair, models.MainReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
-	err = followerClient.SetFollowerValue(r.Context(), pair.Key, pair.Value)
+	// TODO: This should be done async
+	err = followerClient.SetValue(r.Context(), &pair, models.BackupReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
@@ -144,12 +149,12 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err := client.DelValue(ctx, key)
+	err := client.DelValue(ctx, key, models.MainReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
-	err = followerClient.DelFollowerValue(ctx, key)
+	err = followerClient.DelValue(ctx, key, models.BackupReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return

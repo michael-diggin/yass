@@ -49,7 +49,7 @@ func TestClientSetValue(t *testing.T) {
 	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pair}).Return(nil, nil)
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
 
-	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Value: val})
+	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Value: val}, models.MainReplica)
 	require.NoError(t, err)
 }
 
@@ -75,7 +75,7 @@ func TestClientGetValue(t *testing.T) {
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
 			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-			resp, err := cc.GetValue(context.Background(), tc.key)
+			resp, err := cc.GetValue(context.Background(), tc.key, models.MainReplica)
 
 			require.Equal(t, err, tc.err)
 			if tc.value != nil {
@@ -93,7 +93,7 @@ func TestClientDelValue(t *testing.T) {
 	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: key}).
 		Return(&pb.Null{}, nil)
 	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-	err := cc.DelValue(context.TODO(), key)
+	err := cc.DelValue(context.Background(), key, models.MainReplica)
 
 	require.NoError(t, err)
 }
