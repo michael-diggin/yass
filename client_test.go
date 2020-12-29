@@ -98,63 +98,6 @@ func TestClientDelValue(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestClientSetFollowerValue(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockgRPC := mocks.NewMockCacheClient(ctrl)
-
-	key := "test"
-	val := "value"
-	mockgRPC.EXPECT().SetFollower(gomock.Any(), &pb.Pair{Key: key, Value: []byte(`"value"`)}).
-		Return(&pb.Key{Key: key}, nil)
-	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-
-	err := cc.SetFollowerValue(context.Background(), key, val)
-	require.NoError(t, err)
-}
-
-func TestClientGetFollowerValue(t *testing.T) {
-	errTest := errors.New("Not in storage")
-
-	tt := []struct {
-		name  string
-		key   string
-		value string
-		err   error
-	}{
-		{"valid case", "test", "value", nil},
-		{"err case", "bad", "", errTest},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			mockgRPC := mocks.NewMockCacheClient(ctrl)
-			mockgRPC.EXPECT().GetFollower(gomock.Any(), &pb.Key{Key: tc.key}).
-				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
-
-			cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-			val, err := cc.GetFollowerValue(context.Background(), tc.key)
-
-			require.Equal(t, err, tc.err)
-			require.Equal(t, tc.value, val)
-		})
-	}
-}
-
-func TestClientDelFollowerValue(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockgRPC := mocks.NewMockCacheClient(ctrl)
-	key := "test"
-	mockgRPC.EXPECT().DeleteFollower(gomock.Any(), &pb.Key{Key: key}).Return(&pb.Null{}, nil)
-	cc := CacheClient{grpcClient: mockgRPC, conn: nil}
-	err := cc.DelFollowerValue(context.TODO(), key)
-
-	require.NoError(t, err)
-}
-
 func TestBatchGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

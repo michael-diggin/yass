@@ -11,8 +11,5 @@ type GrpcClient interface {
 	SetValue(context.Context, *models.Pair, models.Replica) error
 	GetValue(context.Context, string, models.Replica) (*models.Pair, error)
 	DelValue(context.Context, string, models.Replica) error
-	SetFollowerValue(context.Context, string, interface{}) error
-	GetFollowerValue(context.Context, string) (interface{}, error)
-	DelFollowerValue(context.Context, string) error
 	Close() error
 }

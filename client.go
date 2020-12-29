@@ -4,7 +4,6 @@ package yass
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/michael-diggin/yass/models"
 	pb "github.com/michael-diggin/yass/proto"
@@ -70,39 +69,6 @@ func (c *CacheClient) DelValue(ctx context.Context, key string, rep models.Repli
 	replica := pb.ToReplica(rep)
 	req := &pb.DeleteRequest{Replica: replica, Key: key}
 	_, err := c.grpcClient.Delete(ctx, req)
-	return err
-}
-
-// SetFollowerValue sets a key/value pair in the follower partition
-func (c *CacheClient) SetFollowerValue(ctx context.Context, key string, value interface{}) error {
-	bytesValue, err := json.Marshal(value)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal value")
-	}
-	pair := &pb.Pair{Key: key, Value: bytesValue}
-	_, err = c.grpcClient.SetFollower(ctx, pair)
-	return err
-}
-
-// GetFollowerValue returns the value of a given key
-func (c *CacheClient) GetFollowerValue(ctx context.Context, key string) (interface{}, error) {
-	pbKey := &pb.Key{Key: key}
-	pbPair, err := c.grpcClient.GetFollower(ctx, pbKey)
-	if err != nil {
-		return "", err
-	}
-	var value interface{}
-	err = json.Unmarshal(pbPair.Value, &value)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal result")
-	}
-	return value, nil
-}
-
-// DelFollowerValue deletes a key/value pair
-func (c *CacheClient) DelFollowerValue(ctx context.Context, key string) error {
-	pbKey := &pb.Key{Key: key}
-	_, err := c.grpcClient.DeleteFollower(ctx, pbKey)
 	return err
 }
 

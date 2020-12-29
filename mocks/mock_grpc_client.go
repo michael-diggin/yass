@@ -95,26 +95,6 @@ func (mr *MockCacheClientMockRecorder) Delete(arg0, arg1 interface{}, arg2 ...in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCacheClient)(nil).Delete), varargs...)
 }
 
-// DeleteFollower mocks base method
-func (m *MockCacheClient) DeleteFollower(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Null, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "DeleteFollower", varargs...)
-	ret0, _ := ret[0].(*proto.Null)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteFollower indicates an expected call of DeleteFollower
-func (mr *MockCacheClientMockRecorder) DeleteFollower(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFollower", reflect.TypeOf((*MockCacheClient)(nil).DeleteFollower), varargs...)
-}
-
 // Get mocks base method
 func (m *MockCacheClient) Get(arg0 context.Context, arg1 *proto.GetRequest, arg2 ...grpc.CallOption) (*proto.Pair, error) {
 	m.ctrl.T.Helper()
@@ -133,26 +113,6 @@ func (mr *MockCacheClientMockRecorder) Get(arg0, arg1 interface{}, arg2 ...inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCacheClient)(nil).Get), varargs...)
-}
-
-// GetFollower mocks base method
-func (m *MockCacheClient) GetFollower(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Pair, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "GetFollower", varargs...)
-	ret0, _ := ret[0].(*proto.Pair)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetFollower indicates an expected call of GetFollower
-func (mr *MockCacheClientMockRecorder) GetFollower(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollower", reflect.TypeOf((*MockCacheClient)(nil).GetFollower), varargs...)
 }
 
 // Ping mocks base method
@@ -193,24 +153,4 @@ func (mr *MockCacheClientMockRecorder) Set(arg0, arg1 interface{}, arg2 ...inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockCacheClient)(nil).Set), varargs...)
-}
-
-// SetFollower mocks base method
-func (m *MockCacheClient) SetFollower(arg0 context.Context, arg1 *proto.Pair, arg2 ...grpc.CallOption) (*proto.Key, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "SetFollower", varargs...)
-	ret0, _ := ret[0].(*proto.Key)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SetFollower indicates an expected call of SetFollower
-func (mr *MockCacheClientMockRecorder) SetFollower(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFollower", reflect.TypeOf((*MockCacheClient)(nil).SetFollower), varargs...)
 }
