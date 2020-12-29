@@ -24,6 +24,10 @@ func (g *Gateway) PingStorageServers(ctx context.Context, freq time.Duration) {
 					logrus.Warningf("Storage server %d not serving", serverNum)
 				}
 				cancel()
+				// TODO: strategy for dealing with dropping node
+				// idea: post `instruction` for replicate data from replica A to new replica
+				// in RegisterServer, execute instruction to batch get/set data on new server
+				// before it is allowed to recieve more traffic
 			}
 		}
 	}
