@@ -29,6 +29,52 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
+type Replica int32
+
+const (
+	Replica_MAIN   Replica = 0
+	Replica_BACKUP Replica = 1
+)
+
+// Enum value maps for Replica.
+var (
+	Replica_name = map[int32]string{
+		0: "MAIN",
+		1: "BACKUP",
+	}
+	Replica_value = map[string]int32{
+		"MAIN":   0,
+		"BACKUP": 1,
+	}
+)
+
+func (x Replica) Enum() *Replica {
+	p := new(Replica)
+	*p = x
+	return p
+}
+
+func (x Replica) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Replica) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_yass_proto_enumTypes[0].Descriptor()
+}
+
+func (Replica) Type() protoreflect.EnumType {
+	return &file_proto_yass_proto_enumTypes[0]
+}
+
+func (x Replica) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Replica.Descriptor instead.
+func (Replica) EnumDescriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{0}
+}
+
 type PingResponse_ServingStatus int32
 
 const (
@@ -62,11 +108,11 @@ func (x PingResponse_ServingStatus) String() string {
 }
 
 func (PingResponse_ServingStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_yass_proto_enumTypes[0].Descriptor()
+	return file_proto_yass_proto_enumTypes[1].Descriptor()
 }
 
 func (PingResponse_ServingStatus) Type() protoreflect.EnumType {
-	return &file_proto_yass_proto_enumTypes[0]
+	return &file_proto_yass_proto_enumTypes[1]
 }
 
 func (x PingResponse_ServingStatus) Number() protoreflect.EnumNumber {
@@ -75,7 +121,172 @@ func (x PingResponse_ServingStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PingResponse_ServingStatus.Descriptor instead.
 func (PingResponse_ServingStatus) EnumDescriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{6, 0}
+	return file_proto_yass_proto_rawDescGZIP(), []int{9, 0}
+}
+
+type SetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Replica Replica `protobuf:"varint,1,opt,name=replica,proto3,enum=proto.Replica" json:"replica,omitempty"`
+	Pair    *Pair   `protobuf:"bytes,2,opt,name=pair,proto3" json:"pair,omitempty"`
+}
+
+func (x *SetRequest) Reset() {
+	*x = SetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_yass_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRequest) ProtoMessage() {}
+
+func (x *SetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRequest.ProtoReflect.Descriptor instead.
+func (*SetRequest) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *SetRequest) GetReplica() Replica {
+	if x != nil {
+		return x.Replica
+	}
+	return Replica_MAIN
+}
+
+func (x *SetRequest) GetPair() *Pair {
+	if x != nil {
+		return x.Pair
+	}
+	return nil
+}
+
+type GetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Replica Replica `protobuf:"varint,1,opt,name=replica,proto3,enum=proto.Replica" json:"replica,omitempty"`
+	Key     string  `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *GetRequest) Reset() {
+	*x = GetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_yass_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequest) ProtoMessage() {}
+
+func (x *GetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
+func (*GetRequest) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetRequest) GetReplica() Replica {
+	if x != nil {
+		return x.Replica
+	}
+	return Replica_MAIN
+}
+
+func (x *GetRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type DeleteRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Replica Replica `protobuf:"varint,1,opt,name=replica,proto3,enum=proto.Replica" json:"replica,omitempty"`
+	Key     string  `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *DeleteRequest) Reset() {
+	*x = DeleteRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_yass_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRequest) ProtoMessage() {}
+
+func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRequest) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DeleteRequest) GetReplica() Replica {
+	if x != nil {
+		return x.Replica
+	}
+	return Replica_MAIN
+}
+
+func (x *DeleteRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
 }
 
 type Pair struct {
@@ -90,7 +301,7 @@ type Pair struct {
 func (x *Pair) Reset() {
 	*x = Pair{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[0]
+		mi := &file_proto_yass_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -103,7 +314,7 @@ func (x *Pair) String() string {
 func (*Pair) ProtoMessage() {}
 
 func (x *Pair) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[0]
+	mi := &file_proto_yass_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -116,7 +327,7 @@ func (x *Pair) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pair.ProtoReflect.Descriptor instead.
 func (*Pair) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{0}
+	return file_proto_yass_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Pair) GetKey() string {
@@ -144,7 +355,7 @@ type Key struct {
 func (x *Key) Reset() {
 	*x = Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[1]
+		mi := &file_proto_yass_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -157,7 +368,7 @@ func (x *Key) String() string {
 func (*Key) ProtoMessage() {}
 
 func (x *Key) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[1]
+	mi := &file_proto_yass_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -170,7 +381,7 @@ func (x *Key) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Key.ProtoReflect.Descriptor instead.
 func (*Key) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{1}
+	return file_proto_yass_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Key) GetKey() string {
@@ -189,7 +400,7 @@ type Null struct {
 func (x *Null) Reset() {
 	*x = Null{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[2]
+		mi := &file_proto_yass_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -202,7 +413,7 @@ func (x *Null) String() string {
 func (*Null) ProtoMessage() {}
 
 func (x *Null) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[2]
+	mi := &file_proto_yass_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -215,7 +426,7 @@ func (x *Null) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Null.ProtoReflect.Descriptor instead.
 func (*Null) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{2}
+	return file_proto_yass_proto_rawDescGZIP(), []int{5}
 }
 
 type BatchSetRequest struct {
@@ -230,7 +441,7 @@ type BatchSetRequest struct {
 func (x *BatchSetRequest) Reset() {
 	*x = BatchSetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[3]
+		mi := &file_proto_yass_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -243,7 +454,7 @@ func (x *BatchSetRequest) String() string {
 func (*BatchSetRequest) ProtoMessage() {}
 
 func (x *BatchSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[3]
+	mi := &file_proto_yass_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -256,7 +467,7 @@ func (x *BatchSetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchSetRequest.ProtoReflect.Descriptor instead.
 func (*BatchSetRequest) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{3}
+	return file_proto_yass_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *BatchSetRequest) GetReplica() int32 {
@@ -284,7 +495,7 @@ type BatchGetRequest struct {
 func (x *BatchGetRequest) Reset() {
 	*x = BatchGetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[4]
+		mi := &file_proto_yass_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -297,7 +508,7 @@ func (x *BatchGetRequest) String() string {
 func (*BatchGetRequest) ProtoMessage() {}
 
 func (x *BatchGetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[4]
+	mi := &file_proto_yass_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -310,7 +521,7 @@ func (x *BatchGetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetRequest.ProtoReflect.Descriptor instead.
 func (*BatchGetRequest) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{4}
+	return file_proto_yass_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *BatchGetRequest) GetReplica() int32 {
@@ -332,7 +543,7 @@ type BatchGetResponse struct {
 func (x *BatchGetResponse) Reset() {
 	*x = BatchGetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[5]
+		mi := &file_proto_yass_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -345,7 +556,7 @@ func (x *BatchGetResponse) String() string {
 func (*BatchGetResponse) ProtoMessage() {}
 
 func (x *BatchGetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[5]
+	mi := &file_proto_yass_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -358,7 +569,7 @@ func (x *BatchGetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetResponse.ProtoReflect.Descriptor instead.
 func (*BatchGetResponse) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{5}
+	return file_proto_yass_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *BatchGetResponse) GetReplica() int32 {
@@ -386,7 +597,7 @@ type PingResponse struct {
 func (x *PingResponse) Reset() {
 	*x = PingResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_yass_proto_msgTypes[6]
+		mi := &file_proto_yass_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -399,7 +610,7 @@ func (x *PingResponse) String() string {
 func (*PingResponse) ProtoMessage() {}
 
 func (x *PingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_yass_proto_msgTypes[6]
+	mi := &file_proto_yass_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,7 +623,7 @@ func (x *PingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
 func (*PingResponse) Descriptor() ([]byte, []int) {
-	return file_proto_yass_proto_rawDescGZIP(), []int{6}
+	return file_proto_yass_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PingResponse) GetStatus() PingResponse_ServingStatus {
@@ -426,7 +637,22 @@ var File_proto_yass_proto protoreflect.FileDescriptor
 
 var file_proto_yass_proto_rawDesc = []byte{
 	0x0a, 0x10, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x2e, 0x0a, 0x04, 0x50, 0x61, 0x69,
+	0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x57, 0x0a, 0x0a, 0x53, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69,
+	0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63,
+	0x61, 0x12, 0x1f, 0x0a, 0x04, 0x70, 0x61, 0x69, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x52, 0x04, 0x70, 0x61,
+	0x69, 0x72, 0x22, 0x48, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x28, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0e, 0x32, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63,
+	0x61, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65,
+	0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x4b, 0x0a, 0x0d,
+	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a,
+	0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0e,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x52, 0x07,
+	0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x2e, 0x0a, 0x04, 0x50, 0x61, 0x69,
 	0x72, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
 	0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79,
@@ -452,36 +678,31 @@ var file_proto_yass_proto_rawDesc = []byte{
 	0x22, 0x3a, 0x0a, 0x0d, 0x53, 0x65, 0x72, 0x76, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x61, 0x74, 0x75,
 	0x73, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x0b,
 	0x0a, 0x07, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x4e,
-	0x4f, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x32, 0x8f, 0x03, 0x0a,
-	0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x2a, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x0b,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x13, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x00, 0x12, 0x20, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b,
-	0x65, 0x79, 0x22, 0x00, 0x12, 0x20, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0a, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x23, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x28, 0x0a, 0x0b, 0x53,
-	0x65, 0x74, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x72, 0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x4b, 0x65, 0x79, 0x22, 0x00, 0x12, 0x28, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x46, 0x6f, 0x6c, 0x6c,
-	0x6f, 0x77, 0x65, 0x72, 0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79,
-	0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x12,
-	0x2b, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x46, 0x6f, 0x6c, 0x6c, 0x6f, 0x77, 0x65,
-	0x72, 0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x08,
-	0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65,
-	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x31, 0x0a, 0x08, 0x42,
-	0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x2c,
-	0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63,
-	0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73,
-	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x4f, 0x54, 0x5f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x2a, 0x1f, 0x0a, 0x07,
+	0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x08, 0x0a, 0x04, 0x4d, 0x41, 0x49, 0x4e, 0x10,
+	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x42, 0x41, 0x43, 0x4b, 0x55, 0x50, 0x10, 0x01, 0x32, 0xa6, 0x02,
+	0x0a, 0x05, 0x43, 0x61, 0x63, 0x68, 0x65, 0x12, 0x2a, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12,
+	0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x1a, 0x13, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x03,
+	0x47, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50,
+	0x61, 0x69, 0x72, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12,
+	0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75,
+	0x6c, 0x6c, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74,
+	0x12, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x00, 0x12, 0x31, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x12,
+	0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
+	0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67,
+	0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -496,45 +717,47 @@ func file_proto_yass_proto_rawDescGZIP() []byte {
 	return file_proto_yass_proto_rawDescData
 }
 
-var file_proto_yass_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_proto_yass_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_proto_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_proto_yass_proto_goTypes = []interface{}{
-	(PingResponse_ServingStatus)(0), // 0: proto.PingResponse.ServingStatus
-	(*Pair)(nil),                    // 1: proto.Pair
-	(*Key)(nil),                     // 2: proto.Key
-	(*Null)(nil),                    // 3: proto.Null
-	(*BatchSetRequest)(nil),         // 4: proto.BatchSetRequest
-	(*BatchGetRequest)(nil),         // 5: proto.BatchGetRequest
-	(*BatchGetResponse)(nil),        // 6: proto.BatchGetResponse
-	(*PingResponse)(nil),            // 7: proto.PingResponse
+	(Replica)(0),                    // 0: proto.Replica
+	(PingResponse_ServingStatus)(0), // 1: proto.PingResponse.ServingStatus
+	(*SetRequest)(nil),              // 2: proto.SetRequest
+	(*GetRequest)(nil),              // 3: proto.GetRequest
+	(*DeleteRequest)(nil),           // 4: proto.DeleteRequest
+	(*Pair)(nil),                    // 5: proto.Pair
+	(*Key)(nil),                     // 6: proto.Key
+	(*Null)(nil),                    // 7: proto.Null
+	(*BatchSetRequest)(nil),         // 8: proto.BatchSetRequest
+	(*BatchGetRequest)(nil),         // 9: proto.BatchGetRequest
+	(*BatchGetResponse)(nil),        // 10: proto.BatchGetResponse
+	(*PingResponse)(nil),            // 11: proto.PingResponse
 }
 var file_proto_yass_proto_depIdxs = []int32{
-	1,  // 0: proto.BatchSetRequest.data:type_name -> proto.Pair
-	1,  // 1: proto.BatchGetResponse.data:type_name -> proto.Pair
-	0,  // 2: proto.PingResponse.status:type_name -> proto.PingResponse.ServingStatus
-	3,  // 3: proto.Cache.Ping:input_type -> proto.Null
-	1,  // 4: proto.Cache.Set:input_type -> proto.Pair
-	2,  // 5: proto.Cache.Get:input_type -> proto.Key
-	2,  // 6: proto.Cache.Delete:input_type -> proto.Key
-	1,  // 7: proto.Cache.SetFollower:input_type -> proto.Pair
-	2,  // 8: proto.Cache.GetFollower:input_type -> proto.Key
-	2,  // 9: proto.Cache.DeleteFollower:input_type -> proto.Key
-	5,  // 10: proto.Cache.BatchGet:input_type -> proto.BatchGetRequest
-	4,  // 11: proto.Cache.BatchSet:input_type -> proto.BatchSetRequest
-	7,  // 12: proto.Cache.Ping:output_type -> proto.PingResponse
-	2,  // 13: proto.Cache.Set:output_type -> proto.Key
-	1,  // 14: proto.Cache.Get:output_type -> proto.Pair
-	3,  // 15: proto.Cache.Delete:output_type -> proto.Null
-	2,  // 16: proto.Cache.SetFollower:output_type -> proto.Key
-	1,  // 17: proto.Cache.GetFollower:output_type -> proto.Pair
-	3,  // 18: proto.Cache.DeleteFollower:output_type -> proto.Null
-	6,  // 19: proto.Cache.BatchGet:output_type -> proto.BatchGetResponse
-	3,  // 20: proto.Cache.BatchSet:output_type -> proto.Null
-	12, // [12:21] is the sub-list for method output_type
-	3,  // [3:12] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	0,  // 0: proto.SetRequest.replica:type_name -> proto.Replica
+	5,  // 1: proto.SetRequest.pair:type_name -> proto.Pair
+	0,  // 2: proto.GetRequest.replica:type_name -> proto.Replica
+	0,  // 3: proto.DeleteRequest.replica:type_name -> proto.Replica
+	5,  // 4: proto.BatchSetRequest.data:type_name -> proto.Pair
+	5,  // 5: proto.BatchGetResponse.data:type_name -> proto.Pair
+	1,  // 6: proto.PingResponse.status:type_name -> proto.PingResponse.ServingStatus
+	7,  // 7: proto.Cache.Ping:input_type -> proto.Null
+	2,  // 8: proto.Cache.Set:input_type -> proto.SetRequest
+	3,  // 9: proto.Cache.Get:input_type -> proto.GetRequest
+	4,  // 10: proto.Cache.Delete:input_type -> proto.DeleteRequest
+	9,  // 11: proto.Cache.BatchGet:input_type -> proto.BatchGetRequest
+	8,  // 12: proto.Cache.BatchSet:input_type -> proto.BatchSetRequest
+	11, // 13: proto.Cache.Ping:output_type -> proto.PingResponse
+	7,  // 14: proto.Cache.Set:output_type -> proto.Null
+	5,  // 15: proto.Cache.Get:output_type -> proto.Pair
+	7,  // 16: proto.Cache.Delete:output_type -> proto.Null
+	10, // 17: proto.Cache.BatchGet:output_type -> proto.BatchGetResponse
+	7,  // 18: proto.Cache.BatchSet:output_type -> proto.Null
+	13, // [13:19] is the sub-list for method output_type
+	7,  // [7:13] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_yass_proto_init() }
@@ -544,7 +767,7 @@ func file_proto_yass_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_proto_yass_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Pair); i {
+			switch v := v.(*SetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -556,7 +779,7 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Key); i {
+			switch v := v.(*GetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -568,7 +791,7 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Null); i {
+			switch v := v.(*DeleteRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -580,7 +803,7 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchSetRequest); i {
+			switch v := v.(*Pair); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -592,7 +815,7 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchGetRequest); i {
+			switch v := v.(*Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -604,7 +827,7 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchGetResponse); i {
+			switch v := v.(*Null); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -616,6 +839,42 @@ func file_proto_yass_proto_init() {
 			}
 		}
 		file_proto_yass_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BatchSetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_yass_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BatchGetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_yass_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*BatchGetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_yass_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PingResponse); i {
 			case 0:
 				return &v.state
@@ -633,8 +892,8 @@ func file_proto_yass_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_yass_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   7,
+			NumEnums:      2,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -662,12 +921,9 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CacheClient interface {
 	Ping(ctx context.Context, in *Null, opts ...grpc.CallOption) (*PingResponse, error)
-	Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
-	Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
-	Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
-	SetFollower(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error)
-	GetFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
-	DeleteFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error)
+	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error)
+	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error)
 	BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error)
 	BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error)
 }
@@ -689,8 +945,8 @@ func (c *cacheClient) Ping(ctx context.Context, in *Null, opts ...grpc.CallOptio
 	return out, nil
 }
 
-func (c *cacheClient) Set(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
-	out := new(Key)
+func (c *cacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
 	err := c.cc.Invoke(ctx, "/proto.Cache/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -698,7 +954,7 @@ func (c *cacheClient) Set(ctx context.Context, in *Pair, opts ...grpc.CallOption
 	return out, nil
 }
 
-func (c *cacheClient) Get(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error) {
+func (c *cacheClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error) {
 	out := new(Pair)
 	err := c.cc.Invoke(ctx, "/proto.Cache/Get", in, out, opts...)
 	if err != nil {
@@ -707,36 +963,9 @@ func (c *cacheClient) Get(ctx context.Context, in *Key, opts ...grpc.CallOption)
 	return out, nil
 }
 
-func (c *cacheClient) Delete(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error) {
+func (c *cacheClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error) {
 	out := new(Null)
 	err := c.cc.Invoke(ctx, "/proto.Cache/Delete", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cacheClient) SetFollower(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Key, error) {
-	out := new(Key)
-	err := c.cc.Invoke(ctx, "/proto.Cache/SetFollower", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cacheClient) GetFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error) {
-	out := new(Pair)
-	err := c.cc.Invoke(ctx, "/proto.Cache/GetFollower", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cacheClient) DeleteFollower(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Cache/DeleteFollower", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -764,12 +993,9 @@ func (c *cacheClient) BatchSet(ctx context.Context, in *BatchSetRequest, opts ..
 // CacheServer is the server API for Cache service.
 type CacheServer interface {
 	Ping(context.Context, *Null) (*PingResponse, error)
-	Set(context.Context, *Pair) (*Key, error)
-	Get(context.Context, *Key) (*Pair, error)
-	Delete(context.Context, *Key) (*Null, error)
-	SetFollower(context.Context, *Pair) (*Key, error)
-	GetFollower(context.Context, *Key) (*Pair, error)
-	DeleteFollower(context.Context, *Key) (*Null, error)
+	Set(context.Context, *SetRequest) (*Null, error)
+	Get(context.Context, *GetRequest) (*Pair, error)
+	Delete(context.Context, *DeleteRequest) (*Null, error)
 	BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error)
 	BatchSet(context.Context, *BatchSetRequest) (*Null, error)
 }
@@ -781,23 +1007,14 @@ type UnimplementedCacheServer struct {
 func (*UnimplementedCacheServer) Ping(context.Context, *Null) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
-func (*UnimplementedCacheServer) Set(context.Context, *Pair) (*Key, error) {
+func (*UnimplementedCacheServer) Set(context.Context, *SetRequest) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (*UnimplementedCacheServer) Get(context.Context, *Key) (*Pair, error) {
+func (*UnimplementedCacheServer) Get(context.Context, *GetRequest) (*Pair, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (*UnimplementedCacheServer) Delete(context.Context, *Key) (*Null, error) {
+func (*UnimplementedCacheServer) Delete(context.Context, *DeleteRequest) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
-}
-func (*UnimplementedCacheServer) SetFollower(context.Context, *Pair) (*Key, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetFollower not implemented")
-}
-func (*UnimplementedCacheServer) GetFollower(context.Context, *Key) (*Pair, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFollower not implemented")
-}
-func (*UnimplementedCacheServer) DeleteFollower(context.Context, *Key) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFollower not implemented")
 }
 func (*UnimplementedCacheServer) BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGet not implemented")
@@ -829,7 +1046,7 @@ func _Cache_Ping_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Pair)
+	in := new(SetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -841,13 +1058,13 @@ func _Cache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: "/proto.Cache/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Set(ctx, req.(*Pair))
+		return srv.(CacheServer).Set(ctx, req.(*SetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Cache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
+	in := new(GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -859,13 +1076,13 @@ func _Cache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: "/proto.Cache/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Get(ctx, req.(*Key))
+		return srv.(CacheServer).Get(ctx, req.(*GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -877,61 +1094,7 @@ func _Cache_Delete_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/proto.Cache/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).Delete(ctx, req.(*Key))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Cache_SetFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Pair)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CacheServer).SetFollower(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Cache/SetFollower",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).SetFollower(ctx, req.(*Pair))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Cache_GetFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CacheServer).GetFollower(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Cache/GetFollower",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).GetFollower(ctx, req.(*Key))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Cache_DeleteFollower_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CacheServer).DeleteFollower(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Cache/DeleteFollower",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CacheServer).DeleteFollower(ctx, req.(*Key))
+		return srv.(CacheServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -991,18 +1154,6 @@ var _Cache_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _Cache_Delete_Handler,
-		},
-		{
-			MethodName: "SetFollower",
-			Handler:    _Cache_SetFollower_Handler,
-		},
-		{
-			MethodName: "GetFollower",
-			Handler:    _Cache_GetFollower_Handler,
-		},
-		{
-			MethodName: "DeleteFollower",
-			Handler:    _Cache_DeleteFollower_Handler,
 		},
 		{
 			MethodName: "BatchGet",

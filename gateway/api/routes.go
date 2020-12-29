@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/michael-diggin/yass/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,12 +50,20 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 	resps := make(chan internalResponse, 2)
 	go func() {
-		val, err := client.GetValue(ctx, key)
-		resps <- internalResponse{value: val, err: err}
+		pair, err := client.GetValue(ctx, key, models.MainReplica)
+		if err != nil {
+			resps <- internalResponse{err: err}
+			return
+		}
+		resps <- internalResponse{value: pair.Value, err: err}
 	}()
 	go func() {
-		val, err := followerClient.GetFollowerValue(ctx, key)
-		resps <- internalResponse{value: val, err: err}
+		pair, err := followerClient.GetValue(ctx, key, models.BackupReplica)
+		if err != nil {
+			resps <- internalResponse{err: err}
+			return
+		}
+		resps <- internalResponse{value: pair.Value, err: err}
 	}()
 
 	for i := 0; i < 2; i++ {
@@ -85,17 +94,14 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	}
 	logrus.Debug("Serving Set request")
 	decoder := json.NewDecoder(r.Body)
-	var data kv
-	err := decoder.Decode(&data)
+	var pair models.Pair
+	err := decoder.Decode(&pair)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusBadRequest, "data could not be decoded")
 		return
 	}
 
-	key := data.Key
-	value := data.Value
-
-	hash := getHashOfKey(key)
+	hash := getHashOfKey(pair.Key)
 	server := hash % g.numServers
 	follower := (server + 1) % g.numServers
 	g.mu.RLock()
@@ -103,12 +109,13 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	followerClient := g.Clients[follower]
 	g.mu.RUnlock()
 
-	err = client.SetValue(r.Context(), key, value)
+	err = client.SetValue(r.Context(), &pair, models.MainReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
-	err = followerClient.SetFollowerValue(r.Context(), key, value)
+	// TODO: This should be done async
+	err = followerClient.SetValue(r.Context(), &pair, models.BackupReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
@@ -142,12 +149,12 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err := client.DelValue(ctx, key)
+	err := client.DelValue(ctx, key, models.MainReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return
 	}
-	err = followerClient.DelFollowerValue(ctx, key)
+	err = followerClient.DelValue(ctx, key, models.BackupReplica)
 	if err != nil {
 		respondWithError(w, err)
 		return

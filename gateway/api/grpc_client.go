@@ -1,14 +1,15 @@
 package api
 
-import "context"
+import (
+	"context"
+
+	"github.com/michael-diggin/yass/models"
+)
 
 // GrpcClient is the interface needed to communicate with the cache server
 type GrpcClient interface {
-	SetValue(context.Context, string, interface{}) error
-	GetValue(context.Context, string) (interface{}, error)
-	DelValue(context.Context, string) error
-	SetFollowerValue(context.Context, string, interface{}) error
-	GetFollowerValue(context.Context, string) (interface{}, error)
-	DelFollowerValue(context.Context, string) error
+	SetValue(context.Context, *models.Pair, models.Replica) error
+	GetValue(context.Context, string, models.Replica) (*models.Pair, error)
+	DelValue(context.Context, string, models.Replica) error
 	Close() error
 }

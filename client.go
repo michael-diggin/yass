@@ -4,8 +4,8 @@ package yass
 
 import (
 	"context"
-	"encoding/json"
 
+	"github.com/michael-diggin/yass/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -42,68 +42,33 @@ func (c CacheClient) Ping(ctx context.Context) (bool, error) {
 }
 
 // SetValue sets a key/value pair in the cache
-func (c *CacheClient) SetValue(ctx context.Context, key string, value interface{}) error {
-	bytesValue, err := json.Marshal(value)
+func (c *CacheClient) SetValue(ctx context.Context, pair *models.Pair, rep models.Replica) error {
+	pbPair, err := pb.ToPair(pair)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal value")
+		return err
 	}
-	pair := &pb.Pair{Key: key, Value: bytesValue}
-	_, err = c.grpcClient.Set(ctx, pair)
+	replica := pb.ToReplica(rep)
+	req := &pb.SetRequest{Replica: replica, Pair: pbPair}
+	_, err = c.grpcClient.Set(ctx, req)
 	return err
 }
 
 // GetValue returns the value of a given key
-func (c *CacheClient) GetValue(ctx context.Context, key string) (interface{}, error) {
-	pbKey := &pb.Key{Key: key}
-	pbPair, err := c.grpcClient.Get(ctx, pbKey)
+func (c *CacheClient) GetValue(ctx context.Context, key string, rep models.Replica) (*models.Pair, error) {
+	replica := pb.ToReplica(rep)
+	req := &pb.GetRequest{Replica: replica, Key: key}
+	pbPair, err := c.grpcClient.Get(ctx, req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var value interface{}
-	err = json.Unmarshal(pbPair.Value, &value)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal result")
-	}
-	return value, nil
+	return pbPair.ToModel()
 }
 
 // DelValue deletes a key/value pair
-func (c *CacheClient) DelValue(ctx context.Context, key string) error {
-	pbKey := &pb.Key{Key: key}
-	_, err := c.grpcClient.Delete(ctx, pbKey)
-	return err
-}
-
-// SetFollowerValue sets a key/value pair in the follower partition
-func (c *CacheClient) SetFollowerValue(ctx context.Context, key string, value interface{}) error {
-	bytesValue, err := json.Marshal(value)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal value")
-	}
-	pair := &pb.Pair{Key: key, Value: bytesValue}
-	_, err = c.grpcClient.SetFollower(ctx, pair)
-	return err
-}
-
-// GetFollowerValue returns the value of a given key
-func (c *CacheClient) GetFollowerValue(ctx context.Context, key string) (interface{}, error) {
-	pbKey := &pb.Key{Key: key}
-	pbPair, err := c.grpcClient.GetFollower(ctx, pbKey)
-	if err != nil {
-		return "", err
-	}
-	var value interface{}
-	err = json.Unmarshal(pbPair.Value, &value)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal result")
-	}
-	return value, nil
-}
-
-// DelFollowerValue deletes a key/value pair
-func (c *CacheClient) DelFollowerValue(ctx context.Context, key string) error {
-	pbKey := &pb.Key{Key: key}
-	_, err := c.grpcClient.DeleteFollower(ctx, pbKey)
+func (c *CacheClient) DelValue(ctx context.Context, key string, rep models.Replica) error {
+	replica := pb.ToReplica(rep)
+	req := &pb.DeleteRequest{Replica: replica, Key: key}
+	_, err := c.grpcClient.Delete(ctx, req)
 	return err
 }
 

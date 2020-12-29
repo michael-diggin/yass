@@ -14,7 +14,7 @@ import (
 // BatchGet returns all of the stored data in a given replica
 func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
 	logrus.Info("Serving BatchGet request")
-	stores := map[int32]model.Service{0: s.Leader, 1: s.Follower}
+	stores := map[int32]model.Service{0: s.MainReplica, 1: s.BackupReplica}
 	store := stores[req.GetReplica()]
 	select {
 	case <-ctx.Done():
@@ -38,7 +38,7 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 // BatchSet sets the values into the store
 func (s server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchSet request")
-	stores := map[int32]model.Service{0: s.Leader, 1: s.Follower}
+	stores := map[int32]model.Service{0: s.MainReplica, 1: s.BackupReplica}
 	store := stores[req.GetReplica()]
 	select {
 	case <-ctx.Done():

@@ -33,15 +33,15 @@ func TestServerPing(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockLeader := mocks.NewMockService(ctrl)
-			mockLeader.EXPECT().Ping().DoAndReturn(func() error {
+			mockMainStore := mocks.NewMockService(ctrl)
+			mockMainStore.EXPECT().Ping().DoAndReturn(func() error {
 				if tc.name == "serving" {
 					return nil
 				}
-				return errors.New("Leader Storage not reachable")
+				return errors.New("MainReplica Storage not reachable")
 			}).AnyTimes()
 
-			srv := server{Leader: mockLeader, Follower: mockLeader}
+			srv := server{MainReplica: mockMainStore, BackupReplica: mockMainStore}
 
 			resp, err := srv.Ping(context.Background(), &pb.Null{})
 			r.Equal(tc.errCode, grpc.Code(err))
@@ -67,7 +67,7 @@ func TestSettoStorage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockLeader := mocks.NewMockService(ctrl)
+			mockMainStore := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -76,19 +76,17 @@ func TestSettoStorage(t *testing.T) {
 				Err:   status.Error(tc.errCode, "")}
 			close(resp)
 
-			mockLeader.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
+			mockMainStore.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
 
-			srv := server{Leader: mockLeader}
+			srv := server{MainReplica: mockMainStore}
 			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
+			req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: testKV}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			res, err := srv.Set(ctx, testKV)
+			_, err := srv.Set(ctx, req)
 			defer cancel()
 			if e, ok := status.FromError(err); ok {
 				r.Equal(tc.errCode, e.Code())
-			}
-			if res != nil {
-				r.Equal(testKV.Key, res.Key)
 			}
 		})
 	}
@@ -112,7 +110,7 @@ func TestGetFromStorage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockLeader := mocks.NewMockService(ctrl)
+			mockMainStore := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -122,13 +120,13 @@ func TestGetFromStorage(t *testing.T) {
 			close(resp)
 
 			if tc.key != "" && tc.value != nil {
-				mockLeader.EXPECT().Get(tc.key).Return(resp)
+				mockMainStore.EXPECT().Get(tc.key).Return(resp)
 			}
 
-			srv := server{Leader: mockLeader}
-			testK := &pb.Key{Key: tc.key}
+			srv := server{MainReplica: mockMainStore}
+			req := &pb.GetRequest{Replica: pb.Replica_MAIN, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			res, err := srv.Get(ctx, testK)
+			res, err := srv.Get(ctx, req)
 			cancel()
 			e, ok := status.FromError(err)
 			r.True(ok)
@@ -158,7 +156,7 @@ func TestDeleteKeyValue(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			mockLeader := mocks.NewMockService(ctrl)
+			mockMainStore := mocks.NewMockService(ctrl)
 			resp := make(chan *model.StorageResponse, 1)
 
 			resp <- &model.StorageResponse{
@@ -167,14 +165,14 @@ func TestDeleteKeyValue(t *testing.T) {
 			close(resp)
 
 			if tc.key != "" {
-				mockLeader.EXPECT().Delete(tc.key).Return(resp)
+				mockMainStore.EXPECT().Delete(tc.key).Return(resp)
 			}
 
-			srv := server{Leader: mockLeader}
+			srv := server{MainReplica: mockMainStore}
 
-			testKV := &pb.Key{Key: tc.key}
+			req := &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
-			_, err := srv.Delete(ctx, testKV)
+			_, err := srv.Delete(ctx, req)
 			cancel()
 			e, ok := status.FromError(err)
 			r.True(ok)
@@ -182,4 +180,30 @@ func TestDeleteKeyValue(t *testing.T) {
 
 		})
 	}
+}
+
+func TestDeleteKeyValueFromBackup(t *testing.T) {
+	r := require.New(t)
+	key := "test-del-key"
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockStore := mocks.NewMockService(ctrl)
+	resp := make(chan *model.StorageResponse, 1)
+
+	resp <- &model.StorageResponse{
+		Key: key,
+		Err: status.Error(codes.OK, "")}
+	close(resp)
+
+	mockStore.EXPECT().Delete(key).Return(resp)
+
+	srv := server{BackupReplica: mockStore}
+
+	req := &pb.DeleteRequest{Replica: pb.Replica_BACKUP, Key: key}
+	ctx := context.Background()
+	_, err := srv.Delete(ctx, req)
+	e, ok := status.FromError(err)
+	r.True(ok)
+	r.Equal(codes.OK, e.Code())
 }
