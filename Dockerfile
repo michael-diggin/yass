@@ -6,15 +6,17 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN GOOS=linux go build -o /bin/server github.com/michael-diggin/yass/server
+RUN CGO_ENABLED=0 go build -o /bin/server github.com/michael-diggin/yass/server
 
-RUN ls /app
+# Adding the grpc_health_probe
+RUN GRPC_HEALTH_PROBE_VERSION=v0.3.2 && \
+    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
+    chmod +x /bin/grpc_health_probe
 
-FROM alpine:latest  
-RUN apk --no-cache add ca-certificates
+
+# Final distroless image
+FROM gcr.io/distroless/static
 WORKDIR /root/
 COPY --from=builder /bin/server .
-
-RUN ls
-
-ENTRYPOINT [ "./server" ]
+COPY --from=builder /bin/grpc_health_probe ./grpc_health_probe
+ENTRYPOINT ["./server"]
