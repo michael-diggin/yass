@@ -11,14 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Opts gives the user the chance to alter the parameters
-type Opts struct {
-	hashRingWeights int
-	replicaCount    int
-}
-
-var defaultOpts = Opts{hashRingWeights: 3, replicaCount: 2}
-
 // Gateway holds the router and the grpc clients
 type Gateway struct {
 	*http.Server
@@ -30,11 +22,7 @@ type Gateway struct {
 }
 
 // NewGateway will initialize the application
-func NewGateway(numServers int, srv *http.Server, opts ...Opts) *Gateway {
-	var opt = defaultOpts
-	if len(opts) == 1 {
-		opt = opts[0]
-	}
+func NewGateway(numServers int, srv *http.Server) *Gateway {
 	g := Gateway{}
 
 	router := mux.NewRouter()
@@ -50,8 +38,8 @@ func NewGateway(numServers int, srv *http.Server, opts ...Opts) *Gateway {
 	g.Clients = make(map[string]GrpcClient)
 	g.numServers = numServers
 	g.mu = sync.RWMutex{}
-	g.hashRing = hashring.New(opt.hashRingWeights)
-	g.replicas = numServers
+	g.hashRing = hashring.New(3)
+	g.replicas = 2
 	return &g
 }
 

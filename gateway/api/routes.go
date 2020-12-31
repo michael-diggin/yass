@@ -57,14 +57,13 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var retErr error
-	valMap := make(map[interface{}]int)
+	// valMap := make(map[interface{}]int)
 	for i := 0; i < len(clientIDs); i++ {
 		r := <-resps
-		valMap[r.value]++
 		if r.err != nil && retErr == nil {
 			retErr = r.err
 		}
-		if valMap[r.value] > (g.replicas-1)/2 {
+		if r.value != nil {
 			value = r.value
 			cancel()
 			break
