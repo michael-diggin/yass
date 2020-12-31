@@ -22,6 +22,8 @@ func (g *Gateway) PingStorageServers(ctx context.Context, freq time.Duration) {
 				ok, err := client.Check(tCtx)
 				if !ok || err != nil {
 					logrus.Warningf("Storage server %s not serving", serverAddr)
+					delete(g.Clients, serverAddr)
+					g.hashRing.RemoveNode(serverAddr)
 				}
 				cancel()
 				// TODO: strategy for dealing with dropping node

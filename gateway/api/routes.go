@@ -32,12 +32,6 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	var value interface{}
-
-	type internalResponse struct {
-		value interface{}
-		err   error
-	}
 
 	resps := make(chan internalResponse, len(clientIDs))
 	for _, addr := range clientIDs {
@@ -56,19 +50,7 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	var retErr error
-	// valMap := make(map[interface{}]int)
-	for i := 0; i < len(clientIDs); i++ {
-		r := <-resps
-		if r.err != nil && retErr == nil {
-			retErr = r.err
-		}
-		if r.value != nil {
-			value = r.value
-			cancel()
-			break
-		}
-	}
+	value, retErr := getValueFromRequests(resps, len(clientIDs), cancel)
 
 	if value == nil && retErr != nil {
 		respondWithError(w, retErr)
@@ -78,6 +60,29 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	resp := models.Pair{Key: key, Value: value}
 	respondWithJSON(w, http.StatusOK, resp)
 	return
+}
+
+type internalResponse struct {
+	value interface{}
+	err   error
+}
+
+func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) (interface{}, error) {
+	var err error
+	var value interface{}
+	// valMap := make(map[interface{}]int)
+	for i := 0; i < n; i++ {
+		r := <-resps
+		if r.err != nil && err == nil {
+			err = r.err
+		}
+		if r.value != nil {
+			value = r.value
+			cancel()
+			break
+		}
+	}
+	return value, err
 }
 
 // Set handles the Setting of a key value pair
@@ -115,17 +120,15 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var retErr error
-	var nilErrs int
 	for i := 0; i < len(clientIDs); i++ {
 		err := <-resps
-		if err != nil && retErr == nil {
-			retErr = err
-			continue
-		}
-		nilErrs++
-		if nilErrs > (g.replicas-1)/2 {
+		if err == nil {
 			retErr = nil
 			break
+		}
+		if retErr == nil {
+			retErr = err
+			continue
 		}
 	}
 	if retErr != nil {
@@ -171,17 +174,15 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var retErr error
-	var nilErrs int
 	for i := 0; i < len(clientIDs); i++ {
 		err := <-resps
-		if err != nil && retErr == nil {
-			retErr = err
-			continue
-		}
-		nilErrs++
-		if nilErrs > (g.replicas-1)/2 {
+		if err == nil {
 			retErr = nil
 			break
+		}
+		if retErr == nil {
+			retErr = err
+			continue
 		}
 	}
 
