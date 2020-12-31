@@ -28,10 +28,11 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
+		g.replicas = 1
 
 		mockClient.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(nil)
-		mockClient.EXPECT().SetValue(gomock.Any(), pair, models.BackupReplica).Return(nil)
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -52,10 +53,12 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
+		g.replicas = 1
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
 		mockClient.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(errMock)
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -76,8 +79,10 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
+		g.replicas = 1
 
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
 
 		payload := []byte{}
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -106,10 +111,12 @@ func TestGatewayGetSuccess(t *testing.T) {
 	pair := &models.Pair{Key: key, Value: value}
 
 	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(pair, nil).AnyTimes()
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.BackupReplica).Return(pair, nil).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(pair, nil).AnyTimes()
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
+	g.hashRing.AddNode("0")
+	g.hashRing.AddNode("1")
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -135,11 +142,13 @@ func TestGatewayGetNotFound(t *testing.T) {
 	key := "test-get-key"
 	errMock := status.Error(codes.NotFound, "key not found in cache")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock)
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.BackupReplica).Return(nil, errMock)
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock).AnyTimes()
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
+	g.hashRing.AddNode("0")
+	g.hashRing.AddNode("1")
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -165,11 +174,13 @@ func TestGatewayGetTimeout(t *testing.T) {
 	key := "test-get-key"
 	errMock := status.Error(codes.Canceled, "request timed out")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock)
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.BackupReplica).Return(nil, errMock)
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock).AnyTimes()
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
+	g.hashRing.AddNode("0")
+	g.hashRing.AddNode("1")
 
 	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -191,22 +202,28 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 
 	mockClientOne := mocks.NewMockGrpcClient(ctrl)
 	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
-	g := NewGateway(2, &http.Server{})
+	mockClientThree := mocks.NewMockGrpcClient(ctrl)
+	g := NewGateway(3, &http.Server{})
 
 	key := "test-get-key"
 	value := "test-value"
 	pair := &models.Pair{Key: key, Value: value}
 	errMock := status.Error(codes.Canceled, "request timed out")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock)
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.BackupReplica).
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(nil, errMock).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).
 		DoAndReturn(func(...interface{}) (interface{}, error) {
 			time.Sleep(500 * time.Millisecond)
 			return pair, nil
-		})
+		}).AnyTimes()
+	mockClientThree.EXPECT().GetValue(gomock.Any(), key, models.MainReplica).Return(pair, nil).AnyTimes()
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
+	g.Clients["2"] = mockClientThree
+	g.hashRing.AddNode("0")
+	g.hashRing.AddNode("1")
+	g.hashRing.AddNode("2")
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -234,8 +251,9 @@ func TestGatewayDelete(t *testing.T) {
 		key := "test-key"
 
 		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil)
-		mockClient.EXPECT().DelValue(gomock.Any(), key, models.BackupReplica).Return(nil)
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
+		g.replicas = 1
 
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -255,12 +273,14 @@ func TestGatewayDelete(t *testing.T) {
 
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
+		g.replicas = 1
 
 		key := "test-key"
 		errMock := status.Error(codes.Internal, "internal server error")
 
 		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errMock)
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
 
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -280,12 +300,14 @@ func TestGatewayDelete(t *testing.T) {
 
 		mockClient := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(1, &http.Server{})
+		g.replicas = 1
 
 		key := "test-key"
 		errMock := errors.New("network issues")
 
 		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errMock)
-		g.Clients[0] = mockClient
+		g.Clients["0"] = mockClient
+		g.hashRing.AddNode("0")
 
 		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
 		req.Header.Set("Content-Type", "application/json")
@@ -306,15 +328,21 @@ func TestGatewayDeleteWithMultipleClients(t *testing.T) {
 
 	mockClientOne := mocks.NewMockGrpcClient(ctrl)
 	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
-	g := NewGateway(2, &http.Server{})
+	mockClientThree := mocks.NewMockGrpcClient(ctrl)
+	g := NewGateway(3, &http.Server{})
 
 	key := "test-get-key"
 
-	mockClientOne.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil)
-	mockClientTwo.EXPECT().DelValue(gomock.Any(), key, models.BackupReplica).Return(nil)
+	mockClientOne.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil).AnyTimes()
+	mockClientTwo.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errors.New("test error")).AnyTimes()
+	mockClientThree.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil).AnyTimes()
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
+	g.Clients["2"] = mockClientThree
+	g.hashRing.AddNode("0")
+	g.hashRing.AddNode("1")
+	g.hashRing.AddNode("2")
 
 	t.Run("success", func(t *testing.T) {
 

@@ -7,15 +7,18 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/michael-diggin/yass/gateway/hashring"
 	"github.com/sirupsen/logrus"
 )
 
 // Gateway holds the router and the grpc clients
 type Gateway struct {
 	*http.Server
-	Clients    map[int]GrpcClient
+	Clients    map[string]GrpcClient
 	numServers int
 	mu         sync.RWMutex
+	hashRing   *hashring.Ring
+	replicas   int
 }
 
 // NewGateway will initialize the application
@@ -32,9 +35,11 @@ func NewGateway(numServers int, srv *http.Server) *Gateway {
 
 	g.Handler = router
 
-	g.Clients = make(map[int]GrpcClient)
+	g.Clients = make(map[string]GrpcClient)
 	g.numServers = numServers
 	g.mu = sync.RWMutex{}
+	g.hashRing = hashring.New(3)
+	g.replicas = 2
 	return &g
 }
 

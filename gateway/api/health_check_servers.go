@@ -15,13 +15,15 @@ func (g *Gateway) PingStorageServers(ctx context.Context, freq time.Duration) {
 		case <-ctx.Done():
 			return
 		case <-time.After(freq):
-			for num, client := range g.Clients {
-				serverNum := num
-				logrus.Infof("Checking storage server %d", serverNum)
+			for addr, client := range g.Clients {
+				serverAddr := addr
+				logrus.Infof("Checking storage server %s", serverAddr)
 				tCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 				ok, err := client.Check(tCtx)
 				if !ok || err != nil {
-					logrus.Warningf("Storage server %d not serving", serverNum)
+					logrus.Warningf("Storage server %s not serving", serverAddr)
+					delete(g.Clients, serverAddr)
+					g.hashRing.RemoveNode(serverAddr)
 				}
 				cancel()
 				// TODO: strategy for dealing with dropping node
