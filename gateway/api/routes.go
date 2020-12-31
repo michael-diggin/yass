@@ -13,7 +13,7 @@ import (
 
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) != g.numServers {
+	if len(g.Clients) < g.numServers-1 {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
@@ -87,7 +87,7 @@ func getValueFromRequests(resps chan internalResponse, n int, cancel context.Can
 
 // Set handles the Setting of a key value pair
 func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) != g.numServers {
+	if len(g.Clients) < g.numServers-1 {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
@@ -142,7 +142,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 // Delete handles the removal of a value for a given key
 func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) != g.numServers {
+	if len(g.Clients) < g.numServers-1 {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
