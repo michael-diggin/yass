@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"hash/fnv"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/michael-diggin/yass/models"
@@ -25,17 +25,13 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash := getHashOfKey(key)
-	server := hash % g.numServers
-	follower := (server + 1) % g.numServers
-	g.mu.RLock()
-	client := g.Clients[server]
-	followerClient := g.Clients[follower]
-	g.mu.RUnlock()
+	clientIDs, err := g.hashRing.GetN(key, g.replicas)
+	if err != nil {
+		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
+	}
 
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
-	var err error
 	var value interface{}
 
 	type internalResponse struct {
@@ -43,36 +39,40 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		err   error
 	}
 
-	resps := make(chan internalResponse, 2)
-	go func() {
-		pair, err := client.GetValue(ctx, key, models.MainReplica)
-		if err != nil {
-			resps <- internalResponse{err: err}
-			return
-		}
-		resps <- internalResponse{value: pair.Value, err: err}
-	}()
-	go func() {
-		pair, err := followerClient.GetValue(ctx, key, models.BackupReplica)
-		if err != nil {
-			resps <- internalResponse{err: err}
-			return
-		}
-		resps <- internalResponse{value: pair.Value, err: err}
-	}()
+	resps := make(chan internalResponse, len(clientIDs))
+	for _, addr := range clientIDs {
+		g.mu.RLock()
+		client := g.Clients[addr]
+		g.mu.RUnlock()
+		go func() {
+			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			defer cancel()
+			pair, err := client.GetValue(subctx, key, models.MainReplica)
+			if err != nil {
+				resps <- internalResponse{err: err}
+				return
+			}
+			resps <- internalResponse{value: pair.Value, err: err}
+		}()
+	}
 
-	for i := 0; i < 2; i++ {
+	var retErr error
+	valMap := make(map[interface{}]int)
+	for i := 0; i < len(clientIDs); i++ {
 		r := <-resps
-		if r.value != nil {
+		valMap[r.value]++
+		if r.err != nil && retErr == nil {
+			retErr = r.err
+		}
+		if valMap[r.value] > (g.replicas-1)/2 {
 			value = r.value
 			cancel()
 			break
 		}
-		err = r.err
 	}
 
-	if value == nil && err != nil {
-		respondWithError(w, err)
+	if value == nil && retErr != nil {
+		respondWithError(w, retErr)
 		return
 	}
 
@@ -96,23 +96,41 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash := getHashOfKey(pair.Key)
-	server := hash % g.numServers
-	follower := (server + 1) % g.numServers
-	g.mu.RLock()
-	client := g.Clients[server]
-	followerClient := g.Clients[follower]
-	g.mu.RUnlock()
-
-	err = client.SetValue(r.Context(), &pair, models.MainReplica)
+	clientIDs, err := g.hashRing.GetN(pair.Key, g.replicas)
 	if err != nil {
-		respondWithError(w, err)
-		return
+		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
-	// TODO: This should be done async
-	err = followerClient.SetValue(r.Context(), &pair, models.BackupReplica)
-	if err != nil {
-		respondWithError(w, err)
+
+	ctx := r.Context()
+
+	resps := make(chan error, len(clientIDs))
+	for _, addr := range clientIDs {
+		g.mu.RLock()
+		client := g.Clients[addr]
+		g.mu.RUnlock()
+		go func() {
+			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			resps <- client.SetValue(subctx, &pair, models.MainReplica)
+			cancel()
+		}()
+	}
+
+	var retErr error
+	var nilErrs int
+	for i := 0; i < len(clientIDs); i++ {
+		err := <-resps
+		if err != nil && retErr == nil {
+			retErr = err
+			continue
+		}
+		nilErrs++
+		if nilErrs > (g.replicas-1)/2 {
+			retErr = nil
+			break
+		}
+	}
+	if retErr != nil {
+		respondWithError(w, retErr)
 		return
 	}
 
@@ -134,33 +152,45 @@ func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash := getHashOfKey(key)
-	server := hash % g.numServers
-	follower := (server + 1) % g.numServers
-	g.mu.RLock()
-	client := g.Clients[server]
-	followerClient := g.Clients[follower]
-	g.mu.RUnlock()
+	clientIDs, err := g.hashRing.GetN(key, g.replicas)
+	if err != nil {
+		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
+	}
 
 	ctx := r.Context()
 
-	err := client.DelValue(ctx, key, models.MainReplica)
-	if err != nil {
-		respondWithError(w, err)
-		return
+	resps := make(chan error, len(clientIDs))
+	for _, addr := range clientIDs {
+		g.mu.RLock()
+		client := g.Clients[addr]
+		g.mu.RUnlock()
+		go func() {
+			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			resps <- client.DelValue(subctx, key, models.MainReplica)
+			cancel()
+		}()
 	}
-	err = followerClient.DelValue(ctx, key, models.BackupReplica)
-	if err != nil {
-		respondWithError(w, err)
+
+	var retErr error
+	var nilErrs int
+	for i := 0; i < len(clientIDs); i++ {
+		err := <-resps
+		if err != nil && retErr == nil {
+			retErr = err
+			continue
+		}
+		nilErrs++
+		if nilErrs > (g.replicas-1)/2 {
+			retErr = nil
+			break
+		}
+	}
+
+	if retErr != nil {
+		respondWithError(w, retErr)
 		return
 	}
 
 	respondWithJSON(w, http.StatusOK, "key deleted")
 	return
-}
-
-func getHashOfKey(key string) int {
-	h := fnv.New32a()
-	h.Write([]byte(key))
-	return int(h.Sum32())
 }

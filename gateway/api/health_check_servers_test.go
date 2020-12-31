@@ -26,8 +26,8 @@ func TestPingStorageServers(t *testing.T) {
 			return true, nil
 		})
 
-	g.Clients[0] = mockClientOne
-	g.Clients[1] = mockClientTwo
+	g.Clients["0"] = mockClientOne
+	g.Clients["1"] = mockClientTwo
 
 	g.PingStorageServers(ctx, 50*time.Millisecond)
 }

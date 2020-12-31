@@ -38,8 +38,8 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	g.mu.Lock()
-	currentNumber := len(g.Clients)
-	g.Clients[currentNumber] = client
+	g.Clients[addr] = client
+	g.hashRing.AddNode(addr)
 	g.mu.Unlock()
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
 	return
