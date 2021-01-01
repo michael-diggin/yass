@@ -28,7 +28,6 @@ func NewGateway(numServers int, srv *http.Server) *Gateway {
 	router := mux.NewRouter()
 	router.HandleFunc("/get/{key}", g.Get).Methods("GET")
 	router.HandleFunc("/set", g.Set).Methods("POST")
-	router.HandleFunc("/delete/{key}", g.Delete).Methods("DELETE")
 	router.HandleFunc("/register", g.RegisterCacheServer).Methods("POST")
 
 	g.Server = srv
@@ -38,7 +37,7 @@ func NewGateway(numServers int, srv *http.Server) *Gateway {
 	g.Clients = make(map[string]GrpcClient)
 	g.numServers = numServers
 	g.mu = sync.RWMutex{}
-	g.hashRing = hashring.New(3)
+	g.hashRing = hashring.New(10)
 	g.replicas = 2
 	return &g
 }

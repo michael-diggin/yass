@@ -28,8 +28,8 @@ func (g *Gateway) PingStorageServers(ctx context.Context, freq time.Duration) {
 				cancel()
 				// TODO: strategy for dealing with dropping node
 				// idea: post `instruction` for replicate data from replica A to new replica
-				// in RegisterServer, execute instruction to batch get/set data on new server
-				// before it is allowed to recieve more traffic
+				// hashRimg.RemoveNode returns instruction (ranges of hash, nodes that they are on, need to go too?)
+				// and the nodes themselves can request the data from other nodes?
 			}
 		}
 	}

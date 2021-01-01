@@ -100,6 +100,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get node Addrs from hash ring
 	clientIDs, err := g.hashRing.GetN(pair.Key, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
@@ -107,90 +108,41 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	resps := make(chan error, len(clientIDs))
+	// synchronously set the key/value on the storage servers
+	revertSetAddr := []string{}
+	var returnErr error
 	for _, addr := range clientIDs {
 		g.mu.RLock()
 		client := g.Clients[addr]
 		g.mu.RUnlock()
-		go func() {
-			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-			resps <- client.SetValue(subctx, &pair, models.MainReplica)
-			cancel()
-		}()
-	}
-
-	var retErr error
-	for i := 0; i < len(clientIDs); i++ {
-		err := <-resps
-		if err == nil {
-			retErr = nil
+		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		err := client.SetValue(subctx, &pair, models.MainReplica)
+		cancel()
+		if err != nil {
+			returnErr = err
 			break
 		}
-		if retErr == nil {
-			retErr = err
-			continue
-		}
+		revertSetAddr = append(revertSetAddr, addr)
 	}
-	if retErr != nil {
-		respondWithError(w, retErr)
+
+	if returnErr != nil {
+		logrus.Errorf("Encountered error: %v", returnErr)
+		// revert any changes that were made before an error
+		for _, addr := range revertSetAddr {
+			g.mu.RLock()
+			client := g.Clients[addr]
+			g.mu.RUnlock()
+			go func() {
+				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+				client.DelValue(subctx, pair.Key, models.MainReplica)
+				cancel()
+			}()
+		}
+
+		respondWithError(w, returnErr)
 		return
 	}
 
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added")
-	return
-}
-
-// Delete handles the removal of a value for a given key
-func (g *Gateway) Delete(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) < g.numServers-1 {
-		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
-		return
-	}
-	logrus.Debug("Serving Delete request")
-	vars := mux.Vars(r)
-	key, ok := vars["key"]
-	if !ok {
-		respondWithErrorCode(w, http.StatusBadRequest, "no key supplied with request")
-		return
-	}
-
-	clientIDs, err := g.hashRing.GetN(key, g.replicas)
-	if err != nil {
-		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
-	}
-
-	ctx := r.Context()
-
-	resps := make(chan error, len(clientIDs))
-	for _, addr := range clientIDs {
-		g.mu.RLock()
-		client := g.Clients[addr]
-		g.mu.RUnlock()
-		go func() {
-			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-			resps <- client.DelValue(subctx, key, models.MainReplica)
-			cancel()
-		}()
-	}
-
-	var retErr error
-	for i := 0; i < len(clientIDs); i++ {
-		err := <-resps
-		if err == nil {
-			retErr = nil
-			break
-		}
-		if retErr == nil {
-			retErr = err
-			continue
-		}
-	}
-
-	if retErr != nil {
-		respondWithError(w, retErr)
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, "key deleted")
 	return
 }

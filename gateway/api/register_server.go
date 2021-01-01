@@ -40,6 +40,8 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 	g.mu.Lock()
 	g.Clients[addr] = client
 	g.hashRing.AddNode(addr)
+	// TODO: add rebalance instruction when new node is added
+	// new node requests appropriate data from other nodes
 	g.mu.Unlock()
 	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
 	return
