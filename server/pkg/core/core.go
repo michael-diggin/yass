@@ -107,7 +107,7 @@ func (s server) Get(ctx context.Context, req *pb.GetRequest) (*pb.Pair, error) {
 
 // Delete is the endpoint to delete a key/value if it is already in the storage
 func (s server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Null, error) {
-	logrus.Info("Serving Delete request")
+	logrus.Debug("Serving Delete request")
 	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}

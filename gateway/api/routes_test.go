@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,13 +25,16 @@ func TestGatewaySet(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClient := mocks.NewMockGrpcClient(ctrl)
-		g := NewGateway(1, &http.Server{})
-		g.replicas = 1
+		mockClientOne := mocks.NewMockGrpcClient(ctrl)
+		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(2, &http.Server{})
 
-		mockClient.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(nil)
-		g.Clients["0"] = mockClient
+		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(nil)
+		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(nil)
+		g.Clients["0"] = mockClientOne
 		g.hashRing.AddNode("0")
+		g.Clients["1"] = mockClientTwo
+		g.hashRing.AddNode("1")
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -51,14 +53,18 @@ func TestGatewaySet(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClient := mocks.NewMockGrpcClient(ctrl)
-		g := NewGateway(1, &http.Server{})
-		g.replicas = 1
+		mockClientOne := mocks.NewMockGrpcClient(ctrl)
+		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		g := NewGateway(2, &http.Server{})
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
-		mockClient.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(errMock)
-		g.Clients["0"] = mockClient
+		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(nil).AnyTimes()
+		mockClientOne.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil).AnyTimes()
+		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, models.MainReplica).Return(errMock)
+		g.Clients["0"] = mockClientOne
 		g.hashRing.AddNode("0")
+		g.Clients["1"] = mockClientTwo
+		g.hashRing.AddNode("1")
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
@@ -237,124 +243,4 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	require.Contains(t, resp["key"], key)
 	require.Contains(t, resp["value"], value)
 
-}
-
-func TestGatewayDelete(t *testing.T) {
-
-	t.Run("success", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := mocks.NewMockGrpcClient(ctrl)
-		g := NewGateway(1, &http.Server{})
-
-		key := "test-key"
-
-		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil)
-		g.Clients["0"] = mockClient
-		g.hashRing.AddNode("0")
-		g.replicas = 1
-
-		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
-
-		require.Equal(t, rec.Code, http.StatusOK)
-
-		var resp string
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp, "deleted")
-	})
-
-	t.Run("internal error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := mocks.NewMockGrpcClient(ctrl)
-		g := NewGateway(1, &http.Server{})
-		g.replicas = 1
-
-		key := "test-key"
-		errMock := status.Error(codes.Internal, "internal server error")
-
-		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errMock)
-		g.Clients["0"] = mockClient
-		g.hashRing.AddNode("0")
-
-		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
-
-		require.Equal(t, rec.Code, http.StatusInternalServerError)
-
-		var resp map[string]interface{}
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp["error"], "wrong")
-	})
-
-	t.Run("non grpc error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := mocks.NewMockGrpcClient(ctrl)
-		g := NewGateway(1, &http.Server{})
-		g.replicas = 1
-
-		key := "test-key"
-		errMock := errors.New("network issues")
-
-		mockClient.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errMock)
-		g.Clients["0"] = mockClient
-		g.hashRing.AddNode("0")
-
-		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
-
-		require.Equal(t, rec.Code, http.StatusInternalServerError)
-
-		var resp map[string]interface{}
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp["error"], "network")
-	})
-}
-
-func TestGatewayDeleteWithMultipleClients(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
-	mockClientThree := mocks.NewMockGrpcClient(ctrl)
-	g := NewGateway(3, &http.Server{})
-
-	key := "test-get-key"
-
-	mockClientOne.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil).AnyTimes()
-	mockClientTwo.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(errors.New("test error")).AnyTimes()
-	mockClientThree.EXPECT().DelValue(gomock.Any(), key, models.MainReplica).Return(nil).AnyTimes()
-
-	g.Clients["0"] = mockClientOne
-	g.Clients["1"] = mockClientTwo
-	g.Clients["2"] = mockClientThree
-	g.hashRing.AddNode("0")
-	g.hashRing.AddNode("1")
-	g.hashRing.AddNode("2")
-
-	t.Run("success", func(t *testing.T) {
-
-		req, _ := http.NewRequest("DELETE", "/delete/"+key, nil)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
-
-		require.Equal(t, rec.Code, http.StatusOK)
-
-		var resp string
-		json.Unmarshal(rec.Body.Bytes(), &resp)
-		require.Contains(t, resp, "deleted")
-	})
 }
