@@ -95,3 +95,27 @@ func TestHashRingGetN(t *testing.T) {
 		require.True(t, errors.Is(err, ErrNotEnoughNodes))
 	})
 }
+
+func TestHashRingRebalanceInstruction(t *testing.T) {
+	r := New(3)
+	r.AddNode("server1")
+	r.AddNode("server2")
+	r.AddNode("server3")
+
+	require.Equal(t, 9, r.Nodes.Len())
+
+	t.Run("with valid node id", func(t *testing.T) {
+		instructions, err := r.RebalanceInstructions("server2")
+		require.NoError(t, err)
+		require.Len(t, instructions, 3)
+		require.Equal(t, "server1", instructions[0].FromNode)
+		require.Equal(t, "server3", instructions[1].FromNode)
+		require.Equal(t, "server3", instructions[2].FromNode)
+	})
+
+	t.Run("error when not valid node id", func(t *testing.T) {
+		_, err := r.RebalanceInstructions("server4")
+		require.Error(t, err)
+	})
+
+}
