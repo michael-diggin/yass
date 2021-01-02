@@ -67,7 +67,7 @@ func (s server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) {
 	if pair.Key == "" || pair.Value == nil {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set an empty key or value")
 	}
-	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -91,7 +91,7 @@ func (s server) Get(ctx context.Context, req *pb.GetRequest) (*pb.Pair, error) {
 	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
 	}
-	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -118,7 +118,7 @@ func (s server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Null, er
 	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}
-	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -131,9 +131,9 @@ func (s server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Null, er
 	}
 }
 
-func (s server) getStoreForRequest(idx int) (model.Service, error) {
-	if idx >= len(s.DataStores) {
+func (s server) getStoreForRequest(idx int32) (model.Service, error) {
+	if int(idx) >= len(s.DataStores) {
 		return nil, errors.New("requested a datastore that does not exist")
 	}
-	return s.DataStores[idx], nil
+	return s.DataStores[int(idx)], nil
 }

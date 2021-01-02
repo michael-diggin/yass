@@ -14,7 +14,7 @@ func TestHashRingSetUpNodes(t *testing.T) {
 
 		require.Equal(t, 1, r.Nodes.Len())
 		require.Equal(t, "server1", r.Nodes[0].ID)
-		require.Equal(t, uint32(0xdd6101cf), r.Nodes[0].HashID)
+		require.Equal(t, uint32(0x7f0dcc4), r.Nodes[0].HashID)
 	})
 
 	t.Run("with weight greater than one", func(t *testing.T) {
@@ -78,15 +78,20 @@ func TestHashRingGetN(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Len(t, nodeIDs, 1)
-		require.Equal(t, "server2", nodeIDs[0])
+		require.Equal(t, "server1", nodeIDs[0].ID)
+		require.Equal(t, 0, nodeIDs[0].Idx)
 	})
 
 	t.Run("get two", func(t *testing.T) {
-		nodeIDs, err := r.GetN(hashkey, 2)
-
+		hashkey := uint32(3730899808)
+		nodes, err := r.GetN(hashkey, 2)
 		require.NoError(t, err)
-		require.Len(t, nodeIDs, 2)
-		require.ElementsMatch(t, nodeIDs, []string{"server2", "server3"})
+		require.Len(t, nodes, 2)
+
+		nodeIDs := []string{nodes[0].ID, nodes[1].ID}
+		require.ElementsMatch(t, nodeIDs, []string{"server1", "server3"})
+		require.Equal(t, 0, nodes[0].Idx)
+		require.Equal(t, 2, nodes[1].Idx)
 	})
 
 	t.Run("errors if asking for too many servers", func(t *testing.T) {
@@ -94,28 +99,4 @@ func TestHashRingGetN(t *testing.T) {
 		require.Error(t, err)
 		require.True(t, errors.Is(err, ErrNotEnoughNodes))
 	})
-}
-
-func TestHashRingRebalanceInstruction(t *testing.T) {
-	r := New(3)
-	r.AddNode("server1")
-	r.AddNode("server2")
-	r.AddNode("server3")
-
-	require.Equal(t, 9, r.Nodes.Len())
-
-	t.Run("with valid node id", func(t *testing.T) {
-		instructions, err := r.RebalanceInstructions("server2")
-		require.NoError(t, err)
-		require.Len(t, instructions, 3)
-		require.Equal(t, "server1", instructions[0].FromNode)
-		require.Equal(t, "server3", instructions[1].FromNode)
-		require.Equal(t, "server3", instructions[2].FromNode)
-	})
-
-	t.Run("error when not valid node id", func(t *testing.T) {
-		_, err := r.RebalanceInstructions("server4")
-		require.Error(t, err)
-	})
-
 }

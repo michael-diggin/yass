@@ -22,10 +22,10 @@ func TestClientSetValue(t *testing.T) {
 
 	mockgRPC := mocks.NewMockStorageClient(ctrl)
 	pair := &pb.Pair{Key: key, Hash: hash, Value: []byte(`"value"`)}
-	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pair}).Return(nil, nil)
+	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: int32(0), Pair: pair}).Return(nil, nil)
 	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
 
-	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Hash: hash, Value: val}, models.MainReplica)
+	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Hash: hash, Value: val}, 0)
 	require.NoError(t, err)
 }
 
@@ -47,11 +47,11 @@ func TestClientGetValue(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockgRPC := mocks.NewMockStorageClient(ctrl)
-			mockgRPC.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: pb.Replica_MAIN, Key: tc.key}).
+			mockgRPC.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: int32(0), Key: tc.key}).
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
 			cc := StorageClient{grpcClient: mockgRPC, conn: nil}
-			resp, err := cc.GetValue(context.Background(), tc.key, models.MainReplica)
+			resp, err := cc.GetValue(context.Background(), tc.key, 0)
 
 			require.Equal(t, err, tc.err)
 			if tc.value != nil {
@@ -66,10 +66,10 @@ func TestClientDelValue(t *testing.T) {
 	defer ctrl.Finish()
 	mockgRPC := mocks.NewMockStorageClient(ctrl)
 	key := "test"
-	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: key}).
+	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: int32(0), Key: key}).
 		Return(&pb.Null{}, nil)
 	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
-	err := cc.DelValue(context.Background(), key, models.MainReplica)
+	err := cc.DelValue(context.Background(), key, 0)
 
 	require.NoError(t, err)
 }

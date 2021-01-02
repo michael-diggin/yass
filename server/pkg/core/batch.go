@@ -14,7 +14,7 @@ import (
 // BatchGet returns all of the stored data in a given replica
 func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
 	logrus.Info("Serving BatchGet request")
-	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -40,7 +40,7 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 // BatchSet sets the values into the store
 func (s server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchSet request")
-	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

@@ -27,23 +27,26 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashkey := hashring.Hash(key)
-	clientIDs, err := g.hashRing.GetN(hashkey, g.replicas)
+	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
 
+	logrus.Infof("%v", nodes)
+
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
-	resps := make(chan internalResponse, len(clientIDs))
-	for _, addr := range clientIDs {
+	resps := make(chan internalResponse, len(nodes))
+	for _, node := range nodes {
+		n := node
 		g.mu.RLock()
-		client := g.Clients[addr]
+		client := g.Clients[n.ID]
 		g.mu.RUnlock()
 		go func() {
 			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
-			pair, err := client.GetValue(subctx, key, models.MainReplica)
+			pair, err := client.GetValue(subctx, key, n.Idx)
 			if err != nil {
 				resps <- internalResponse{err: err}
 				return
@@ -52,7 +55,7 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
-	value, retErr := getValueFromRequests(resps, len(clientIDs), cancel)
+	value, retErr := getValueFromRequests(resps, len(nodes), cancel)
 
 	if value == nil && retErr != nil {
 		respondWithError(w, retErr)
@@ -103,7 +106,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 
 	// get node Addrs from hash ring
 	hashkey := hashring.Hash(pair.Key)
-	clientIDs, err := g.hashRing.GetN(hashkey, g.replicas)
+	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
@@ -112,32 +115,33 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// synchronously set the key/value on the storage servers
-	revertSetAddr := []string{}
+	revertSetNodes := []hashring.Node{}
 	var returnErr error
-	for _, addr := range clientIDs {
+	for _, node := range nodes {
 		g.mu.RLock()
-		client := g.Clients[addr]
+		client := g.Clients[node.ID]
 		g.mu.RUnlock()
 		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-		err := client.SetValue(subctx, &pair, models.MainReplica)
+		err := client.SetValue(subctx, &pair, node.Idx)
 		cancel()
 		if err != nil {
 			returnErr = err
 			break
 		}
-		revertSetAddr = append(revertSetAddr, addr)
+		revertSetNodes = append(revertSetNodes, node)
 	}
 
 	if returnErr != nil {
 		logrus.Errorf("Encountered error: %v", returnErr)
 		// revert any changes that were made before an error
-		for _, addr := range revertSetAddr {
+		for _, node := range revertSetNodes {
+			n := node
 			g.mu.RLock()
-			client := g.Clients[addr]
+			client := g.Clients[n.ID]
 			g.mu.RUnlock()
 			go func() {
 				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-				client.DelValue(subctx, pair.Key, models.MainReplica)
+				client.DelValue(subctx, pair.Key, n.Idx)
 				cancel()
 			}()
 		}

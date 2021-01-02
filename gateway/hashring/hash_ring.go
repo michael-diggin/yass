@@ -37,7 +37,7 @@ func Hash(key string) uint32 {
 
 // vNodeID generates a string key for a virtual node.
 func vNodeID(id string, idx int) string {
-	return strconv.Itoa(idx) + id
+	return id + "-" + strconv.Itoa(idx)
 }
 
 // AddNode adds a node to the hash ring, including `Weight` virtual nodes
@@ -100,31 +100,31 @@ func (r *Ring) RemoveNode(id string) error {
 }
 
 // Get returns the nearest node greater than the hash of key
-func (r *Ring) Get(hashkey uint32) string {
+func (r *Ring) Get(hashkey uint32) Node {
 	i := r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0
 	}
-	return r.Nodes[i].ID
+	return r.Nodes[i]
 }
 
 // GetN returns the N nearest unique nodes greater than the hash of the key
-func (r *Ring) GetN(hashkey uint32, n int) ([]string, error) {
+func (r *Ring) GetN(hashkey uint32, n int) ([]Node, error) {
 	if n == 1 {
-		return []string{r.Get(hashkey)}, nil
+		return []Node{r.Get(hashkey)}, nil
 	}
 	if r.Nodes.Len()/r.Weight < n {
 		return nil, ErrNotEnoughNodes
 	}
 	var i int
 	nodeIDs := make(map[string]struct{})
-	output := []string{}
+	output := []Node{}
 	i = r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0
 	}
 	nodeIDs[r.Nodes[i].ID] = struct{}{}
-	output = append(output, r.Nodes[i].ID)
+	output = append(output, r.Nodes[i])
 	left := n - 1
 	for left > 0 {
 		i = i + 1
@@ -133,7 +133,7 @@ func (r *Ring) GetN(hashkey uint32, n int) ([]string, error) {
 		}
 		if _, ok := nodeIDs[r.Nodes[i].ID]; !ok {
 			nodeIDs[r.Nodes[i].ID] = struct{}{}
-			output = append(output, r.Nodes[i].ID)
+			output = append(output, r.Nodes[i])
 			left--
 		}
 	}

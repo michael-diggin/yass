@@ -47,7 +47,7 @@ func TestSettoStorage(t *testing.T) {
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
 			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}
-			req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: testKV}
+			req := &pb.SetRequest{Replica: 0, Pair: testKV}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Set(ctx, req)
@@ -91,7 +91,7 @@ func TestGetFromStorage(t *testing.T) {
 			}
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
-			req := &pb.GetRequest{Replica: pb.Replica_MAIN, Key: tc.key}
+			req := &pb.GetRequest{Replica: 0, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.Get(ctx, req)
 			cancel()
@@ -137,7 +137,7 @@ func TestDeleteKeyValue(t *testing.T) {
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
 
-			req := &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: tc.key}
+			req := &pb.DeleteRequest{Replica: 0, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Delete(ctx, req)
 			cancel()
@@ -168,7 +168,7 @@ func TestDeleteKeyValueFromBackup(t *testing.T) {
 
 	srv := server{DataStores: []model.Service{mockMainStore, mockStore}}
 
-	req := &pb.DeleteRequest{Replica: pb.Replica_BACKUP, Key: key}
+	req := &pb.DeleteRequest{Replica: 1, Key: key}
 	ctx := context.Background()
 	_, err := srv.Delete(ctx, req)
 	e, ok := status.FromError(err)

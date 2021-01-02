@@ -64,14 +64,3 @@ func TestToProtoPairWithBadData(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, pbPair)
 }
-
-func TestToReplica(t *testing.T) {
-	t.Run("main", func(t *testing.T) {
-		rep := ToReplica(models.MainReplica)
-		require.Equal(t, Replica_MAIN, rep)
-	})
-	t.Run("backup", func(t *testing.T) {
-		rep := ToReplica(models.BackupReplica)
-		require.Equal(t, Replica_BACKUP, rep)
-	})
-}
