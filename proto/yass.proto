@@ -35,7 +35,8 @@ message DeleteRequest {
 
 message Pair {
     string key = 1;
-    bytes value = 2;
+    uint32 hash = 2;
+    bytes value = 3;
 }
 
 message Key {

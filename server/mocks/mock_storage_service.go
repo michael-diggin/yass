@@ -34,10 +34,10 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // BatchGet mocks base method
-func (m *MockService) BatchGet() <-chan map[string]interface{} {
+func (m *MockService) BatchGet() <-chan map[string]model.Data {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BatchGet")
-	ret0, _ := ret[0].(<-chan map[string]interface{})
+	ret0, _ := ret[0].(<-chan map[string]model.Data)
 	return ret0
 }
 
@@ -48,7 +48,7 @@ func (mr *MockServiceMockRecorder) BatchGet() *gomock.Call {
 }
 
 // BatchSet mocks base method
-func (m *MockService) BatchSet(arg0 map[string]interface{}) <-chan error {
+func (m *MockService) BatchSet(arg0 map[string]model.Data) <-chan error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BatchSet", arg0)
 	ret0, _ := ret[0].(<-chan error)
@@ -116,15 +116,15 @@ func (mr *MockServiceMockRecorder) Ping() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockService) Set(arg0 string, arg1 interface{}) <-chan *model.StorageResponse {
+func (m *MockService) Set(arg0 string, arg1 uint32, arg2 interface{}) <-chan *model.StorageResponse {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", arg0, arg1)
+	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2)
 	ret0, _ := ret[0].(<-chan *model.StorageResponse)
 	return ret0
 }
 
 // Set indicates an expected call of Set
-func (mr *MockServiceMockRecorder) Set(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) Set(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockService)(nil).Set), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockService)(nil).Set), arg0, arg1, arg2)
 }

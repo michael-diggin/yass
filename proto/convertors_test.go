@@ -8,11 +8,12 @@ import (
 )
 
 func TestToModelPair(t *testing.T) {
-	pbPair := Pair{Key: "test-key", Value: []byte(`"test-value"`)}
+	pbPair := Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
 	modelPair, err := pbPair.ToModel()
 
 	require.NoError(t, err)
 	require.Equal(t, "test-key", modelPair.Key)
+	require.Equal(t, uint32(100), modelPair.Hash)
 	require.Equal(t, "test-value", modelPair.Value)
 }
 
@@ -22,6 +23,7 @@ func TestToModelPairWithNoValues(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "", modelPair.Key)
+	require.Equal(t, uint32(0), modelPair.Hash)
 	require.Nil(t, modelPair.Value)
 }
 
@@ -34,13 +36,14 @@ func TestToModelPairWithBadData(t *testing.T) {
 }
 
 func TestToProtoPair(t *testing.T) {
-	pbPair := Pair{Key: "test-key", Value: []byte(`"test-value"`)}
-	modelPair := &models.Pair{Key: "test-key", Value: "test-value"}
+	pbPair := Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
+	modelPair := &models.Pair{Key: "test-key", Hash: uint32(100), Value: "test-value"}
 
 	pair, err := ToPair(modelPair)
 
 	require.NoError(t, err)
 	require.Equal(t, pbPair.Key, pair.Key)
+	require.Equal(t, pbPair.Hash, pair.Hash)
 	require.Equal(t, pbPair.Value, pair.Value)
 }
 
@@ -50,6 +53,7 @@ func TestToProtoPairWithNoValues(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, "", pbPair.Key)
+	require.Equal(t, uint32(0), pbPair.Hash)
 	require.Nil(t, modelPair.Value)
 }
 

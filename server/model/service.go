@@ -1,5 +1,11 @@
 package model
 
+// Data holds the value interface and the hash value of the key
+type Data struct {
+	Value interface{}
+	Hash  uint32
+}
+
 // StorageResponse encodes key/values and the errors from the storage layer
 type StorageResponse struct {
 	Key   string
@@ -14,8 +20,8 @@ type Service interface {
 	Set(string, uint32, interface{}) <-chan *StorageResponse
 	Delete(string) <-chan *StorageResponse
 
-	BatchGet() <-chan map[string]interface{}
-	BatchSet(map[string]interface{}) <-chan error
+	BatchGet() <-chan map[string]Data
+	BatchSet(map[string]Data) <-chan error
 
 	Close()
 }

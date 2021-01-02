@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/michael-diggin/yass/server/errors"
+	"github.com/michael-diggin/yass/server/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -104,13 +105,13 @@ func TestBatchGet(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	ser.store["test-key-1"] = Data{value: "value-1", hash: uint32(100)}
-	ser.store["test-key-2"] = Data{value: 2, hash: uint32(101)}
+	ser.store["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
+	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
 
 	data := <-ser.BatchGet()
 	r.Len(data, 2)
-	r.Equal(data["test-key-1"], Data{value: "value-1", hash: uint32(100)})
-	r.Equal(data["test-key-2"], Data{value: 2, hash: uint32(101)})
+	r.Equal(data["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
+	r.Equal(data["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
 }
 
 func TestBatchSet(t *testing.T) {
@@ -118,13 +119,13 @@ func TestBatchSet(t *testing.T) {
 	ser := New()
 	defer ser.Close()
 
-	data := make(map[string]Data)
-	data["test-key-1"] = Data{value: "value-1", hash: uint32(100)}
-	data["test-key-2"] = Data{value: 2, hash: uint32(101)}
+	data := make(map[string]model.Data)
+	data["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
+	data["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
 
 	err := <-ser.BatchSet(data)
 	r.NoError(err)
 	r.Len(ser.store, 2)
-	r.Equal(ser.store["test-key-1"], Data{value: "value-1", hash: uint32(100)})
-	r.Equal(ser.store["test-key-2"], Data{value: 2, hash: uint32(101)})
+	r.Equal(ser.store["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
+	r.Equal(ser.store["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
 }

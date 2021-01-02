@@ -21,12 +21,13 @@ func TestSettoStorage(t *testing.T) {
 	tt := []struct {
 		name    string
 		key     string
+		hash    uint32
 		value   []byte
 		errCode codes.Code
 		timeout time.Duration
 	}{
-		{"valid case", "newKey", []byte(`"newValue"`), codes.OK, time.Second},
-		{"already set key", "testKey", []byte(`"testVal"`), codes.AlreadyExists, time.Second},
+		{"valid case", "newKey", uint32(100), []byte(`"newValue"`), codes.OK, time.Second},
+		{"already set key", "testKey", uint32(101), []byte(`"testVal"`), codes.AlreadyExists, time.Second},
 	}
 
 	for _, tc := range tt {
@@ -42,10 +43,10 @@ func TestSettoStorage(t *testing.T) {
 				Err:   status.Error(tc.errCode, "")}
 			close(resp)
 
-			mockMainStore.EXPECT().Set(tc.key, gomock.Any()).Return(resp)
+			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any()).Return(resp)
 
 			srv := server{MainReplica: mockMainStore}
-			testKV := &pb.Pair{Key: tc.key, Value: tc.value}
+			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}
 			req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: testKV}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)

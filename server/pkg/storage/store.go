@@ -7,21 +7,15 @@ import (
 	"github.com/michael-diggin/yass/server/model"
 )
 
-// Data holds the value interface and the hash value of the key
-type Data struct {
-	value interface{}
-	hash  uint32
-}
-
 // Service implements the model.Service interface
 type Service struct {
-	store map[string]Data
+	store map[string]model.Data
 	mu    sync.RWMutex
 }
 
 // New returns an instance of Service
 func New() *Service {
-	store := make(map[string]Data)
+	store := make(map[string]model.Data)
 	return &Service{store: store, mu: sync.RWMutex{}}
 }
 
@@ -37,7 +31,7 @@ func (s *Service) Ping() error {
 func (s *Service) Set(key string, hash uint32, value interface{}) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
-		data := Data{value: value, hash: hash}
+		data := model.Data{Value: value, Hash: hash}
 		s.mu.Lock()
 		err := setValue(s.store, key, data)
 		s.mu.Unlock()
@@ -47,7 +41,7 @@ func (s *Service) Set(key string, hash uint32, value interface{}) <-chan *model.
 	return respChan
 }
 
-func setValue(store map[string]Data, key string, data Data) error {
+func setValue(store map[string]model.Data, key string, data model.Data) error {
 	if _, ok := store[key]; ok {
 		return errors.AlreadySet{Key: key}
 	}
@@ -68,12 +62,12 @@ func (s *Service) Get(key string) <-chan *model.StorageResponse {
 	return respChan
 }
 
-func getValue(store map[string]Data, key string) (interface{}, error) {
+func getValue(store map[string]model.Data, key string) (interface{}, error) {
 	data, ok := store[key]
 	if !ok {
 		return nil, errors.NotFound{Key: key}
 	}
-	return data.value, nil
+	return data.Value, nil
 }
 
 // Delete removes a key from the store
@@ -111,7 +105,7 @@ func (s *Service) BatchGet() <-chan map[string]interface{} {
 }
 
 // BatchSet sets all of the passed data to the data store
-func (s *Service) BatchSet(newData map[string]Data) <-chan error {
+func (s *Service) BatchSet(newData map[string]model.Data) <-chan error {
 	resp := make(chan error)
 	go func() {
 		s.mu.Lock()
