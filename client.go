@@ -86,6 +86,23 @@ func (c *StorageClient) BatchSet(ctx context.Context, replica int, data interfac
 	return err
 }
 
+// BatchSend sends a batch of data where the keys lie between the hash values from
+// node to another node
+// it is used for rebalancing partitions and repopulating failed nodes
+func (c *StorageClient) BatchSend(ctx context.Context, replica, toReplica int, addr string,
+	low, high uint32) error {
+	req := &pb.BatchSendRequest{
+		Replica:   int32(replica),
+		Address:   addr,
+		ToReplica: int32(toReplica),
+		Low:       low,
+		High:      high,
+		Delete:    true,
+	}
+	_, err := c.grpcClient.BatchSend(ctx, req)
+	return err
+}
+
 // BatchGet returns a batch of data
 func (c *StorageClient) BatchGet(ctx context.Context, replica int) (interface{}, error) {
 	req := &pb.BatchGetRequest{Replica: int32(replica)}

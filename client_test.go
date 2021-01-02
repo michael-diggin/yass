@@ -103,3 +103,16 @@ func TestBatchSet(t *testing.T) {
 	err := cc.BatchSet(context.Background(), 1, []*pb.Pair{testPair})
 	require.NoError(t, err)
 }
+
+func TestBatchSend(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockgRPC := mocks.NewMockStorageClient(ctrl)
+	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 2,
+		Low: uint32(100), High: uint32(1000), Delete: true}
+	mockgRPC.EXPECT().BatchSend(gomock.Any(), req).
+		Return(&pb.Null{}, nil)
+	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	err := cc.BatchSend(context.Background(), 1, 2, "localhost:8081", uint32(100), uint32(1000))
+	require.NoError(t, err)
+}
