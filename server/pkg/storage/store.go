@@ -125,10 +125,22 @@ func (s *Service) BatchSet(newData map[string]model.Data) <-chan error {
 	go func() {
 		s.mu.Lock()
 		for key, data := range newData {
-			if _, ok := s.store[key]; ok {
-				continue
-			}
 			s.store[key] = data
+		}
+		s.mu.Unlock()
+		resp <- nil
+		close(resp)
+	}()
+	return resp
+}
+
+// BatchDelete removes all the keys and data from the data store
+func (s *Service) BatchDelete(keys []string) <-chan error {
+	resp := make(chan error)
+	go func() {
+		s.mu.Lock()
+		for _, key := range keys {
+			delete(s.store, key)
 		}
 		s.mu.Unlock()
 		resp <- nil
