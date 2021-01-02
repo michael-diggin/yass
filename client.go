@@ -48,21 +48,19 @@ func (c StorageClient) Check(ctx context.Context) (bool, error) {
 }
 
 // SetValue sets a key/value pair in the cache
-func (c *StorageClient) SetValue(ctx context.Context, pair *models.Pair, rep models.Replica) error {
+func (c *StorageClient) SetValue(ctx context.Context, pair *models.Pair, rep int) error {
 	pbPair, err := pb.ToPair(pair)
 	if err != nil {
 		return err
 	}
-	replica := pb.ToReplica(rep)
-	req := &pb.SetRequest{Replica: replica, Pair: pbPair}
+	req := &pb.SetRequest{Replica: int32(rep), Pair: pbPair}
 	_, err = c.grpcClient.Set(ctx, req)
 	return err
 }
 
 // GetValue returns the value of a given key
-func (c *StorageClient) GetValue(ctx context.Context, key string, rep models.Replica) (*models.Pair, error) {
-	replica := pb.ToReplica(rep)
-	req := &pb.GetRequest{Replica: replica, Key: key}
+func (c *StorageClient) GetValue(ctx context.Context, key string, rep int) (*models.Pair, error) {
+	req := &pb.GetRequest{Replica: int32(rep), Key: key}
 	pbPair, err := c.grpcClient.Get(ctx, req)
 	if err != nil {
 		return nil, err
@@ -71,9 +69,8 @@ func (c *StorageClient) GetValue(ctx context.Context, key string, rep models.Rep
 }
 
 // DelValue deletes a key/value pair
-func (c *StorageClient) DelValue(ctx context.Context, key string, rep models.Replica) error {
-	replica := pb.ToReplica(rep)
-	req := &pb.DeleteRequest{Replica: replica, Key: key}
+func (c *StorageClient) DelValue(ctx context.Context, key string, rep int) error {
+	req := &pb.DeleteRequest{Replica: int32(rep), Key: key}
 	_, err := c.grpcClient.Delete(ctx, req)
 	return err
 }

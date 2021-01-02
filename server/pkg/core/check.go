@@ -13,9 +13,8 @@ import (
 func (s *server) Check(ctx context.Context, req *grpc_health_v1.HealthCheckRequest) (*grpc_health_v1.HealthCheckResponse, error) {
 	logrus.Info("Serving the Check request for health check")
 
-	errMain := s.MainReplica.Ping()
-	errBackup := s.BackupReplica.Ping()
-	if errMain != nil || errBackup != nil {
+	errMain := s.DataStores[0].Ping()
+	if errMain != nil {
 		return &grpc_health_v1.HealthCheckResponse{
 			Status: grpc_health_v1.HealthCheckResponse_NOT_SERVING,
 		}, status.Error(codes.Unavailable, "replicas not serving")
@@ -29,9 +28,8 @@ func (s *server) Check(ctx context.Context, req *grpc_health_v1.HealthCheckReque
 // Watch is the streaming healthcheck endpoint
 func (s *server) Watch(req *grpc_health_v1.HealthCheckRequest, server grpc_health_v1.Health_WatchServer) error {
 	logrus.Debug("Serving the Watch request for health check")
-	errMain := s.MainReplica.Ping()
-	errBackup := s.BackupReplica.Ping()
-	if errMain != nil || errBackup != nil {
+	errMain := s.DataStores[0].Ping()
+	if errMain != nil {
 		return server.Send(&grpc_health_v1.HealthCheckResponse{
 			Status: grpc_health_v1.HealthCheckResponse_NOT_SERVING,
 		})

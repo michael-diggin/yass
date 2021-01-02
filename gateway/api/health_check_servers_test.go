@@ -17,7 +17,7 @@ func TestPingStorageServers(t *testing.T) {
 
 	mockClientOne := mocks.NewMockGrpcClient(ctrl)
 	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
-	g := NewGateway(2, &http.Server{})
+	g := NewGateway(2, 1, &http.Server{})
 
 	mockClientOne.EXPECT().Check(gomock.Any()).Return(true, nil)
 	mockClientTwo.EXPECT().Check(gomock.Any()).

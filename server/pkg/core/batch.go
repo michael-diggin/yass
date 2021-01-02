@@ -14,8 +14,10 @@ import (
 // BatchGet returns all of the stored data in a given replica
 func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
 	logrus.Info("Serving BatchGet request")
-	stores := map[int32]model.Service{0: s.MainReplica, 1: s.BackupReplica}
-	store := stores[req.GetReplica()]
+	store, err := s.getStoreForRequest(req.GetReplica())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
@@ -38,8 +40,10 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 // BatchSet sets the values into the store
 func (s server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchSet request")
-	stores := map[int32]model.Service{0: s.MainReplica, 1: s.BackupReplica}
-	store := stores[req.GetReplica()]
+	store, err := s.getStoreForRequest(req.GetReplica())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")

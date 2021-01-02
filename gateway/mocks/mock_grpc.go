@@ -64,7 +64,7 @@ func (mr *MockGrpcClientMockRecorder) Close() *gomock.Call {
 }
 
 // DelValue mocks base method
-func (m *MockGrpcClient) DelValue(arg0 context.Context, arg1 string, arg2 models.Replica) error {
+func (m *MockGrpcClient) DelValue(arg0 context.Context, arg1 string, arg2 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DelValue", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -78,7 +78,7 @@ func (mr *MockGrpcClientMockRecorder) DelValue(arg0, arg1, arg2 interface{}) *go
 }
 
 // GetValue mocks base method
-func (m *MockGrpcClient) GetValue(arg0 context.Context, arg1 string, arg2 models.Replica) (*models.Pair, error) {
+func (m *MockGrpcClient) GetValue(arg0 context.Context, arg1 string, arg2 int) (*models.Pair, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetValue", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Pair)
@@ -93,7 +93,7 @@ func (mr *MockGrpcClientMockRecorder) GetValue(arg0, arg1, arg2 interface{}) *go
 }
 
 // SetValue mocks base method
-func (m *MockGrpcClient) SetValue(arg0 context.Context, arg1 *models.Pair, arg2 models.Replica) error {
+func (m *MockGrpcClient) SetValue(arg0 context.Context, arg1 *models.Pair, arg2 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetValue", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

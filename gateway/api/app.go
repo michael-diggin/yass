@@ -22,7 +22,7 @@ type Gateway struct {
 }
 
 // NewGateway will initialize the application
-func NewGateway(numServers int, srv *http.Server) *Gateway {
+func NewGateway(numServers, weight int, srv *http.Server) *Gateway {
 	g := Gateway{}
 
 	router := mux.NewRouter()
@@ -37,7 +37,7 @@ func NewGateway(numServers int, srv *http.Server) *Gateway {
 	g.Clients = make(map[string]GrpcClient)
 	g.numServers = numServers
 	g.mu = sync.RWMutex{}
-	g.hashRing = hashring.New(10)
+	g.hashRing = hashring.New(weight)
 	g.replicas = 2
 	return &g
 }

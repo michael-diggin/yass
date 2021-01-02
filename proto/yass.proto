@@ -13,23 +13,18 @@ service Storage {
     rpc BatchSet(BatchSetRequest) returns(Null){}
 }
 
-enum Replica {
-    MAIN = 0;
-    BACKUP = 1;
-}
-
 message SetRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     Pair pair = 2;
 }
 
 message GetRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     string key = 2;
 }
 
 message DeleteRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     string key = 2;
 }
 
@@ -57,13 +52,4 @@ message BatchGetRequest {
 message BatchGetResponse {
     int32 replica = 1;
     repeated Pair data = 2;
-}
-
-message PingResponse{
-    enum ServingStatus {
-        UNKNOWN = 0;
-        SERVING = 1;
-        NOT_SERVING = 2;
-      }
-      ServingStatus status = 1;
 }

@@ -29,7 +29,6 @@ func TestRunAndPingServer(t *testing.T) {
 	mockLeader := mocks.NewMockService(ctrl)
 	mockLeader.EXPECT().Ping().Return(nil)
 	mockFollower := mocks.NewMockService(ctrl)
-	mockFollower.EXPECT().Ping().Return(nil)
 
 	srv := New(lis, mockLeader, mockFollower)
 	srv.Start()

@@ -30,7 +30,7 @@ func TestBatchSettoStorage(t *testing.T) {
 			return nil
 		})
 
-	srv := server{MainReplica: mockStore}
+	srv := server{DataStores: []model.Service{mockStore}}
 
 	dataOne := &pb.Pair{Key: "key-1", Hash: uint32(100), Value: []byte(`"value-1"`)}
 	dataTwo := &pb.Pair{Key: "key-2", Hash: uint32(101), Value: []byte(`2`)}
@@ -57,7 +57,7 @@ func TestBatchGetFromStorage(t *testing.T) {
 
 	mockBackup.EXPECT().BatchGet(gomock.Any(), gomock.Any()).Return(resp)
 
-	srv := server{BackupReplica: mockBackup}
+	srv := server{DataStores: []model.Service{mockBackup, mockBackup}}
 
 	req := &pb.BatchGetRequest{Replica: 1}
 

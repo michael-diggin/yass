@@ -13,6 +13,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/michael-diggin/yass/server/model"
 	"github.com/michael-diggin/yass/server/pkg/core"
 	"github.com/michael-diggin/yass/server/pkg/storage"
 	"github.com/pkg/errors"
@@ -23,6 +24,7 @@ import (
 func main() {
 	port := flag.Int("p", 8080, "port for cache server to listen on")
 	gateway := flag.String("g", "localhost:8010", "location of the gateway server")
+	numStores := flag.Int("s", 10, "The number of data stores the server manages")
 	flag.Parse()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
@@ -31,10 +33,13 @@ func main() {
 	}
 
 	// set up cache
-	leader := storage.New()
-	follower := storage.New()
+	stores := make([]model.Service, *numStores)
+	for i := 0; i < *numStores; i++ {
+		store := storage.New()
+		stores[i] = store
+	}
 
-	srv := core.New(lis, leader, follower)
+	srv := core.New(lis, stores...)
 	defer srv.ShutDown()
 
 	ctx, cancel := context.WithCancel(context.Background())

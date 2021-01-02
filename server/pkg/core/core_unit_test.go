@@ -45,9 +45,9 @@ func TestSettoStorage(t *testing.T) {
 
 			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any()).Return(resp)
 
-			srv := server{MainReplica: mockMainStore}
+			srv := server{DataStores: []model.Service{mockMainStore}}
 			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}
-			req := &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: testKV}
+			req := &pb.SetRequest{Replica: 0, Pair: testKV}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Set(ctx, req)
@@ -90,8 +90,8 @@ func TestGetFromStorage(t *testing.T) {
 				mockMainStore.EXPECT().Get(tc.key).Return(resp)
 			}
 
-			srv := server{MainReplica: mockMainStore}
-			req := &pb.GetRequest{Replica: pb.Replica_MAIN, Key: tc.key}
+			srv := server{DataStores: []model.Service{mockMainStore}}
+			req := &pb.GetRequest{Replica: 0, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			res, err := srv.Get(ctx, req)
 			cancel()
@@ -135,9 +135,9 @@ func TestDeleteKeyValue(t *testing.T) {
 				mockMainStore.EXPECT().Delete(tc.key).Return(resp)
 			}
 
-			srv := server{MainReplica: mockMainStore}
+			srv := server{DataStores: []model.Service{mockMainStore}}
 
-			req := &pb.DeleteRequest{Replica: pb.Replica_MAIN, Key: tc.key}
+			req := &pb.DeleteRequest{Replica: 0, Key: tc.key}
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Delete(ctx, req)
 			cancel()
@@ -155,6 +155,7 @@ func TestDeleteKeyValueFromBackup(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+	mockMainStore := mocks.NewMockService(ctrl)
 	mockStore := mocks.NewMockService(ctrl)
 	resp := make(chan *model.StorageResponse, 1)
 
@@ -165,9 +166,9 @@ func TestDeleteKeyValueFromBackup(t *testing.T) {
 
 	mockStore.EXPECT().Delete(key).Return(resp)
 
-	srv := server{BackupReplica: mockStore}
+	srv := server{DataStores: []model.Service{mockMainStore, mockStore}}
 
-	req := &pb.DeleteRequest{Replica: pb.Replica_BACKUP, Key: key}
+	req := &pb.DeleteRequest{Replica: 1, Key: key}
 	ctx := context.Background()
 	_, err := srv.Delete(ctx, req)
 	e, ok := status.FromError(err)
