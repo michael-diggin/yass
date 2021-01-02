@@ -29,22 +29,23 @@ func TestSetInCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value")
 
 	tt := []struct {
 		name  string
 		key   string
 		value interface{}
+		hash  uint32
 		err   error
 	}{
-		{"valid", "key", "value", nil},
-		{"already set", "test-key", "test-value", errors.AlreadySet{Key: "test-key"}},
+		{"valid", "key", "value", uint32(77), nil},
+		{"already set", "test-key", "test-value", uint32(100), errors.AlreadySet{Key: "test-key"}},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 
-			resp := <-ser.Set(tc.key, tc.value)
+			resp := <-ser.Set(tc.key, tc.hash, tc.value)
 			r.Equal(tc.err, resp.Err)
 			r.Equal(tc.key, resp.Key)
 		})
@@ -55,7 +56,7 @@ func TestGetFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value")
 
 	tt := []struct {
 		name  string
@@ -80,7 +81,7 @@ func TestDelFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value")
 
 	tt := []struct {
 		name string
@@ -103,13 +104,13 @@ func TestBatchGet(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	ser.store["test-key-1"] = "value-1"
-	ser.store["test-key-2"] = 2
+	ser.store["test-key-1"] = Data{value: "value-1", hash: uint32(100)}
+	ser.store["test-key-2"] = Data{value: 2, hash: uint32(101)}
 
 	data := <-ser.BatchGet()
 	r.Len(data, 2)
-	r.Equal(data["test-key-1"], "value-1")
-	r.Equal(data["test-key-2"], 2)
+	r.Equal(data["test-key-1"], Data{value: "value-1", hash: uint32(100)})
+	r.Equal(data["test-key-2"], Data{value: 2, hash: uint32(101)})
 }
 
 func TestBatchSet(t *testing.T) {
@@ -117,13 +118,13 @@ func TestBatchSet(t *testing.T) {
 	ser := New()
 	defer ser.Close()
 
-	data := make(map[string]interface{})
-	data["test-key-1"] = "value-1"
-	data["test-key-2"] = 2
+	data := make(map[string]Data)
+	data["test-key-1"] = Data{value: "value-1", hash: uint32(100)}
+	data["test-key-2"] = Data{value: 2, hash: uint32(101)}
 
 	err := <-ser.BatchSet(data)
 	r.NoError(err)
 	r.Len(ser.store, 2)
-	r.Equal(ser.store["test-key-1"], "value-1")
-	r.Equal(ser.store["test-key-2"], 2)
+	r.Equal(ser.store["test-key-1"], Data{value: "value-1", hash: uint32(100)})
+	r.Equal(ser.store["test-key-2"], Data{value: 2, hash: uint32(101)})
 }

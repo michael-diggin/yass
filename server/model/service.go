@@ -11,7 +11,7 @@ type StorageResponse struct {
 type Service interface {
 	Ping() error
 	Get(string) <-chan *StorageResponse
-	Set(string, interface{}) <-chan *StorageResponse
+	Set(string, uint32, interface{}) <-chan *StorageResponse
 	Delete(string) <-chan *StorageResponse
 
 	BatchGet() <-chan map[string]interface{}

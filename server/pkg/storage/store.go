@@ -7,15 +7,21 @@ import (
 	"github.com/michael-diggin/yass/server/model"
 )
 
+// Data holds the value interface and the hash value of the key
+type Data struct {
+	value interface{}
+	hash  uint32
+}
+
 // Service implements the model.Service interface
 type Service struct {
-	store map[string]interface{}
+	store map[string]Data
 	mu    sync.RWMutex
 }
 
 // New returns an instance of Service
 func New() *Service {
-	store := make(map[string]interface{})
+	store := make(map[string]Data)
 	return &Service{store: store, mu: sync.RWMutex{}}
 }
 
@@ -28,11 +34,12 @@ func (s *Service) Ping() error {
 }
 
 // Set adds a key/value pair to the store
-func (s *Service) Set(key string, value interface{}) <-chan *model.StorageResponse {
+func (s *Service) Set(key string, hash uint32, value interface{}) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
+		data := Data{value: value, hash: hash}
 		s.mu.Lock()
-		err := setValue(s.store, key, value)
+		err := setValue(s.store, key, data)
 		s.mu.Unlock()
 		respChan <- &model.StorageResponse{Key: key, Err: err}
 		close(respChan)
@@ -40,11 +47,11 @@ func (s *Service) Set(key string, value interface{}) <-chan *model.StorageRespon
 	return respChan
 }
 
-func setValue(store map[string]interface{}, key string, value interface{}) error {
+func setValue(store map[string]Data, key string, data Data) error {
 	if _, ok := store[key]; ok {
 		return errors.AlreadySet{Key: key}
 	}
-	store[key] = value
+	store[key] = data
 	return nil
 }
 
@@ -61,12 +68,12 @@ func (s *Service) Get(key string) <-chan *model.StorageResponse {
 	return respChan
 }
 
-func getValue(store map[string]interface{}, key string) (interface{}, error) {
-	val, ok := store[key]
+func getValue(store map[string]Data, key string) (interface{}, error) {
+	data, ok := store[key]
 	if !ok {
 		return nil, errors.NotFound{Key: key}
 	}
-	return val, nil
+	return data.value, nil
 }
 
 // Delete removes a key from the store
@@ -104,15 +111,15 @@ func (s *Service) BatchGet() <-chan map[string]interface{} {
 }
 
 // BatchSet sets all of the passed data to the data store
-func (s *Service) BatchSet(data map[string]interface{}) <-chan error {
+func (s *Service) BatchSet(newData map[string]Data) <-chan error {
 	resp := make(chan error)
 	go func() {
 		s.mu.Lock()
-		for key, val := range data {
+		for key, data := range newData {
 			if _, ok := s.store[key]; ok {
 				continue
 			}
-			s.store[key] = val
+			s.store[key] = data
 		}
 		s.mu.Unlock()
 		resp <- nil
