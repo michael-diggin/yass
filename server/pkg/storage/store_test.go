@@ -145,3 +145,18 @@ func TestBatchSet(t *testing.T) {
 	r.Equal(ser.store["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
 	r.Equal(ser.store["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
 }
+
+func TestBatchDelete(t *testing.T) {
+	r := require.New(t)
+	ser := New()
+	defer ser.Close()
+
+	ser.store["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
+	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
+	ser.store["test-key-3"] = model.Data{Value: 12, Hash: uint32(201)}
+
+	err := <-ser.BatchDelete([]string{"test-key-1", "test-key-2"})
+	r.NoError(err)
+	r.Len(ser.store, 1)
+	r.Equal(ser.store["test-key-3"], model.Data{Value: 12, Hash: uint32(201)})
+}
