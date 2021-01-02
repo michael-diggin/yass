@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"net"
 
 	"github.com/michael-diggin/yass/models"
@@ -21,9 +22,9 @@ type YassServer struct {
 }
 
 // New sets up the server
-func New(lis net.Listener, main, backup model.Service) YassServer {
+func New(lis net.Listener, dataStores ...model.Service) YassServer {
 	s := grpc.NewServer()
-	srv := server{MainReplica: main, BackupReplica: backup}
+	srv := server{DataStores: dataStores}
 	pb.RegisterStorageServer(s, srv)
 	grpc_health_v1.RegisterHealthServer(s, &srv)
 	return YassServer{lis: lis, srv: s}
@@ -51,8 +52,7 @@ func (y YassServer) ShutDown() {
 
 // server (unexported) implements the CacheServer interface
 type server struct {
-	MainReplica   model.Service
-	BackupReplica model.Service
+	DataStores []model.Service
 }
 
 // Set takes a key/value pair and adds it to the storage
@@ -67,7 +67,10 @@ func (s server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) {
 	if pair.Key == "" || pair.Value == nil {
 		return nil, status.Error(codes.InvalidArgument, "Cannot set an empty key or value")
 	}
-	store := s.getStoreForRequest(req.GetReplica())
+	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	select {
 	case <-ctx.Done():
@@ -88,7 +91,11 @@ func (s server) Get(ctx context.Context, req *pb.GetRequest) (*pb.Pair, error) {
 	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot get an empty key")
 	}
-	store := s.getStoreForRequest(req.GetReplica())
+	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
@@ -111,7 +118,11 @@ func (s server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Null, er
 	if req.Key == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot delete a zero key")
 	}
-	store := s.getStoreForRequest(req.GetReplica())
+	store, err := s.getStoreForRequest(int(req.GetReplica()))
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
@@ -120,9 +131,9 @@ func (s server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.Null, er
 	}
 }
 
-func (s server) getStoreForRequest(req pb.Replica) model.Service {
-	if req == pb.Replica_BACKUP {
-		return s.BackupReplica
+func (s server) getStoreForRequest(idx int) (model.Service, error) {
+	if idx >= len(s.DataStores) {
+		return nil, errors.New("requested a datastore that does not exist")
 	}
-	return s.MainReplica
+	return s.DataStores[idx], nil
 }

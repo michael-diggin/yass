@@ -19,17 +19,17 @@ enum Replica {
 }
 
 message SetRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     Pair pair = 2;
 }
 
 message GetRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     string key = 2;
 }
 
 message DeleteRequest {
-    Replica replica = 1;
+    int32 replica = 1;
     string key = 2;
 }
 
