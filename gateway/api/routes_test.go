@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/michael-diggin/yass/gateway/hashring"
 	"github.com/michael-diggin/yass/gateway/mocks"
 	"github.com/michael-diggin/yass/models"
 	"github.com/stretchr/testify/require"
@@ -18,8 +19,9 @@ import (
 
 func TestGatewaySet(t *testing.T) {
 	key := "test"
+	hashkey := hashring.Hash(key)
 	value := "test-value"
-	pair := &models.Pair{Key: key, Value: value}
+	pair := &models.Pair{Key: key, Hash: hashkey, Value: value}
 
 	t.Run("success", func(t *testing.T) {
 		ctrl := gomock.NewController(t)

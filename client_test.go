@@ -17,14 +17,15 @@ func TestClientSetValue(t *testing.T) {
 	defer ctrl.Finish()
 
 	key := "test"
+	hash := uint32(100)
 	val := "value"
 
 	mockgRPC := mocks.NewMockStorageClient(ctrl)
-	pair := &pb.Pair{Key: key, Value: []byte(`"value"`)}
+	pair := &pb.Pair{Key: key, Hash: hash, Value: []byte(`"value"`)}
 	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: pb.Replica_MAIN, Pair: pair}).Return(nil, nil)
 	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
 
-	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Value: val}, models.MainReplica)
+	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Hash: hash, Value: val}, models.MainReplica)
 	require.NoError(t, err)
 }
 

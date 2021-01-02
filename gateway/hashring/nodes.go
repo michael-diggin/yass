@@ -19,6 +19,6 @@ func NewNode(id string, idx int) *Node {
 	return &Node{
 		ID:     id,
 		VID:    vNodeID(id, idx),
-		HashID: getFNVHash(vNodeID(id, idx)),
+		HashID: Hash(vNodeID(id, idx)),
 	}
 }

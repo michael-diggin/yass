@@ -21,12 +21,12 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 		return nil, status.Error(codes.Canceled, "Context timeout")
 	case storedData := <-store.BatchGet():
 		data := make([]*pb.Pair, 0, len(storedData))
-		for k, v := range storedData {
-			valueBytes, err := json.Marshal(v)
+		for k, d := range storedData {
+			valueBytes, err := json.Marshal(d.Value)
 			if err != nil {
 				return nil, status.Error(codes.Internal, "failed to marshal data")
 			}
-			data = append(data, &pb.Pair{Key: k, Value: valueBytes})
+			data = append(data, &pb.Pair{Key: k, Hash: d.Hash, Value: valueBytes})
 		}
 		resp := &pb.BatchGetResponse{Replica: req.GetReplica(), Data: data}
 		logrus.Info("BatchGet request succeeded")
@@ -52,19 +52,19 @@ func (s server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null
 	}
 }
 
-func batchSet(store model.Service, data []*pb.Pair) <-chan error {
+func batchSet(store model.Service, newData []*pb.Pair) <-chan error {
 	resp := make(chan error)
 	go func() {
 		defer close(resp)
-		mapData := make(map[string]interface{})
-		for _, pair := range data {
+		mapData := make(map[string]model.Data)
+		for _, pair := range newData {
 			var value interface{}
 			err := json.Unmarshal(pair.Value, &value)
 			if err != nil {
 				resp <- err
 				return
 			}
-			mapData[pair.Key] = value
+			mapData[pair.Key] = model.Data{Value: value, Hash: pair.Hash}
 		}
 		err := <-store.BatchSet(mapData)
 		resp <- err

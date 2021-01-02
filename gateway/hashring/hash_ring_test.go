@@ -69,12 +69,12 @@ func TestHashRingGetN(t *testing.T) {
 	r.AddNode("server2")
 	r.AddNode("server3")
 
-	key := "test-key"
+	hashkey := Hash("test-key")
 
 	require.Equal(t, 9, r.Nodes.Len())
 
 	t.Run("get one", func(t *testing.T) {
-		nodeIDs, err := r.GetN(key, 1)
+		nodeIDs, err := r.GetN(hashkey, 1)
 
 		require.NoError(t, err)
 		require.Len(t, nodeIDs, 1)
@@ -82,7 +82,7 @@ func TestHashRingGetN(t *testing.T) {
 	})
 
 	t.Run("get two", func(t *testing.T) {
-		nodeIDs, err := r.GetN(key, 2)
+		nodeIDs, err := r.GetN(hashkey, 2)
 
 		require.NoError(t, err)
 		require.Len(t, nodeIDs, 2)
@@ -90,7 +90,7 @@ func TestHashRingGetN(t *testing.T) {
 	})
 
 	t.Run("errors if asking for too many servers", func(t *testing.T) {
-		_, err := r.GetN(key, 4)
+		_, err := r.GetN(hashkey, 4)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, ErrNotEnoughNodes))
 	})

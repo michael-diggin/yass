@@ -28,7 +28,8 @@ func New(weight int) *Ring {
 	}
 }
 
-func getFNVHash(key string) uint32 {
+// Hash returns the fnv hash of key
+func Hash(key string) uint32 {
 	h := fnv.New32a()
 	h.Write([]byte(key))
 	return h.Sum32()
@@ -60,7 +61,7 @@ func (r *Ring) RebalanceInstructions(id string) ([]Instruction, error) {
 	instr := []Instruction{}
 
 	for idx := 0; idx < r.Weight; idx++ {
-		hash := getFNVHash(vNodeID(id, idx))
+		hash := Hash(vNodeID(id, idx))
 		i := r.binSearch(hash)
 		if i >= r.Nodes.Len() || r.Nodes[i].ID != id {
 			return nil, ErrNodeNotFound
@@ -86,7 +87,7 @@ func (r *Ring) RemoveNode(id string) error {
 	defer r.Unlock()
 
 	for idx := 0; idx < r.Weight; idx++ {
-		hash := getFNVHash(vNodeID(id, idx))
+		hash := Hash(vNodeID(id, idx))
 		i := r.binSearch(hash)
 		if i >= r.Nodes.Len() || r.Nodes[i].ID != id {
 			return ErrNodeNotFound
@@ -99,9 +100,8 @@ func (r *Ring) RemoveNode(id string) error {
 }
 
 // Get returns the nearest node greater than the hash of key
-func (r *Ring) Get(key string) string {
-	hashKey := getFNVHash(key)
-	i := r.binSearch(hashKey)
+func (r *Ring) Get(hashkey uint32) string {
+	i := r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0
 	}
@@ -109,9 +109,9 @@ func (r *Ring) Get(key string) string {
 }
 
 // GetN returns the N nearest unique nodes greater than the hash of the key
-func (r *Ring) GetN(key string, n int) ([]string, error) {
+func (r *Ring) GetN(hashkey uint32, n int) ([]string, error) {
 	if n == 1 {
-		return []string{r.Get(key)}, nil
+		return []string{r.Get(hashkey)}, nil
 	}
 	if r.Nodes.Len()/r.Weight < n {
 		return nil, ErrNotEnoughNodes
@@ -119,8 +119,7 @@ func (r *Ring) GetN(key string, n int) ([]string, error) {
 	var i int
 	nodeIDs := make(map[string]struct{})
 	output := []string{}
-	hashKey := getFNVHash(key)
-	i = r.binSearch(hashKey)
+	i = r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0
 	}

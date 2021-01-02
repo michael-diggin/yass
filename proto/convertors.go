@@ -16,7 +16,7 @@ func (p *Pair) ToModel() (*models.Pair, error) {
 			return nil, errors.Wrap(err, "failed to unmarshal value")
 		}
 	}
-	return &models.Pair{Key: p.Key, Value: val}, nil
+	return &models.Pair{Key: p.Key, Hash: p.Hash, Value: val}, nil
 }
 
 // ToPair converts the model type to a proto type
@@ -29,7 +29,7 @@ func ToPair(p *models.Pair) (*Pair, error) {
 			return nil, errors.Wrap(err, "failed to marshal value")
 		}
 	}
-	return &Pair{Key: p.Key, Value: val}, nil
+	return &Pair{Key: p.Key, Hash: p.Hash, Value: val}, nil
 }
 
 // ToReplica converts to a proto replica enum

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/michael-diggin/yass/gateway/hashring"
 	"github.com/michael-diggin/yass/models"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +26,8 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientIDs, err := g.hashRing.GetN(key, g.replicas)
+	hashkey := hashring.Hash(key)
+	clientIDs, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
@@ -70,7 +72,6 @@ type internalResponse struct {
 func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) (interface{}, error) {
 	var err error
 	var value interface{}
-	// valMap := make(map[interface{}]int)
 	for i := 0; i < n; i++ {
 		r := <-resps
 		if r.err != nil && err == nil {
@@ -101,10 +102,12 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get node Addrs from hash ring
-	clientIDs, err := g.hashRing.GetN(pair.Key, g.replicas)
+	hashkey := hashring.Hash(pair.Key)
+	clientIDs, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
+	pair.Hash = hashkey
 
 	ctx := r.Context()
 
