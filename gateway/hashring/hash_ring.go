@@ -51,6 +51,35 @@ func (r *Ring) AddNode(id string) {
 	sort.Sort(r.Nodes) //TODO: is a tree implementation more effecient?
 }
 
+// RebalanceInstructions returns the instructions for where to find data
+// to add to a new node
+func (r *Ring) RebalanceInstructions(id string) ([]Instruction, error) {
+	r.Lock()
+	defer r.Unlock()
+
+	instr := []Instruction{}
+
+	for idx := 0; idx < r.Weight; idx++ {
+		hash := getFNVHash(vNodeID(id, idx))
+		i := r.binSearch(hash)
+		if i >= r.Nodes.Len() || r.Nodes[i].ID != id {
+			return nil, ErrNodeNotFound
+		}
+		j := i - 1
+		if j == -1 {
+			j = r.Nodes.Len() - 1
+		}
+		ins := Instruction{
+			FromNode: r.Nodes[j].ID,
+			LowHash:  r.Nodes[j].HashID,
+			HighHash: r.Nodes[i].HashID,
+		}
+		instr = append(instr, ins)
+	}
+
+	return instr, nil
+}
+
 // RemoveNode will remove a node from the hash ring, including it's virtual nodes
 func (r *Ring) RemoveNode(id string) error {
 	r.Lock()
