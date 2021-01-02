@@ -89,10 +89,10 @@ func (s *Service) Close() {
 }
 
 // BatchGet returns all of the stored data
-func (s *Service) BatchGet() <-chan map[string]interface{} {
-	resp := make(chan map[string]interface{})
+func (s *Service) BatchGet() <-chan map[string]model.Data {
+	resp := make(chan map[string]model.Data)
 	go func() {
-		data := make(map[string]interface{})
+		data := make(map[string]model.Data)
 		s.mu.RLock()
 		for k, v := range s.store {
 			data[k] = v
