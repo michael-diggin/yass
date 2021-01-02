@@ -106,12 +106,28 @@ func TestBatchGet(t *testing.T) {
 	ser := New()
 	defer ser.Close()
 	ser.store["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
-	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
+	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(201)}
 
-	data := <-ser.BatchGet()
-	r.Len(data, 2)
-	r.Equal(data["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
-	r.Equal(data["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
+	t.Run("get all", func(t *testing.T) {
+		data := <-ser.BatchGet(uint32(0), uint32(1000))
+		r.Len(data, 2)
+		r.Equal(data["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
+		r.Equal(data["test-key-2"], model.Data{Value: 2, Hash: uint32(201)})
+	})
+
+	t.Run("filters correctly", func(t *testing.T) {
+		data := <-ser.BatchGet(uint32(0), uint32(150))
+		r.Len(data, 1)
+		r.Equal(data["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
+	})
+
+	t.Run("wrap around case", func(t *testing.T) {
+		// this is the edge case where high < low due to wrapping around the hash ring
+		data := <-ser.BatchGet(uint32(150), uint32(50))
+		r.Len(data, 1)
+		r.Equal(data["test-key-2"], model.Data{Value: 2, Hash: uint32(201)})
+	})
+
 }
 
 func TestBatchSet(t *testing.T) {

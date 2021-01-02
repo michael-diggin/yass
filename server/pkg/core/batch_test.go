@@ -55,7 +55,7 @@ func TestBatchGetFromStorage(t *testing.T) {
 	resp <- data
 	close(resp)
 
-	mockBackup.EXPECT().BatchGet().Return(resp)
+	mockBackup.EXPECT().BatchGet(gomock.Any(), gomock.Any()).Return(resp)
 
 	srv := server{BackupReplica: mockBackup}
 

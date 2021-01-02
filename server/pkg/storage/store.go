@@ -88,14 +88,29 @@ func (s *Service) Close() {
 	s = &Service{} // let GC handle the freeing up of memory
 }
 
-// BatchGet returns all of the stored data
-func (s *Service) BatchGet() <-chan map[string]model.Data {
+// BatchGet returns all of the stored data that lies in the region
+// (low, high]
+func (s *Service) BatchGet(low, high uint32) <-chan map[string]model.Data {
 	resp := make(chan map[string]model.Data)
+	var constraintFunc func(uint32) bool
+
+	if low < high {
+		constraintFunc = func(hash uint32) bool {
+			return hash > low && hash <= high
+		}
+	} else {
+		constraintFunc = func(hash uint32) bool {
+			return hash <= high || hash > low
+		}
+	}
+
 	go func() {
 		data := make(map[string]model.Data)
 		s.mu.RLock()
 		for k, v := range s.store {
-			data[k] = v
+			if constraintFunc(v.Hash) {
+				data[k] = v
+			}
 		}
 		s.mu.RUnlock()
 		resp <- data

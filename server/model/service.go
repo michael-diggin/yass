@@ -20,7 +20,7 @@ type Service interface {
 	Set(string, uint32, interface{}) <-chan *StorageResponse
 	Delete(string) <-chan *StorageResponse
 
-	BatchGet() <-chan map[string]Data
+	BatchGet(low, high uint32) <-chan map[string]Data
 	BatchSet(map[string]Data) <-chan error
 
 	Close()

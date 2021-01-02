@@ -34,17 +34,17 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // BatchGet mocks base method
-func (m *MockService) BatchGet() <-chan map[string]model.Data {
+func (m *MockService) BatchGet(arg0, arg1 uint32) <-chan map[string]model.Data {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BatchGet")
+	ret := m.ctrl.Call(m, "BatchGet", arg0, arg1)
 	ret0, _ := ret[0].(<-chan map[string]model.Data)
 	return ret0
 }
 
 // BatchGet indicates an expected call of BatchGet
-func (mr *MockServiceMockRecorder) BatchGet() *gomock.Call {
+func (mr *MockServiceMockRecorder) BatchGet(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchGet", reflect.TypeOf((*MockService)(nil).BatchGet))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchGet", reflect.TypeOf((*MockService)(nil).BatchGet), arg0, arg1)
 }
 
 // BatchSet mocks base method

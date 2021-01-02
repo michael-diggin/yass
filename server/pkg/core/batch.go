@@ -19,7 +19,7 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case storedData := <-store.BatchGet():
+	case storedData := <-store.BatchGet(uint32(0), uint32(1)):
 		data := make([]*pb.Pair, 0, len(storedData))
 		for k, d := range storedData {
 			valueBytes, err := json.Marshal(d.Value)
