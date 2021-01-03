@@ -27,7 +27,7 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	gateway := api.NewGateway(*numServers, 10, srv)
+	gateway := api.NewGateway(*numServers, 5, srv)
 
 	defer gateway.Stop()
 

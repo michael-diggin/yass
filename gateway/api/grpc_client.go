@@ -12,5 +12,9 @@ type GrpcClient interface {
 	SetValue(context.Context, *models.Pair, int) error
 	GetValue(context.Context, string, int) (*models.Pair, error)
 	DelValue(context.Context, string, int) error
+
+	BatchSend(context.Context, int, int, string, uint32, uint32) error
+	BatchDelete(context.Context, int, uint32, uint32) error
+
 	Close() error
 }

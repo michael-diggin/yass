@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/michael-diggin/yass"
@@ -134,11 +135,15 @@ type factory struct {
 
 func (f factory) NewClient(ctx context.Context, addr string) (*yass.StorageClient, error) {
 	mockgRPC := grpcmocks.NewMockStorageClient(f.ctrl)
-	testPair1 := &pb.Pair{Key: "key-1", Hash: uint32(100), Value: []byte(`"value-1"`)}
-	testPair2 := &pb.Pair{Key: "key-2", Hash: uint32(101), Value: []byte(`2`)}
 
-	mockgRPC.EXPECT().BatchSet(gomock.Any(), &pb.BatchSetRequest{Replica: int32(1), Data: []*pb.Pair{testPair1, testPair2}}).
-		Return(&pb.Null{}, nil)
+	mockgRPC.EXPECT().BatchSet(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
+			data := req.GetData()
+			if len(data) != 2 {
+				return nil, errors.New("did not get two pairs")
+			}
+			return &pb.Null{}, nil
+		})
 
 	return &yass.StorageClient{GrpcClient: mockgRPC}, nil
 }
