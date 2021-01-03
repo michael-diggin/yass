@@ -105,9 +105,19 @@ func (c *StorageClient) BatchSend(ctx context.Context, replica, toReplica int, a
 		ToReplica: int32(toReplica),
 		Low:       low,
 		High:      high,
-		Delete:    true,
 	}
 	_, err := c.GrpcClient.BatchSend(ctx, req)
+	return err
+}
+
+// BatchDelete deletes a batch of data where the keys lie between the hash values
+func (c *StorageClient) BatchDelete(ctx context.Context, replica, low, high uint32) error {
+	req := &pb.BatchDeleteRequest{
+		Replica: int32(replica),
+		Low:     low,
+		High:    high,
+	}
+	_, err := c.GrpcClient.BatchDelete(ctx, req)
 	return err
 }
 

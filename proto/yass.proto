@@ -12,6 +12,7 @@ service Storage {
     rpc BatchGet(BatchGetRequest) returns(BatchGetResponse){}
     rpc BatchSet(BatchSetRequest) returns(Null){}
     rpc BatchSend(BatchSendRequest) returns(Null){}
+    rpc BatchDelete(BatchDeleteRequest) returns(Null){}
 }
 
 message SetRequest {
@@ -52,7 +53,12 @@ message BatchSendRequest {
     int32 toReplica = 3;
     uint32 low = 4;
     uint32 high = 5;
-    bool delete = 6;
+}
+
+message BatchDeleteRequest {
+    int32 replica = 1;
+    uint32 low = 4;
+    uint32 high = 5;
 }
 
 message BatchGetRequest {

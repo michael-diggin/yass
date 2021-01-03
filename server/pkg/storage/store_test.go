@@ -155,7 +155,7 @@ func TestBatchDelete(t *testing.T) {
 	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
 	ser.store["test-key-3"] = model.Data{Value: 12, Hash: uint32(201)}
 
-	err := <-ser.BatchDelete([]string{"test-key-1", "test-key-2"})
+	err := <-ser.BatchDelete(uint32(50), uint32(150))
 	r.NoError(err)
 	r.Len(ser.store, 1)
 	r.Equal(ser.store["test-key-3"], model.Data{Value: 12, Hash: uint32(201)})

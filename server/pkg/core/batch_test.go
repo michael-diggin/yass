@@ -79,6 +79,27 @@ func TestBatchGetFromStorage(t *testing.T) {
 	r.Contains(hashes, res.Data[1].Hash)
 }
 
+func TestBatchDeleteFromStorage(t *testing.T) {
+	r := require.New(t)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockBackup := mocks.NewMockService(ctrl)
+	resp := make(chan error, 1)
+	resp <- nil
+	close(resp)
+
+	mockBackup.EXPECT().BatchDelete(uint32(100), uint32(1000)).Return(resp)
+
+	srv := server{DataStores: []model.Service{mockBackup, mockBackup}}
+
+	req := &pb.BatchDeleteRequest{Replica: 1, Low: uint32(100), High: uint32(1000)}
+
+	ctx := context.Background()
+	_, err := srv.BatchDelete(ctx, req)
+	r.NoError(err)
+}
+
 func TestBatchSend(t *testing.T) {
 	r := require.New(t)
 

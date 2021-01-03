@@ -22,7 +22,7 @@ type Service interface {
 
 	BatchGet(low, high uint32) <-chan map[string]Data
 	BatchSet(map[string]Data) <-chan error
-	BatchDelete([]string) <-chan error
+	BatchDelete(low, high uint32) <-chan error
 
 	Close()
 }
