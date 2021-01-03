@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/michael-diggin/yass/common/client"
-	"github.com/michael-diggin/yass/gateway/hashring"
+	"github.com/michael-diggin/yass/gateway/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -71,9 +71,9 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (g *Gateway) rebalanceData(addr string, instructions []hashring.Instruction, delete bool) error {
+func (g *Gateway) rebalanceData(addr string, instructions []models.Instruction, delete bool) error {
 	for _, instr := range instructions {
-		go func(instr hashring.Instruction) {
+		go func(instr models.Instruction) {
 			g.mu.RLock()
 			dbClient := g.Clients[instr.FromNode]
 			g.mu.RUnlock()

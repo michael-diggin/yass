@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/michael-diggin/yass/common/client"
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"

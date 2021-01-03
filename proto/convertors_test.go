@@ -3,7 +3,7 @@ package proto
 import (
 	"testing"
 
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/stretchr/testify/require"
 )
 

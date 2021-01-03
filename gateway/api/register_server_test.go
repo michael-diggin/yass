@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/michael-diggin/yass/gateway/hashring"
-	"github.com/michael-diggin/yass/gateway/mocks"
+	"github.com/michael-diggin/yass/common/mocks"
+	"github.com/michael-diggin/yass/gateway/models"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -32,15 +32,15 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 }
 
 func TestRebalanceData(t *testing.T) {
-	instrs := []hashring.Instruction{
-		hashring.Instruction{
+	instrs := []models.Instruction{
+		models.Instruction{
 			FromNode: "server1",
 			FromIdx:  0,
 			ToIdx:    1,
 			LowHash:  uint32(100),
 			HighHash: uint32(1000),
 		},
-		hashring.Instruction{
+		models.Instruction{
 			FromNode: "server2",
 			FromIdx:  1,
 			ToIdx:    0,
@@ -53,8 +53,8 @@ func TestRebalanceData(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockGrpcClient(ctrl)
-		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientTwo := mocks.NewMockClientInterface(ctrl)
 		g := NewGateway(2, 1, &http.Server{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
@@ -71,8 +71,8 @@ func TestRebalanceData(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockGrpcClient(ctrl)
-		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientTwo := mocks.NewMockClientInterface(ctrl)
 		g := NewGateway(2, 1, &http.Server{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
