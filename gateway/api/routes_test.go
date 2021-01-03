@@ -31,8 +31,8 @@ func TestGatewaySet(t *testing.T) {
 		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
 		g := NewGateway(2, 2, &http.Server{})
 
-		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil)
-		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 1).Return(nil)
+		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 1).Return(nil)
+		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil)
 		g.Clients["0"] = mockClientOne
 		g.hashRing.AddNode("0")
 		g.Clients["1"] = mockClientTwo
@@ -62,7 +62,7 @@ func TestGatewaySet(t *testing.T) {
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil).AnyTimes()
 		mockClientOne.EXPECT().DelValue(gomock.Any(), key, 0).Return(nil).AnyTimes()
-		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 1).Return(errMock)
+		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 0).Return(errMock)
 		g.Clients["0"] = mockClientOne
 		g.hashRing.AddNode("0")
 		g.Clients["1"] = mockClientTwo
@@ -118,8 +118,8 @@ func TestGatewayGetSuccess(t *testing.T) {
 	value := "test-value"
 	pair := &models.Pair{Key: key, Value: value}
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 1).Return(pair, nil).AnyTimes()
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 0).Return(pair, nil).AnyTimes()
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(pair, nil).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(pair, nil).AnyTimes()
 
 	g.Clients["server0"] = mockClientOne
 	g.Clients["server1"] = mockClientTwo
@@ -150,8 +150,8 @@ func TestGatewayGetNotFound(t *testing.T) {
 	key := "test-get-key"
 	errMock := status.Error(codes.NotFound, "key not found in cache")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
 
 	g.Clients["server0"] = mockClientOne
 	g.Clients["server1"] = mockClientTwo
@@ -182,8 +182,8 @@ func TestGatewayGetTimeout(t *testing.T) {
 	key := "test-get-key"
 	errMock := status.Error(codes.Canceled, "request timed out")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
+	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
 
 	g.Clients["server0"] = mockClientOne
 	g.Clients["server1"] = mockClientTwo
@@ -218,13 +218,12 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	pair := &models.Pair{Key: key, Value: value}
 	errMock := status.Error(codes.Canceled, "request timed out")
 
-	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
-	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 0).
+	mockClientThree.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
+	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).
 		DoAndReturn(func(...interface{}) (interface{}, error) {
 			time.Sleep(500 * time.Millisecond)
 			return pair, nil
 		}).AnyTimes()
-	mockClientThree.EXPECT().GetValue(gomock.Any(), key, 0).Return(pair, nil).AnyTimes()
 
 	g.Clients["server0"] = mockClientOne
 	g.Clients["server1"] = mockClientTwo

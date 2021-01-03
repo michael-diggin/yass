@@ -37,7 +37,7 @@ func Hash(key string) uint32 {
 
 // vNodeID generates a string key for a virtual node.
 func vNodeID(id string, idx int) string {
-	return id + "-" + strconv.Itoa(idx)
+	return id + "-" + strconv.Itoa(int(Hash(strconv.Itoa(idx))))
 }
 
 // AddNode adds a node to the hash ring, including `Weight` virtual nodes
@@ -52,33 +52,77 @@ func (r *Ring) AddNode(id string) {
 	sort.Sort(r.Nodes) //TODO: is a tree implementation more effecient?
 }
 
+func handleOOB(i, len int) int {
+	if i < 0 {
+		return i + len
+	}
+	if i >= len {
+		return i - len
+	}
+	return i
+}
+
 // RebalanceInstructions returns the instructions for where to find data
 // to add to a new node
-func (r *Ring) RebalanceInstructions(id string) ([]Instruction, error) {
+func (r *Ring) RebalanceInstructions(id string) []Instruction {
 	r.Lock()
 	defer r.Unlock()
 
 	instr := []Instruction{}
 
-	for idx := 0; idx < r.Weight; idx++ {
-		hash := Hash(vNodeID(id, idx))
-		i := r.binSearch(hash)
-		if i >= r.Nodes.Len() || r.Nodes[i].ID != id {
-			return nil, ErrNodeNotFound
+	len := r.Nodes.Len()
+
+	for i := 0; i < len; i++ {
+		if r.Nodes[i].ID != id {
+			continue
 		}
-		j := i - 1
-		if j == -1 {
-			j = r.Nodes.Len() - 1
+
+		m := handleOOB(i-2, len)
+		j := handleOOB(i-1, len)
+		k := handleOOB(i+1, len)
+
+		// FromNode (k) has to be different to the new node
+		for {
+			if r.Nodes[k].ID != id {
+				break
+			}
+			k = handleOOB(k+1, len)
 		}
-		ins := Instruction{
-			FromNode: r.Nodes[j].ID,
+
+		n := handleOOB(k+1, len)
+
+		// FromNode (n) has to be different to the new node
+		for {
+			if r.Nodes[n].ID != id {
+				break
+			}
+			n = handleOOB(n+1, len)
+		}
+
+		// hash range just before this vNode, from different Node 2 after it
+		// this is what this node is mainly for
+		instructOne := Instruction{
+			FromNode: r.Nodes[n].ID,
+			FromIdx:  r.Nodes[n].Idx,
+			ToIdx:    r.Nodes[i].Idx,
 			LowHash:  r.Nodes[j].HashID,
 			HighHash: r.Nodes[i].HashID,
 		}
-		instr = append(instr, ins)
+
+		// hash range two before this vNode, from different Node 1 after it
+		// this is the range that gets replicated to this node
+		instructTwo := Instruction{
+			FromNode: r.Nodes[k].ID,
+			FromIdx:  r.Nodes[k].Idx,
+			ToIdx:    r.Nodes[i].Idx,
+			LowHash:  r.Nodes[m].HashID,
+			HighHash: r.Nodes[j].HashID,
+		}
+
+		instr = append(instr, instructOne, instructTwo)
 	}
 
-	return instr, nil
+	return instr
 }
 
 // RemoveNode will remove a node from the hash ring, including it's virtual nodes
