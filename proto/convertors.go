@@ -3,7 +3,7 @@ package proto
 import (
 	"encoding/json"
 
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/pkg/errors"
 )
 

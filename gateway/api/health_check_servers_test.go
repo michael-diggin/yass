@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/michael-diggin/yass/gateway/mocks"
+	"github.com/michael-diggin/yass/common/mocks"
 )
 
 func TestPingStorageServers(t *testing.T) {
@@ -15,8 +15,8 @@ func TestPingStorageServers(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
 	g := NewGateway(2, 1, &http.Server{})
 
 	mockClientOne.EXPECT().Check(gomock.Any()).Return(true, nil)

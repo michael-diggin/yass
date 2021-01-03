@@ -5,9 +5,8 @@ import (
 	"errors"
 	"net"
 
-	"github.com/michael-diggin/yass"
-
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/client"
+	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
@@ -26,7 +25,7 @@ type YassServer struct {
 // New sets up the server
 func New(lis net.Listener, dataStores ...model.Service) YassServer {
 	s := grpc.NewServer()
-	srv := server{DataStores: dataStores, clientFactory: yass.Factory{}}
+	srv := server{DataStores: dataStores, clientFactory: client.Factory{}}
 	pb.RegisterStorageServer(s, srv)
 	grpc_health_v1.RegisterHealthServer(s, &srv)
 	return YassServer{lis: lis, srv: s}
@@ -60,7 +59,7 @@ type server struct {
 
 // clientFactory creates a grpc client
 type clientFactory interface {
-	NewClient(ctx context.Context, addr string) (*yass.StorageClient, error)
+	NewClient(ctx context.Context, addr string) (*client.StorageClient, error)
 }
 
 // Set takes a key/value pair and adds it to the storage

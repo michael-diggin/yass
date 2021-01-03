@@ -1,21 +1,16 @@
 package hashring
 
-// Nodes is an array of nodes
-type Nodes []Node
+import "github.com/michael-diggin/yass/gateway/models"
 
-// Node is the struct holding the info of the servers
-type Node struct {
-	ID     string
-	Idx    int
-	HashID uint32
-}
+// Nodes is an array of nodes
+type Nodes []models.Node
 
 func (n Nodes) Len() int           { return len(n) }
 func (n Nodes) Less(i, j int) bool { return n[i].HashID < n[j].HashID }
 func (n Nodes) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
 
 // Get returns the node at the given index
-func (n Nodes) Get(i int) Node {
+func (n Nodes) Get(i int) models.Node {
 	if i >= n.Len() {
 		return n[0]
 	}
@@ -23,8 +18,8 @@ func (n Nodes) Get(i int) Node {
 }
 
 // NewNode returns a new instane of Node
-func NewNode(id string, idx int) *Node {
-	return &Node{
+func NewNode(id string, idx int) *models.Node {
+	return &models.Node{
 		ID:     id,
 		Idx:    idx,
 		HashID: Hash(vNodeID(id, idx)),

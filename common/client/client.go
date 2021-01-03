@@ -1,11 +1,11 @@
-// Package yass implements the client side of
+// Package client implements the client side of
 // the gRPC service interface
-package yass
+package client
 
 import (
 	"context"
 
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"

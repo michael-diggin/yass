@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/michael-diggin/yass/gateway/hashring"
-	"github.com/michael-diggin/yass/models"
+	"github.com/michael-diggin/yass/common/models"
+	gwmodels "github.com/michael-diggin/yass/gateway/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,7 +26,7 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashkey := hashring.Hash(key)
+	hashkey := g.hashRing.Hash(key)
 	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
@@ -103,7 +103,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get node Addrs from hash ring
-	hashkey := hashring.Hash(pair.Key)
+	hashkey := g.hashRing.Hash(pair.Key)
 	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
@@ -113,7 +113,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// synchronously set the key/value on the storage servers
-	revertSetNodes := []hashring.Node{}
+	revertSetNodes := []gwmodels.Node{}
 	var returnErr error
 	for _, node := range nodes {
 		g.mu.RLock()

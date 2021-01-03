@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+
+	"github.com/michael-diggin/yass/gateway/models"
 )
 
 // ErrNodeNotFound is the error returned if a node does not exist
@@ -26,6 +28,11 @@ func New(weight int) *Ring {
 	return &Ring{Nodes: Nodes{},
 		Weight: weight,
 	}
+}
+
+// Hash returns the hash of the key
+func (r *Ring) Hash(key string) uint32 {
+	return Hash(key)
 }
 
 // Hash returns the fnv hash of key
@@ -64,11 +71,11 @@ func handleOOB(i, len int) int {
 
 // RebalanceInstructions returns the instructions for where to find data
 // to add to a new node
-func (r *Ring) RebalanceInstructions(id string) []Instruction {
+func (r *Ring) RebalanceInstructions(id string) []models.Instruction {
 	r.Lock()
 	defer r.Unlock()
 
-	instr := []Instruction{}
+	instr := []models.Instruction{}
 
 	len := r.Nodes.Len()
 
@@ -101,7 +108,7 @@ func (r *Ring) RebalanceInstructions(id string) []Instruction {
 
 		// hash range just before this vNode, from different Node 2 after it
 		// this is what this node is mainly for
-		instructOne := Instruction{
+		instructOne := models.Instruction{
 			FromNode: r.Nodes[n].ID,
 			FromIdx:  r.Nodes[n].Idx,
 			ToIdx:    r.Nodes[i].Idx,
@@ -111,7 +118,7 @@ func (r *Ring) RebalanceInstructions(id string) []Instruction {
 
 		// hash range two before this vNode, from different Node 1 after it
 		// this is the range that gets replicated to this node
-		instructTwo := Instruction{
+		instructTwo := models.Instruction{
 			FromNode: r.Nodes[k].ID,
 			FromIdx:  r.Nodes[k].Idx,
 			ToIdx:    r.Nodes[i].Idx,
@@ -144,7 +151,7 @@ func (r *Ring) RemoveNode(id string) error {
 }
 
 // Get returns the nearest node greater than the hash of key
-func (r *Ring) Get(hashkey uint32) Node {
+func (r *Ring) Get(hashkey uint32) models.Node {
 	i := r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0
@@ -153,16 +160,16 @@ func (r *Ring) Get(hashkey uint32) Node {
 }
 
 // GetN returns the N nearest unique nodes greater than the hash of the key
-func (r *Ring) GetN(hashkey uint32, n int) ([]Node, error) {
+func (r *Ring) GetN(hashkey uint32, n int) ([]models.Node, error) {
 	if n == 1 {
-		return []Node{r.Get(hashkey)}, nil
+		return []models.Node{r.Get(hashkey)}, nil
 	}
 	if r.Nodes.Len()/r.Weight < n {
 		return nil, ErrNotEnoughNodes
 	}
 	var i int
 	nodeIDs := make(map[string]struct{})
-	output := []Node{}
+	output := []models.Node{}
 	i = r.binSearch(hashkey)
 	if i >= r.Nodes.Len() {
 		i = 0

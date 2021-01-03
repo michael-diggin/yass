@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/michael-diggin/yass/common/mocks"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/michael-diggin/yass/gateway/hashring"
-	"github.com/michael-diggin/yass/gateway/mocks"
-	"github.com/michael-diggin/yass/models"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,8 +27,8 @@ func TestGatewaySet(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockGrpcClient(ctrl)
-		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientTwo := mocks.NewMockClientInterface(ctrl)
 		g := NewGateway(2, 2, &http.Server{})
 
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 1).Return(nil)
@@ -55,13 +55,12 @@ func TestGatewaySet(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockGrpcClient(ctrl)
-		mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientTwo := mocks.NewMockClientInterface(ctrl)
 		g := NewGateway(2, 2, &http.Server{})
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil).AnyTimes()
-		mockClientOne.EXPECT().DelValue(gomock.Any(), key, 0).Return(nil).AnyTimes()
 		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 0).Return(errMock)
 		g.Clients["0"] = mockClientOne
 		g.hashRing.AddNode("0")
@@ -85,7 +84,7 @@ func TestGatewaySet(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClient := mocks.NewMockGrpcClient(ctrl)
+		mockClient := mocks.NewMockClientInterface(ctrl)
 		g := NewGateway(1, 2, &http.Server{})
 		g.replicas = 1
 
@@ -110,8 +109,8 @@ func TestGatewayGetSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
 	g := NewGateway(2, 2, &http.Server{})
 
 	key := "test-get-key"
@@ -143,8 +142,8 @@ func TestGatewayGetNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
 	g := NewGateway(2, 2, &http.Server{})
 
 	key := "test-get-key"
@@ -175,8 +174,8 @@ func TestGatewayGetTimeout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
 	g := NewGateway(2, 2, &http.Server{})
 
 	key := "test-get-key"
@@ -208,9 +207,9 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClientOne := mocks.NewMockGrpcClient(ctrl)
-	mockClientTwo := mocks.NewMockGrpcClient(ctrl)
-	mockClientThree := mocks.NewMockGrpcClient(ctrl)
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
+	mockClientThree := mocks.NewMockClientInterface(ctrl)
 	g := NewGateway(3, 2, &http.Server{})
 
 	key := "test-get-key"
