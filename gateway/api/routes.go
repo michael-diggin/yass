@@ -14,7 +14,7 @@ import (
 
 // Get handles the Retrieve of a value for a given key
 func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) < g.numServers-1 {
+	if len(g.Clients) < g.numServers {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
@@ -31,8 +31,6 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
-
-	logrus.Infof("%v", nodes)
 
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
@@ -91,7 +89,7 @@ func getValueFromRequests(resps chan internalResponse, n int, cancel context.Can
 
 // Set handles the Setting of a key value pair
 func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) < g.numServers-1 {
+	if len(g.Clients) < g.numServers {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}

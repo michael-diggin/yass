@@ -111,7 +111,7 @@ func (c *StorageClient) BatchSend(ctx context.Context, replica, toReplica int, a
 }
 
 // BatchDelete deletes a batch of data where the keys lie between the hash values
-func (c *StorageClient) BatchDelete(ctx context.Context, replica, low, high uint32) error {
+func (c *StorageClient) BatchDelete(ctx context.Context, replica int, low, high uint32) error {
 	req := &pb.BatchDeleteRequest{
 		Replica: int32(replica),
 		Low:     low,

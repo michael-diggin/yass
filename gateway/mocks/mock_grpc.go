@@ -34,6 +34,34 @@ func (m *MockGrpcClient) EXPECT() *MockGrpcClientMockRecorder {
 	return m.recorder
 }
 
+// BatchDelete mocks base method
+func (m *MockGrpcClient) BatchDelete(arg0 context.Context, arg1 int, arg2, arg3 uint32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchDelete", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchDelete indicates an expected call of BatchDelete
+func (mr *MockGrpcClientMockRecorder) BatchDelete(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDelete", reflect.TypeOf((*MockGrpcClient)(nil).BatchDelete), arg0, arg1, arg2, arg3)
+}
+
+// BatchSend mocks base method
+func (m *MockGrpcClient) BatchSend(arg0 context.Context, arg1, arg2 int, arg3 string, arg4, arg5 uint32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchSend", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchSend indicates an expected call of BatchSend
+func (mr *MockGrpcClientMockRecorder) BatchSend(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchSend", reflect.TypeOf((*MockGrpcClient)(nil).BatchSend), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
 // Check mocks base method
 func (m *MockGrpcClient) Check(arg0 context.Context) (bool, error) {
 	m.ctrl.T.Helper()
