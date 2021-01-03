@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
@@ -75,4 +76,42 @@ func batchSet(store model.Service, newData []*pb.Pair) <-chan error {
 		return
 	}()
 	return resp
+}
+
+// BatchSend gets data in certain hash ranges and send it to another data node
+func (s server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Null, error) {
+	logrus.Info("Serving BatchSend request")
+	store, err := s.getStoreForRequest(req.GetReplica())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case storedData := <-store.BatchGet(req.Low, req.High):
+		data := make([]*pb.Pair, 0, len(storedData))
+		keys := make([]string, 0, len(storedData))
+		for k, d := range storedData {
+			valueBytes, err := json.Marshal(d.Value)
+			if err != nil {
+				return nil, status.Error(codes.Internal, "failed to marshal data")
+			}
+			data = append(data, &pb.Pair{Key: k, Hash: d.Hash, Value: valueBytes})
+			keys = append(keys, k)
+		}
+
+		newCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+		client, err := s.clientFactory.NewClient(newCtx, req.Address)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "could not connect to node")
+		}
+		err = client.BatchSet(newCtx, int(req.ToReplica), data)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "could not set data on node")
+		}
+
+		logrus.Info("BatchSend request succeeded")
+		return &pb.Null{}, nil
+	}
 }

@@ -11,6 +11,7 @@ service Storage {
 
     rpc BatchGet(BatchGetRequest) returns(BatchGetResponse){}
     rpc BatchSet(BatchSetRequest) returns(Null){}
+    rpc BatchSend(BatchSendRequest) returns(Null){}
 }
 
 message SetRequest {
@@ -43,6 +44,15 @@ message Null{}
 message BatchSetRequest {
     int32 replica = 1;
     repeated Pair data = 2;
+}
+
+message BatchSendRequest {
+    int32 replica = 1;
+    string address = 2;
+    int32 toReplica = 3;
+    uint32 low = 4;
+    uint32 high = 5;
+    bool delete = 6;
 }
 
 message BatchGetRequest {
