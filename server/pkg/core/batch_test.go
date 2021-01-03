@@ -4,7 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/michael-diggin/yass"
+
 	"github.com/golang/mock/gomock"
+	grpcmocks "github.com/michael-diggin/yass/mocks"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -74,4 +77,47 @@ func TestBatchGetFromStorage(t *testing.T) {
 	r.Contains(vals, res.Data[1].Value)
 	r.Contains(hashes, res.Data[0].Hash)
 	r.Contains(hashes, res.Data[1].Hash)
+}
+
+func TestBatchSend(t *testing.T) {
+	r := require.New(t)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockMain := mocks.NewMockService(ctrl)
+	mockBackup := mocks.NewMockService(ctrl)
+	resp := make(chan map[string]model.Data, 1)
+	data := map[string]model.Data{
+		"key-1": model.Data{Value: "value-1", Hash: uint32(100)},
+		"key-2": model.Data{Value: 2, Hash: uint32(101)},
+	}
+	resp <- data
+	close(resp)
+
+	mockBackup.EXPECT().BatchGet(uint32(50), uint32(150)).Return(resp)
+
+	srv := server{DataStores: []model.Service{mockMain, mockBackup},
+		clientFactory: factory{ctrl: ctrl}}
+
+	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 1, Low: uint32(50), High: uint32(150)}
+
+	ctx := context.Background()
+	_, err := srv.BatchSend(ctx, req)
+	r.NoError(err)
+
+}
+
+type factory struct {
+	ctrl *gomock.Controller
+}
+
+func (f factory) NewClient(ctx context.Context, addr string) (*yass.StorageClient, error) {
+	mockgRPC := grpcmocks.NewMockStorageClient(f.ctrl)
+	testPair1 := &pb.Pair{Key: "key-1", Hash: uint32(100), Value: []byte(`"value-1"`)}
+	testPair2 := &pb.Pair{Key: "key-2", Hash: uint32(101), Value: []byte(`2`)}
+
+	mockgRPC.EXPECT().BatchSet(gomock.Any(), &pb.BatchSetRequest{Replica: int32(1), Data: []*pb.Pair{testPair1, testPair2}}).
+		Return(&pb.Null{}, nil)
+
+	return &yass.StorageClient{GrpcClient: mockgRPC}, nil
 }

@@ -23,7 +23,7 @@ func TestClientSetValue(t *testing.T) {
 	mockgRPC := mocks.NewMockStorageClient(ctrl)
 	pair := &pb.Pair{Key: key, Hash: hash, Value: []byte(`"value"`)}
 	mockgRPC.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: int32(0), Pair: pair}).Return(nil, nil)
-	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 
 	err := cc.SetValue(context.Background(), &models.Pair{Key: key, Hash: hash, Value: val}, 0)
 	require.NoError(t, err)
@@ -50,7 +50,7 @@ func TestClientGetValue(t *testing.T) {
 			mockgRPC.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: int32(0), Key: tc.key}).
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
-			cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+			cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 			resp, err := cc.GetValue(context.Background(), tc.key, 0)
 
 			require.Equal(t, err, tc.err)
@@ -68,7 +68,7 @@ func TestClientDelValue(t *testing.T) {
 	key := "test"
 	mockgRPC.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: int32(0), Key: key}).
 		Return(&pb.Null{}, nil)
-	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 	err := cc.DelValue(context.Background(), key, 0)
 
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestBatchGet(t *testing.T) {
 	testPair := &pb.Pair{Key: "test-key", Value: []byte(`"value"`)}
 	mockgRPC.EXPECT().BatchGet(gomock.Any(), &pb.BatchGetRequest{Replica: 0}).
 		Return(&pb.BatchGetResponse{Replica: 0, Data: []*pb.Pair{testPair}}, nil)
-	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 	resp, err := cc.BatchGet(context.Background(), 0)
 	require.NoError(t, err)
 
@@ -99,7 +99,7 @@ func TestBatchSet(t *testing.T) {
 	testPair := &pb.Pair{Key: "test-key", Value: []byte(`"value"`)}
 	mockgRPC.EXPECT().BatchSet(gomock.Any(), &pb.BatchSetRequest{Replica: 1, Data: []*pb.Pair{testPair}}).
 		Return(&pb.Null{}, nil)
-	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 	err := cc.BatchSet(context.Background(), 1, []*pb.Pair{testPair})
 	require.NoError(t, err)
 }
@@ -112,7 +112,7 @@ func TestBatchSend(t *testing.T) {
 		Low: uint32(100), High: uint32(1000), Delete: true}
 	mockgRPC.EXPECT().BatchSend(gomock.Any(), req).
 		Return(&pb.Null{}, nil)
-	cc := StorageClient{grpcClient: mockgRPC, conn: nil}
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
 	err := cc.BatchSend(context.Background(), 1, 2, "localhost:8081", uint32(100), uint32(1000))
 	require.NoError(t, err)
 }
