@@ -7,7 +7,6 @@ type Nodes []Node
 type Node struct {
 	ID     string
 	Idx    int
-	VID    string
 	HashID uint32
 }
 
@@ -28,7 +27,6 @@ func NewNode(id string, idx int) *Node {
 	return &Node{
 		ID:     id,
 		Idx:    idx,
-		VID:    vNodeID(id, idx),
 		HashID: Hash(vNodeID(id, idx)),
 	}
 }

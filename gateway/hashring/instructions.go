@@ -4,6 +4,8 @@ package hashring
 // hash range information
 type Instruction struct {
 	FromNode string
+	FromIdx  int
+	ToIdx    int
 	LowHash  uint32
 	HighHash uint32
 }
