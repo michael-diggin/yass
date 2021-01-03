@@ -115,3 +115,22 @@ func (s server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Nu
 		return &pb.Null{}, nil
 	}
 }
+
+// BatchDelete deletes data where the hash of the key lies in a hash range.
+func (s server) BatchDelete(ctx context.Context, req *pb.BatchDeleteRequest) (*pb.Null, error) {
+	logrus.Info("Serving BatchDelete request")
+	store, err := s.getStoreForRequest(req.GetReplica())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "Context timeout")
+	case err := <-store.BatchDelete(req.Low, req.High):
+		if err != nil {
+			return nil, status.Error(codes.Internal, "could not delete data from store")
+		}
+		logrus.Info("BatchDelete request succeeded")
+		return &pb.Null{}, nil
+	}
+}

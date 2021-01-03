@@ -34,17 +34,17 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // BatchDelete mocks base method
-func (m *MockService) BatchDelete(arg0 []string) <-chan error {
+func (m *MockService) BatchDelete(arg0, arg1 uint32) <-chan error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BatchDelete", arg0)
+	ret := m.ctrl.Call(m, "BatchDelete", arg0, arg1)
 	ret0, _ := ret[0].(<-chan error)
 	return ret0
 }
 
 // BatchDelete indicates an expected call of BatchDelete
-func (mr *MockServiceMockRecorder) BatchDelete(arg0 interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) BatchDelete(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDelete", reflect.TypeOf((*MockService)(nil).BatchDelete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDelete", reflect.TypeOf((*MockService)(nil).BatchDelete), arg0, arg1)
 }
 
 // BatchGet mocks base method
