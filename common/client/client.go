@@ -1,6 +1,6 @@
-// Package yass implements the client side of
+// Package client implements the client side of
 // the gRPC service interface
-package yass
+package client
 
 import (
 	"context"

@@ -5,10 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/michael-diggin/yass"
-
 	"github.com/golang/mock/gomock"
-	grpcmocks "github.com/michael-diggin/yass/mocks"
+	"github.com/michael-diggin/yass/common/client"
+	grpcmocks "github.com/michael-diggin/yass/common/client/mocks"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -133,7 +132,7 @@ type factory struct {
 	ctrl *gomock.Controller
 }
 
-func (f factory) NewClient(ctx context.Context, addr string) (*yass.StorageClient, error) {
+func (f factory) NewClient(ctx context.Context, addr string) (*client.StorageClient, error) {
 	mockgRPC := grpcmocks.NewMockStorageClient(f.ctrl)
 
 	mockgRPC.EXPECT().BatchSet(gomock.Any(), gomock.Any()).
@@ -145,5 +144,5 @@ func (f factory) NewClient(ctx context.Context, addr string) (*yass.StorageClien
 			return &pb.Null{}, nil
 		})
 
-	return &yass.StorageClient{GrpcClient: mockgRPC}, nil
+	return &client.StorageClient{GrpcClient: mockgRPC}, nil
 }
