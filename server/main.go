@@ -13,9 +13,9 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/michael-diggin/yass/server/core"
 	"github.com/michael-diggin/yass/server/model"
-	"github.com/michael-diggin/yass/server/pkg/core"
-	"github.com/michael-diggin/yass/server/pkg/storage"
+	"github.com/michael-diggin/yass/server/storage"
 	"github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
