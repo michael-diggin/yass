@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/gateway/api"
 	"github.com/sirupsen/logrus"
 )
@@ -27,7 +28,7 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	gateway := api.NewGateway(*numServers, 5, srv)
+	gateway := api.NewGateway(*numServers, 5, srv, client.Factory{})
 
 	defer gateway.Stop()
 

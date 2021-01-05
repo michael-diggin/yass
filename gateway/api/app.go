@@ -16,15 +16,16 @@ import (
 // Gateway holds the router and the grpc clients
 type Gateway struct {
 	*http.Server
-	Clients    map[string]commonModels.ClientInterface
-	numServers int
-	mu         sync.RWMutex
-	hashRing   models.HashRing
-	replicas   int
+	clientFactory commonModels.ClientFactory
+	Clients       map[string]commonModels.ClientInterface
+	numServers    int
+	mu            sync.RWMutex
+	hashRing      models.HashRing
+	replicas      int
 }
 
 // NewGateway will initialize the application
-func NewGateway(numServers, weight int, srv *http.Server) *Gateway {
+func NewGateway(numServers, weight int, srv *http.Server, factory commonModels.ClientFactory) *Gateway {
 	g := Gateway{}
 
 	router := mux.NewRouter()
@@ -33,6 +34,7 @@ func NewGateway(numServers, weight int, srv *http.Server) *Gateway {
 	router.HandleFunc("/register", g.RegisterCacheServer).Methods("POST")
 
 	g.Server = srv
+	g.clientFactory = factory
 
 	g.Handler = router
 

@@ -54,7 +54,7 @@ func (y YassServer) ShutDown() {
 // server (unexported) implements the CacheServer interface
 type server struct {
 	DataStores    []model.Service
-	clientFactory clientFactory
+	clientFactory models.ClientFactory
 }
 
 // clientFactory creates a grpc client

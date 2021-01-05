@@ -102,7 +102,7 @@ func (s server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Nu
 
 		newCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
-		client, err := s.clientFactory.NewClient(newCtx, req.Address)
+		client, err := s.clientFactory.New(newCtx, req.Address)
 		if err != nil {
 			return nil, status.Error(codes.Internal, "could not connect to node")
 		}

@@ -29,7 +29,7 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 2, &http.Server{})
+		g := NewGateway(2, 2, &http.Server{}, nil)
 
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 1).Return(nil)
 		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil)
@@ -57,7 +57,7 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 2, &http.Server{})
+		g := NewGateway(2, 2, &http.Server{}, nil)
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil).AnyTimes()
@@ -85,7 +85,7 @@ func TestGatewaySet(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(1, 2, &http.Server{})
+		g := NewGateway(1, 2, &http.Server{}, nil)
 		g.replicas = 1
 
 		g.Clients["0"] = mockClient
@@ -111,7 +111,7 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 2, &http.Server{})
+	g := NewGateway(2, 2, &http.Server{}, nil)
 
 	key := "test-get-key"
 	value := "test-value"
@@ -144,7 +144,7 @@ func TestGatewayGetNotFound(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 2, &http.Server{})
+	g := NewGateway(2, 2, &http.Server{}, nil)
 
 	key := "test-get-key"
 	errMock := status.Error(codes.NotFound, "key not found in cache")
@@ -176,7 +176,7 @@ func TestGatewayGetTimeout(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 2, &http.Server{})
+	g := NewGateway(2, 2, &http.Server{}, nil)
 
 	key := "test-get-key"
 	errMock := status.Error(codes.Canceled, "request timed out")
@@ -210,7 +210,7 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
 	mockClientThree := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(3, 2, &http.Server{})
+	g := NewGateway(3, 2, &http.Server{}, nil)
 
 	key := "test-get-key"
 	value := "test-value"

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/gateway/models"
 	"github.com/sirupsen/logrus"
 )
@@ -34,7 +33,7 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 	addr := ip + ":" + port
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	dbClient, err := client.NewClient(ctx, addr)
+	dbClient, err := g.clientFactory.New(ctx, addr)
 	if err != nil {
 		logrus.Errorf("failed to dial server: %v", err)
 		respondWithError(w, err)
@@ -47,7 +46,7 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 		g.Clients[addr] = dbClient
 		g.hashRing.AddNode(addr)
 		g.mu.Unlock()
-		respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
+		respondWithJSON(w, http.StatusCreated, "server registered with gateway")
 		return
 	}
 	if _, ok := g.Clients[addr]; ok {
@@ -57,7 +56,7 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 		instructions := g.hashRing.RebalanceInstructions(addr)
 		g.mu.Unlock()
 		g.rebalanceData(addr, instructions, false)
-		respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
+		respondWithJSON(w, http.StatusCreated, "server registered with gateway")
 		return
 	}
 	// must be a new node added for scaling -> rebalance data from other nodes
@@ -67,7 +66,7 @@ func (g *Gateway) RegisterCacheServer(w http.ResponseWriter, r *http.Request) {
 	g.hashRing.AddNode(addr)
 	instructions := g.hashRing.RebalanceInstructions(addr)
 	g.rebalanceData(addr, instructions, true)
-	respondWithJSON(w, http.StatusCreated, "key and value successfully added to cache")
+	respondWithJSON(w, http.StatusCreated, "server registered with gateway")
 	return
 }
 

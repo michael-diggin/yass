@@ -2,12 +2,16 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/common/mocks"
+	hrMocks "github.com/michael-diggin/yass/gateway/mocks"
 	"github.com/michael-diggin/yass/gateway/models"
 
 	"github.com/golang/mock/gomock"
@@ -15,19 +19,139 @@ import (
 )
 
 func TestRegisterServerNoRebalancing(t *testing.T) {
-	t.Skip("client factory not implemented yet")
+	t.Run("add new node below limit", func(t *testing.T) {
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		newClient := mocks.NewMockClientInterface(ctrl)
+
+		factory := mocks.NewMockClientFactory(ctrl)
+		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
+
+		g := NewGateway(2, 2, &http.Server{}, factory)
+
+		mockHR := hrMocks.NewMockHashRing(ctrl)
+		mockHR.EXPECT().AddNode("127.0.0.1:8080")
+		g.hashRing = mockHR
+
+		var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
+		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		g.ServeHTTP(rec, req)
+
+		require.Equal(t, rec.Code, http.StatusCreated)
+		require.Len(t, g.Clients, 1)
+	})
+
+	t.Run("repopulate existing node", func(t *testing.T) {
+
+		ctx, cancel := context.WithCancel(context.Background())
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), 3, 7, "127.0.0.1:8080", uint32(100), uint32(150)).
+			DoAndReturn(func(...interface{}) error {
+				cancel()
+				return nil
+			})
+		newClient := mocks.NewMockClientInterface(ctrl)
+		factory := mocks.NewMockClientFactory(ctrl)
+		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
+
+		g := NewGateway(2, 10, &http.Server{}, factory)
+		g.Clients["ip:port"] = mockClientOne
+		g.Clients["127.0.0.1:8080"] = mocks.NewMockClientInterface(ctrl)
+
+		mockHR := hrMocks.NewMockHashRing(ctrl)
+		instrs := []models.Instruction{
+			models.Instruction{
+				FromNode: "ip:port",
+				FromIdx:  3,
+				ToIdx:    7,
+				LowHash:  uint32(100),
+				HighHash: uint32(150),
+			},
+		}
+		mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
+		g.hashRing = mockHR
+
+		var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
+		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		g.ServeHTTP(rec, req)
+
+		require.Equal(t, rec.Code, http.StatusCreated)
+		require.Len(t, g.Clients, 2)
+
+		<-ctx.Done() // wait for rebalance goroutine to execute
+	})
+}
+
+func TestRegisterServerRebalanceToNewNode(t *testing.T) {
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	g := NewGateway(2, 2, &http.Server{})
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	mockClientOne := mocks.NewMockClientInterface(ctrl)
+	mockClientTwo := mocks.NewMockClientInterface(ctrl)
+	mockClientOne.EXPECT().BatchSend(gomock.Any(), 3, 7, "127.0.0.1:8080", uint32(100), uint32(150)).Return(nil)
+	mockClientOne.EXPECT().BatchDelete(gomock.Any(), 3, uint32(100), uint32(150)).
+		DoAndReturn(func(...interface{}) error {
+			wg.Done()
+			return nil
+		})
+	mockClientTwo.EXPECT().BatchSend(gomock.Any(), 6, 1, "127.0.0.1:8080", uint32(900), uint32(1500)).Return(nil)
+	mockClientTwo.EXPECT().BatchDelete(gomock.Any(), 6, uint32(900), uint32(1500)).
+		DoAndReturn(func(...interface{}) error {
+			wg.Done()
+			return nil
+		})
+	newClient := mocks.NewMockClientInterface(ctrl)
+	factory := mocks.NewMockClientFactory(ctrl)
+	factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
+
+	g := NewGateway(2, 10, &http.Server{}, factory)
+	g.Clients["ip:port"] = mockClientOne
+	g.Clients["server:port"] = mockClientTwo
+
+	mockHR := hrMocks.NewMockHashRing(ctrl)
+	mockHR.EXPECT().AddNode("127.0.0.1:8080")
+	instrs := []models.Instruction{
+		models.Instruction{
+			FromNode: "ip:port",
+			FromIdx:  3,
+			ToIdx:    7,
+			LowHash:  uint32(100),
+			HighHash: uint32(150),
+		},
+		models.Instruction{
+			FromNode: "server:port",
+			FromIdx:  6,
+			ToIdx:    1,
+			LowHash:  uint32(900),
+			HighHash: uint32(1500),
+		},
+	}
+	mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
+	g.hashRing = mockHR
 
 	var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
-	req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
+	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	g.ServeHTTP(rec, req)
 
 	require.Equal(t, rec.Code, http.StatusCreated)
+	require.Len(t, g.Clients, 3)
+
+	wg.Wait() // wait for rebalance goroutine to execute
 
 }
 
@@ -55,7 +179,7 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, &http.Server{})
+		g := NewGateway(2, 1, &http.Server{}, client.Factory{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)
@@ -64,7 +188,7 @@ func TestRebalanceData(t *testing.T) {
 		g.Clients["server2"] = mockClientTwo
 
 		g.rebalanceData("server3", instrs, false)
-		time.Sleep(500 * time.Millisecond) // want to check the gorountines execute
+		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})
 	t.Run("rebalance data to new node", func(t *testing.T) {
@@ -73,7 +197,7 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, &http.Server{})
+		g := NewGateway(2, 1, &http.Server{}, client.Factory{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)
@@ -85,7 +209,8 @@ func TestRebalanceData(t *testing.T) {
 		g.Clients["server2"] = mockClientTwo
 
 		g.rebalanceData("server3", instrs, true)
-		time.Sleep(500 * time.Millisecond) // want to check the gorountines execute
+		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})
+
 }
