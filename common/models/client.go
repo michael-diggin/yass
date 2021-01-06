@@ -4,6 +4,8 @@ import (
 	"context"
 )
 
+//go:generate mockgen -destination=../mocks/mock_client_interface.go -package=mocks . ClientInterface
+
 // ClientInterface has the methods exposed for the client
 // that wraps the internal Grpc Client
 type ClientInterface interface {
@@ -19,6 +21,8 @@ type ClientInterface interface {
 
 	Close() error
 }
+
+//go:generate mockgen -destination=../mocks/mock_client_factory.go -package=mocks . ClientFactory
 
 // ClientFactory is the interface for creating a new instance of the Client Interface
 type ClientFactory interface {

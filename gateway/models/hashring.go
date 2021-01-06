@@ -17,6 +17,8 @@ type Instruction struct {
 	HighHash uint32
 }
 
+//go:generate mockgen -destination=../mocks/mock_hash_ring.go -package=mocks . HashRing
+
 // HashRing is the interface for the Consistent Hash Ring
 type HashRing interface {
 	AddNode(id string)

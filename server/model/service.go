@@ -13,6 +13,8 @@ type StorageResponse struct {
 	Err   error
 }
 
+//go:generate mockgen -destination=../mocks/mock_storage_service.go -package=mocks . Service
+
 // Service defines the interface for getting and setting cache key/values
 type Service interface {
 	Ping() error
