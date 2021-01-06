@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/common/mocks"
 	hrMocks "github.com/michael-diggin/yass/gateway/mocks"
 	"github.com/michael-diggin/yass/gateway/models"
@@ -158,14 +157,14 @@ func TestRegisterServerRebalanceToNewNode(t *testing.T) {
 func TestRebalanceData(t *testing.T) {
 	instrs := []models.Instruction{
 		models.Instruction{
-			FromNode: "server1",
+			FromNode: "server0",
 			FromIdx:  0,
 			ToIdx:    1,
 			LowHash:  uint32(100),
 			HighHash: uint32(1000),
 		},
 		models.Instruction{
-			FromNode: "server2",
+			FromNode: "server1",
 			FromIdx:  1,
 			ToIdx:    0,
 			LowHash:  uint32(7000),
@@ -179,15 +178,13 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, client.Factory{})
+		mockClientThree := mocks.NewMockClientInterface(ctrl)
 
-		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
-		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server2", uint32(100), uint32(1000)).Return(nil)
+		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server2", uint32(7000), uint32(10)).Return(nil)
+		g := setUpTestGateway(mockClientOne, mockClientTwo, mockClientThree)
 
-		g.Clients["server1"] = mockClientOne
-		g.Clients["server2"] = mockClientTwo
-
-		g.rebalanceData("server3", instrs, false)
+		g.rebalanceData("server2", instrs, false)
 		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})
@@ -197,18 +194,17 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, client.Factory{})
+		mockClientThree := mocks.NewMockClientInterface(ctrl)
 
-		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
-		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server2", uint32(100), uint32(1000)).Return(nil)
+		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server2", uint32(7000), uint32(10)).Return(nil)
 
 		mockClientOne.EXPECT().BatchDelete(gomock.Any(), 0, uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchDelete(gomock.Any(), 1, uint32(7000), uint32(10)).Return(nil)
 
-		g.Clients["server1"] = mockClientOne
-		g.Clients["server2"] = mockClientTwo
+		g := setUpTestGateway(mockClientOne, mockClientTwo, mockClientThree)
 
-		g.rebalanceData("server3", instrs, true)
+		g.rebalanceData("server2", instrs, true)
 		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})

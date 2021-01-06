@@ -16,7 +16,6 @@ func TestPingStorageServers(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 1, nil)
 
 	mockClientOne.EXPECT().Check(gomock.Any()).Return(true, nil)
 	mockClientTwo.EXPECT().Check(gomock.Any()).
@@ -25,8 +24,7 @@ func TestPingStorageServers(t *testing.T) {
 			return true, nil
 		})
 
-	g.Clients["0"] = mockClientOne
-	g.Clients["1"] = mockClientTwo
+	g := setUpTestGateway(mockClientOne, mockClientTwo)
 
 	g.PingStorageServers(ctx, 50*time.Millisecond)
 }
