@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/michael-diggin/yass/common/client"
-	grpcmocks "github.com/michael-diggin/yass/common/client/mocks"
+	factorymocks "github.com/michael-diggin/yass/common/mocks"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -117,8 +116,24 @@ func TestBatchSend(t *testing.T) {
 
 	mockBackup.EXPECT().BatchGet(uint32(50), uint32(150)).Return(resp)
 
+	newClient := factorymocks.NewMockClientInterface(ctrl)
+	newClient.EXPECT().BatchSet(gomock.Any(), 1, gomock.Any()).
+		DoAndReturn(func(ctx context.Context, rep int, data interface{}) error {
+			pairs, ok := data.([]*pb.Pair)
+			if !ok {
+				return errors.New("did not pass in corect data type")
+			}
+			if len(pairs) != 2 {
+				return errors.New("failed to set correct data")
+			}
+			return nil
+		})
+
+	factory := factorymocks.NewMockClientFactory(ctrl)
+	factory.EXPECT().New(gomock.Any(), "localhost:8081").Return(newClient, nil)
+
 	srv := server{DataStores: []model.Service{mockMain, mockBackup},
-		clientFactory: factory{ctrl: ctrl}}
+		clientFactory: factory}
 
 	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 1, Low: uint32(50), High: uint32(150)}
 
@@ -126,23 +141,4 @@ func TestBatchSend(t *testing.T) {
 	_, err := srv.BatchSend(ctx, req)
 	r.NoError(err)
 
-}
-
-type factory struct {
-	ctrl *gomock.Controller
-}
-
-func (f factory) NewClient(ctx context.Context, addr string) (*client.StorageClient, error) {
-	mockgRPC := grpcmocks.NewMockStorageClient(f.ctrl)
-
-	mockgRPC.EXPECT().BatchSet(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
-			data := req.GetData()
-			if len(data) != 2 {
-				return nil, errors.New("did not get two pairs")
-			}
-			return &pb.Null{}, nil
-		})
-
-	return &client.StorageClient{GrpcClient: mockgRPC}, nil
 }

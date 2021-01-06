@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/michael-diggin/yass/server/errors"
+	"github.com/michael-diggin/yass/common/yasserrors"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +15,7 @@ func TestPingStorage(t *testing.T) {
 		err  error
 	}{
 		{"serving", New(), nil},
-		{"not-serving", &Service{}, errors.NotServing{}},
+		{"not-serving", &Service{}, yasserrors.NotServing{}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestSetInCache(t *testing.T) {
 		err   error
 	}{
 		{"valid", "key", "value", uint32(77), nil},
-		{"already set", "test-key", "test-value", uint32(100), errors.AlreadySet{Key: "test-key"}},
+		{"already set", "test-key", "test-value", uint32(100), yasserrors.AlreadySet{Key: "test-key"}},
 	}
 
 	for _, tc := range tt {
@@ -66,7 +66,7 @@ func TestGetFromCache(t *testing.T) {
 		err   error
 	}{
 		{"valid", "test-key", "test-value", nil},
-		{"not found", "key", nil, errors.NotFound{Key: "key"}},
+		{"not found", "key", nil, yasserrors.NotFound{Key: "key"}},
 	}
 
 	for _, tc := range tt {

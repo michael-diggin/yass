@@ -3,64 +3,14 @@ package core
 import (
 	"context"
 	"errors"
-	"net"
 
-	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
-
-// YassServer wraps up the listener, grpc server and cache service
-type YassServer struct {
-	lis net.Listener
-	srv *grpc.Server
-}
-
-// New sets up the server
-func New(lis net.Listener, dataStores ...model.Service) YassServer {
-	s := grpc.NewServer()
-	srv := server{DataStores: dataStores, clientFactory: client.Factory{}}
-	pb.RegisterStorageServer(s, srv)
-	grpc_health_v1.RegisterHealthServer(s, &srv)
-	return YassServer{lis: lis, srv: s}
-}
-
-// Start starts the grpc server
-func (y YassServer) Start() <-chan error {
-	errChan := make(chan error)
-	go func() {
-		err := y.srv.Serve(y.lis)
-		if err != nil {
-			errChan <- err
-			close(errChan)
-		}
-	}()
-	return errChan
-}
-
-// ShutDown closes the server resources
-func (y YassServer) ShutDown() {
-	logrus.Infof("Shutting down server resources")
-	y.srv.GracefulStop()
-	logrus.Infof("gRPC server stopped")
-}
-
-// server (unexported) implements the CacheServer interface
-type server struct {
-	DataStores    []model.Service
-	clientFactory clientFactory
-}
-
-// clientFactory creates a grpc client
-type clientFactory interface {
-	NewClient(ctx context.Context, addr string) (*client.StorageClient, error)
-}
 
 // Set takes a key/value pair and adds it to the storage
 // It returns an error if the key is already set

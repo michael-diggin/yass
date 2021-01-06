@@ -15,6 +15,7 @@ type ClientInterface interface {
 	BatchSend(context.Context, int, int, string, uint32, uint32) error
 	BatchDelete(context.Context, int, uint32, uint32) error
 	BatchGet(context.Context, int) (interface{}, error)
+	BatchSet(context.Context, int, interface{}) error
 
 	Close() error
 }

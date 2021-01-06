@@ -22,8 +22,8 @@ type StorageClient struct {
 // Factory implements the clientFactory interface
 type Factory struct{}
 
-// NewClient calls the factory new client method
-func (f Factory) NewClient(ctx context.Context, addr string) (*StorageClient, error) {
+// New calls the factory new client method
+func (f Factory) New(ctx context.Context, addr string) (models.ClientInterface, error) {
 	return NewClient(ctx, addr)
 }
 
