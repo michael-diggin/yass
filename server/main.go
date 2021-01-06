@@ -12,7 +12,9 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
+	"github.com/michael-diggin/yass/common/retry"
 	"github.com/michael-diggin/yass/server/core"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/michael-diggin/yass/server/storage"
@@ -69,7 +71,14 @@ func main() {
 	}()
 
 	logrus.Info("Registering cache server with api gateway")
-	if err := RegisterServerWithGateway(*gateway, *port); err != nil {
+	err = retry.WithBackOff(func() error {
+		return RegisterServerWithGateway(*gateway, *port)
+	},
+		5,
+		1*time.Second,
+		"register data server with gateway",
+	)
+	if err != nil {
 		logrus.Fatalf("could not register server with gateway: %v", err)
 	}
 
