@@ -29,7 +29,7 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-		g := NewGateway(2, 2, &http.Server{}, factory)
+		g := NewGateway(2, 2, factory)
 
 		mockHR := hrMocks.NewMockHashRing(ctrl)
 		mockHR.EXPECT().AddNode("127.0.0.1:8080")
@@ -61,7 +61,7 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-		g := NewGateway(2, 10, &http.Server{}, factory)
+		g := NewGateway(2, 10, factory)
 		g.Clients["ip:port"] = mockClientOne
 		g.Clients["127.0.0.1:8080"] = mocks.NewMockClientInterface(ctrl)
 
@@ -117,7 +117,7 @@ func TestRegisterServerRebalanceToNewNode(t *testing.T) {
 	factory := mocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-	g := NewGateway(2, 10, &http.Server{}, factory)
+	g := NewGateway(2, 10, factory)
 	g.Clients["ip:port"] = mockClientOne
 	g.Clients["server:port"] = mockClientTwo
 
@@ -179,7 +179,7 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, &http.Server{}, client.Factory{})
+		g := NewGateway(2, 1, client.Factory{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)
@@ -197,7 +197,7 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne := mocks.NewMockClientInterface(ctrl)
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		g := NewGateway(2, 1, &http.Server{}, client.Factory{})
+		g := NewGateway(2, 1, client.Factory{})
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server3", uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server3", uint32(7000), uint32(10)).Return(nil)

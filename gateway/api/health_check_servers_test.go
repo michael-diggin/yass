@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"testing"
 	"time"
 
@@ -17,7 +16,7 @@ func TestPingStorageServers(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 1, &http.Server{}, nil)
+	g := NewGateway(2, 1, nil)
 
 	mockClientOne.EXPECT().Check(gomock.Any()).Return(true, nil)
 	mockClientTwo.EXPECT().Check(gomock.Any()).
