@@ -15,6 +15,3 @@
 # vendor/
 
 *.txt
-
-# proto generated files
-*.pb.go
