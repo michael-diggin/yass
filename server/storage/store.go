@@ -3,7 +3,7 @@ package storage
 import (
 	"sync"
 
-	"github.com/michael-diggin/yass/server/errors"
+	"github.com/michael-diggin/yass/common/yasserrors"
 	"github.com/michael-diggin/yass/server/model"
 )
 
@@ -22,7 +22,7 @@ func New() *Service {
 // Ping performs healthcheck on service
 func (s *Service) Ping() error {
 	if s.store == nil {
-		return errors.NotServing{}
+		return yasserrors.NotServing{}
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func (s *Service) Set(key string, hash uint32, value interface{}) <-chan *model.
 
 func setValue(store map[string]model.Data, key string, data model.Data) error {
 	if _, ok := store[key]; ok {
-		return errors.AlreadySet{Key: key}
+		return yasserrors.AlreadySet{Key: key}
 	}
 	store[key] = data
 	return nil
@@ -65,7 +65,7 @@ func (s *Service) Get(key string) <-chan *model.StorageResponse {
 func getValue(store map[string]model.Data, key string) (interface{}, error) {
 	data, ok := store[key]
 	if !ok {
-		return nil, errors.NotFound{Key: key}
+		return nil, yasserrors.NotFound{Key: key}
 	}
 	return data.Value, nil
 }
