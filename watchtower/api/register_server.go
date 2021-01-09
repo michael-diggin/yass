@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/michael-diggin/yass/common/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,26 +67,4 @@ func (wt *WatchTower) RegisterCacheServer(w http.ResponseWriter, r *http.Request
 	wt.rebalanceData(addr, instructions, true)
 	respondWithJSON(w, http.StatusCreated, "server registered with gateway")
 	return
-}
-
-func (wt *WatchTower) rebalanceData(addr string, instructions []models.Instruction, delete bool) error {
-	for _, instr := range instructions {
-		go func(instr models.Instruction) {
-			wt.mu.RLock()
-			dbClient := wt.Clients[instr.FromNode]
-			wt.mu.RUnlock()
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-			defer cancel()
-			err := dbClient.BatchSend(ctx, instr.FromIdx, instr.ToIdx, addr, instr.LowHash, instr.HighHash)
-			if err != nil {
-				logrus.Errorf("failed to send data from node %v: %v", instr.FromNode, err)
-				return
-			}
-			if delete {
-				dbClient.BatchDelete(ctx, instr.FromIdx, instr.LowHash, instr.HighHash)
-			}
-			return
-		}(instr)
-	}
-	return nil
 }
