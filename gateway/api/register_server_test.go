@@ -10,8 +10,7 @@ import (
 	"time"
 
 	"github.com/michael-diggin/yass/common/mocks"
-	hrMocks "github.com/michael-diggin/yass/gateway/mocks"
-	"github.com/michael-diggin/yass/gateway/models"
+	"github.com/michael-diggin/yass/common/models"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -30,7 +29,7 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 
 		g := NewGateway(2, 2, factory)
 
-		mockHR := hrMocks.NewMockHashRing(ctrl)
+		mockHR := mocks.NewMockHashRing(ctrl)
 		mockHR.EXPECT().AddNode("127.0.0.1:8080")
 		g.hashRing = mockHR
 
@@ -64,7 +63,7 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 		g.Clients["ip:port"] = mockClientOne
 		g.Clients["127.0.0.1:8080"] = mocks.NewMockClientInterface(ctrl)
 
-		mockHR := hrMocks.NewMockHashRing(ctrl)
+		mockHR := mocks.NewMockHashRing(ctrl)
 		instrs := []models.Instruction{
 			models.Instruction{
 				FromNode: "ip:port",
@@ -120,7 +119,7 @@ func TestRegisterServerRebalanceToNewNode(t *testing.T) {
 	g.Clients["ip:port"] = mockClientOne
 	g.Clients["server:port"] = mockClientTwo
 
-	mockHR := hrMocks.NewMockHashRing(ctrl)
+	mockHR := mocks.NewMockHashRing(ctrl)
 	mockHR.EXPECT().AddNode("127.0.0.1:8080")
 	instrs := []models.Instruction{
 		models.Instruction{

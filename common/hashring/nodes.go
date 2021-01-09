@@ -1,6 +1,6 @@
 package hashring
 
-import "github.com/michael-diggin/yass/gateway/models"
+import "github.com/michael-diggin/yass/common/models"
 
 // Nodes is an array of nodes
 type Nodes []models.Node

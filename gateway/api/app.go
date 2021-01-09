@@ -5,17 +5,16 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	commonModels "github.com/michael-diggin/yass/common/models"
-	"github.com/michael-diggin/yass/gateway/hashring"
-	"github.com/michael-diggin/yass/gateway/models"
+	"github.com/michael-diggin/yass/common/hashring"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/sirupsen/logrus"
 )
 
 // Gateway holds the router and the grpc clients
 type Gateway struct {
 	router        *mux.Router
-	clientFactory commonModels.ClientFactory
-	Clients       map[string]commonModels.ClientInterface
+	clientFactory models.ClientFactory
+	Clients       map[string]models.ClientInterface
 	numServers    int
 	mu            sync.RWMutex
 	hashRing      models.HashRing
@@ -23,7 +22,7 @@ type Gateway struct {
 }
 
 // NewGateway will initialize the application
-func NewGateway(numServers, weight int, factory commonModels.ClientFactory) *Gateway {
+func NewGateway(numServers, weight int, factory models.ClientFactory) *Gateway {
 	g := Gateway{}
 
 	g.router = mux.NewRouter()
@@ -33,7 +32,7 @@ func NewGateway(numServers, weight int, factory commonModels.ClientFactory) *Gat
 
 	g.clientFactory = factory
 
-	g.Clients = make(map[string]commonModels.ClientInterface)
+	g.Clients = make(map[string]models.ClientInterface)
 	g.numServers = numServers
 	g.mu = sync.RWMutex{}
 	g.hashRing = hashring.New(weight)

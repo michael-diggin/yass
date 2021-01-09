@@ -51,4 +51,5 @@ func (y YassServer) ShutDown() {
 type server struct {
 	DataStores    []model.Service
 	clientFactory models.ClientFactory
+	hashRing      models.HashRing
 }

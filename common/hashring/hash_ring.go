@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/michael-diggin/yass/gateway/models"
+	"github.com/michael-diggin/yass/common/models"
 )
 
 // ErrNodeNotFound is the error returned if a node does not exist

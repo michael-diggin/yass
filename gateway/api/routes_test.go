@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/michael-diggin/yass/common/hashring"
 	"github.com/michael-diggin/yass/common/mocks"
 	"github.com/michael-diggin/yass/common/models"
-	"github.com/michael-diggin/yass/gateway/hashring"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
