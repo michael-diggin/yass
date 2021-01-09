@@ -130,10 +130,9 @@ func TestBatchSend(t *testing.T) {
 		})
 
 	factory := factorymocks.NewMockClientFactory(ctrl)
-	factory.EXPECT().New(gomock.Any(), "localhost:8081").Return(newClient, nil)
 
-	srv := server{DataStores: []model.Service{mockMain, mockBackup},
-		clientFactory: factory}
+	srv := newServer(factory, mockMain, mockBackup)
+	srv.nodeClients["localhost:8081"] = newClient
 
 	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 1, Low: uint32(50), High: uint32(150)}
 

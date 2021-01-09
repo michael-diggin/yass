@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/michael-diggin/yass/gateway/models"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/sirupsen/logrus"
 )
 

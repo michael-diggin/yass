@@ -74,6 +74,19 @@ func TestClientDelValue(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClientAddNode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockgRPC := mocks.NewMockStorageClient(ctrl)
+	node := "yass-db-4"
+	mockgRPC.EXPECT().AddNode(gomock.Any(), &pb.AddNodeRequest{Node: node}).
+		Return(&pb.Null{}, nil)
+	cc := StorageClient{GrpcClient: mockgRPC, conn: nil}
+	err := cc.AddNode(context.Background(), node)
+
+	require.NoError(t, err)
+}
+
 func TestBatchGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

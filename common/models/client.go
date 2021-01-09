@@ -14,6 +14,8 @@ type ClientInterface interface {
 	GetValue(context.Context, string, int) (*Pair, error)
 	DelValue(context.Context, string, int) error
 
+	AddNode(context.Context, string) error
+
 	BatchSend(context.Context, int, int, string, uint32, uint32) error
 	BatchDelete(context.Context, int, uint32, uint32) error
 	BatchGet(context.Context, int) (interface{}, error)

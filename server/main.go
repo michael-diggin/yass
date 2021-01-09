@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -70,9 +67,13 @@ func main() {
 		}
 	}()
 
+	localIP, err := GetLocalIP()
+	if err != nil {
+		logrus.Fatal("Cannot get node IP")
+	}
 	logrus.Info("Registering cache server with api gateway")
 	err = retry.WithBackOff(func() error {
-		return RegisterServerWithGateway(*gateway, *port)
+		return srv.RegisterServerWithGateway(*gateway, localIP, *port)
 	},
 		5,
 		1*time.Second,
@@ -83,30 +84,6 @@ func main() {
 	}
 
 	wg.Wait()
-}
-
-// RegisterServerWithGateway will register the cache server with the api gateway so it can accept requests
-func RegisterServerWithGateway(gateway string, port int) error {
-	localIP, err := GetLocalIP()
-	if err != nil {
-		return err
-	}
-
-	addr := location{IP: localIP, Port: fmt.Sprintf("%d", port)}
-	payload, err := json.Marshal(addr)
-	if err != nil {
-		return err
-	}
-	resp, err := http.Post("http://"+gateway+"/register", "application/json", bytes.NewBuffer(payload))
-	if err != nil || resp.StatusCode != http.StatusCreated {
-		return err
-	}
-	return nil
-}
-
-type location struct {
-	IP   string `json:"ip"`
-	Port string `json:"port"`
 }
 
 // GetLocalIP returns the first non loopback local IP of the host

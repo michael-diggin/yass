@@ -35,6 +35,26 @@ func (m *MockStorageClient) EXPECT() *MockStorageClientMockRecorder {
 	return m.recorder
 }
 
+// AddNode mocks base method
+func (m *MockStorageClient) AddNode(arg0 context.Context, arg1 *proto.AddNodeRequest, arg2 ...grpc.CallOption) (*proto.Null, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddNode", varargs...)
+	ret0, _ := ret[0].(*proto.Null)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddNode indicates an expected call of AddNode
+func (mr *MockStorageClientMockRecorder) AddNode(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNode", reflect.TypeOf((*MockStorageClient)(nil).AddNode), varargs...)
+}
+
 // BatchDelete mocks base method
 func (m *MockStorageClient) BatchDelete(arg0 context.Context, arg1 *proto.BatchDeleteRequest, arg2 ...grpc.CallOption) (*proto.Null, error) {
 	m.ctrl.T.Helper()

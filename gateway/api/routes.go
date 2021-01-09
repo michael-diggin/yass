@@ -8,7 +8,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/michael-diggin/yass/common/models"
-	gwmodels "github.com/michael-diggin/yass/gateway/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -113,7 +112,7 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// synchronously set the key/value on the storage servers
-	revertSetNodes := []gwmodels.Node{}
+	revertSetNodes := []models.Node{}
 	var returnErr error
 	for _, node := range nodes {
 		g.mu.RLock()

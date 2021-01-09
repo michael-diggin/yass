@@ -83,6 +83,13 @@ func (c *StorageClient) DelValue(ctx context.Context, key string, rep int) error
 	return err
 }
 
+// AddNode instructs a node to add a new node to it's hash ring
+func (c *StorageClient) AddNode(ctx context.Context, node string) error {
+	req := &pb.AddNodeRequest{Node: node}
+	_, err := c.GrpcClient.AddNode(ctx, req)
+	return err
+}
+
 // BatchSet sets a batch of data into the storage server
 func (c *StorageClient) BatchSet(ctx context.Context, replica int, data interface{}) error {
 	reqData, ok := data.([]*pb.Pair)
