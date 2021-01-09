@@ -34,6 +34,20 @@ func (m *MockClientInterface) EXPECT() *MockClientInterfaceMockRecorder {
 	return m.recorder
 }
 
+// AddNode mocks base method
+func (m *MockClientInterface) AddNode(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddNode", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddNode indicates an expected call of AddNode
+func (mr *MockClientInterfaceMockRecorder) AddNode(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNode", reflect.TypeOf((*MockClientInterface)(nil).AddNode), arg0, arg1)
+}
+
 // BatchDelete mocks base method
 func (m *MockClientInterface) BatchDelete(arg0 context.Context, arg1 int, arg2, arg3 uint32) error {
 	m.ctrl.T.Helper()

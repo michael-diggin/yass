@@ -9,6 +9,8 @@ service Storage {
     rpc Get(GetRequest) returns(Pair){}
     rpc Delete(DeleteRequest) returns(Null){}
 
+    rpc AddNode(AddNodeRequest) returns(Null){}
+
     rpc BatchGet(BatchGetRequest) returns(BatchGetResponse){}
     rpc BatchSet(BatchSetRequest) returns(Null){}
     rpc BatchSend(BatchSendRequest) returns(Null){}
@@ -41,6 +43,10 @@ message Key {
 }
 
 message Null{}
+
+message AddNodeRequest {
+    string node = 1;
+}
 
 message BatchSetRequest {
     int32 replica = 1;
