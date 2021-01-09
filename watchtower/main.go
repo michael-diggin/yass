@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/michael-diggin/yass/common/client"
-	"github.com/michael-diggin/yass/gateway/api"
+	"github.com/michael-diggin/yass/watchtower/api"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,11 +25,11 @@ func main() {
 	weight = flag.Int("w", 10, "the number of virtual nodes for each node on the hash ring")
 	flag.Parse()
 
-	gateway := api.NewGateway(*numServers, *weight, client.Factory{})
+	wt := api.NewWatchTower(*numServers, *weight, client.Factory{})
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),
-		Handler:      gateway,
+		Handler:      wt,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
@@ -42,7 +42,7 @@ func main() {
 			logrus.Fatalf("server shutdown failed:%v", err)
 		}
 		logrus.Info("server stopped")
-		gateway.Stop()
+		wt.Stop()
 	}()
 
 	wg := sync.WaitGroup{}
@@ -64,7 +64,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go gateway.PingStorageServers(ctx, 30*time.Second)
+	go wt.PingStorageServers(ctx, 30*time.Second)
 
 	go func() {
 		// Check for a closing signal
