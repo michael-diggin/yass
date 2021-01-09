@@ -18,17 +18,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func setUpTestGateway(clients ...*mocks.MockClientInterface) *Gateway {
-	g := NewGateway(2, 2, nil)
+func setUpTestWatchTower(clients ...*mocks.MockClientInterface) *WatchTower {
+	wt := NewWatchTower(2, 2, nil)
 	for i, c := range clients {
 		addr := fmt.Sprintf("server%d", i)
-		g.Clients[addr] = c
-		g.hashRing.AddNode(addr)
+		wt.Clients[addr] = c
+		wt.hashRing.AddNode(addr)
 	}
-	return g
+	return wt
 }
 
-func TestGatewaySet(t *testing.T) {
+func TestWatchTowerSet(t *testing.T) {
 	key := "test"
 	hashkey := hashring.Hash(key)
 	value := "test-value"
@@ -44,13 +44,13 @@ func TestGatewaySet(t *testing.T) {
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil)
 		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 1).Return(nil)
 
-		g := setUpTestGateway(mockClientOne, mockClientTwo)
+		wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+		wt.ServeHTTP(rec, req)
 
 		require.Equal(t, rec.Code, http.StatusCreated)
 
@@ -70,13 +70,13 @@ func TestGatewaySet(t *testing.T) {
 		mockClientOne.EXPECT().SetValue(gomock.Any(), pair, 0).Return(nil).AnyTimes()
 		mockClientOne.EXPECT().DelValue(gomock.Any(), pair.Key, 0).Return(nil).AnyTimes()
 		mockClientTwo.EXPECT().SetValue(gomock.Any(), pair, 1).Return(errMock)
-		g := setUpTestGateway(mockClientOne, mockClientTwo)
+		wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
 		var payload = []byte(`{"key":"test", "value": "test-value"}`)
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+		wt.ServeHTTP(rec, req)
 
 		require.Equal(t, rec.Code, http.StatusAlreadyReported)
 
@@ -91,13 +91,13 @@ func TestGatewaySet(t *testing.T) {
 
 		mockClient := mocks.NewMockClientInterface(ctrl)
 
-		g := setUpTestGateway(mockClient, mockClient)
+		wt := setUpTestWatchTower(mockClient, mockClient)
 
 		payload := []byte{}
 		req, _ := http.NewRequest("POST", "/set", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+		wt.ServeHTTP(rec, req)
 
 		require.Equal(t, rec.Code, http.StatusBadRequest)
 
@@ -113,7 +113,6 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 	mockClientOne := mocks.NewMockClientInterface(ctrl)
 	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	g := NewGateway(2, 2, nil)
 
 	key := "test-get-key"
 	value := "test-value"
@@ -122,15 +121,12 @@ func TestGatewayGetSuccess(t *testing.T) {
 	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(pair, nil).AnyTimes()
 	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(pair, nil).AnyTimes()
 
-	g.Clients["server0"] = mockClientOne
-	g.Clients["server1"] = mockClientTwo
-	g.hashRing.AddNode("server0")
-	g.hashRing.AddNode("server1")
+	wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	g.ServeHTTP(rec, req)
+	wt.ServeHTTP(rec, req)
 
 	require.Equal(t, rec.Code, http.StatusOK)
 
@@ -153,12 +149,12 @@ func TestGatewayGetNotFound(t *testing.T) {
 	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
 	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
 
-	g := setUpTestGateway(mockClientOne, mockClientTwo)
+	wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	g.ServeHTTP(rec, req)
+	wt.ServeHTTP(rec, req)
 
 	require.Equal(t, rec.Code, http.StatusNotFound)
 
@@ -181,12 +177,12 @@ func TestGatewayGetTimeout(t *testing.T) {
 	mockClientOne.EXPECT().GetValue(gomock.Any(), key, 0).Return(nil, errMock).AnyTimes()
 	mockClientTwo.EXPECT().GetValue(gomock.Any(), key, 1).Return(nil, errMock).AnyTimes()
 
-	g := setUpTestGateway(mockClientOne, mockClientTwo)
+	wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
 	req, _ := http.NewRequest("GET", "/get/"+"test-get-key", nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	g.ServeHTTP(rec, req)
+	wt.ServeHTTP(rec, req)
 
 	require.Equal(t, rec.Code, http.StatusRequestTimeout)
 
@@ -217,12 +213,12 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 			return pair, nil
 		}).AnyTimes()
 
-	g := setUpTestGateway(mockClientOne, mockClientTwo, mockClientThree)
+	wt := setUpTestWatchTower(mockClientOne, mockClientTwo, mockClientThree)
 
 	req, _ := http.NewRequest("GET", "/get/"+key, nil)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	g.ServeHTTP(rec, req)
+	wt.ServeHTTP(rec, req)
 
 	require.Equal(t, http.StatusOK, rec.Code)
 

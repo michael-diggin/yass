@@ -12,8 +12,8 @@ import (
 )
 
 // Get handles the Retrieve of a value for a given key
-func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) < g.numServers {
+func (wt *WatchTower) Get(w http.ResponseWriter, r *http.Request) {
+	if len(wt.Clients) < wt.numServers {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
@@ -25,8 +25,8 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashkey := g.hashRing.Hash(key)
-	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
+	hashkey := wt.hashRing.Hash(key)
+	nodes, err := wt.hashRing.GetN(hashkey, wt.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
@@ -37,9 +37,9 @@ func (g *Gateway) Get(w http.ResponseWriter, r *http.Request) {
 	resps := make(chan internalResponse, len(nodes))
 	for _, node := range nodes {
 		n := node
-		g.mu.RLock()
-		client := g.Clients[n.ID]
-		g.mu.RUnlock()
+		wt.mu.RLock()
+		client := wt.Clients[n.ID]
+		wt.mu.RUnlock()
 		go func() {
 			subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
@@ -87,8 +87,8 @@ func getValueFromRequests(resps chan internalResponse, n int, cancel context.Can
 }
 
 // Set handles the Setting of a key value pair
-func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
-	if len(g.Clients) < g.numServers {
+func (wt *WatchTower) Set(w http.ResponseWriter, r *http.Request) {
+	if len(wt.Clients) < wt.numServers {
 		respondWithErrorCode(w, http.StatusServiceUnavailable, "server is not ready yet")
 		return
 	}
@@ -102,8 +102,8 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get node Addrs from hash ring
-	hashkey := g.hashRing.Hash(pair.Key)
-	nodes, err := g.hashRing.GetN(hashkey, g.replicas)
+	hashkey := wt.hashRing.Hash(pair.Key)
+	nodes, err := wt.hashRing.GetN(hashkey, wt.replicas)
 	if err != nil {
 		respondWithErrorCode(w, http.StatusInternalServerError, "something went wrong")
 	}
@@ -115,9 +115,9 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 	revertSetNodes := []models.Node{}
 	var returnErr error
 	for _, node := range nodes {
-		g.mu.RLock()
-		client := g.Clients[node.ID]
-		g.mu.RUnlock()
+		wt.mu.RLock()
+		client := wt.Clients[node.ID]
+		wt.mu.RUnlock()
 		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		err := client.SetValue(subctx, &pair, node.Idx)
 		cancel()
@@ -133,9 +133,9 @@ func (g *Gateway) Set(w http.ResponseWriter, r *http.Request) {
 		// revert any changes that were made before an error
 		for _, node := range revertSetNodes {
 			n := node
-			g.mu.RLock()
-			client := g.Clients[n.ID]
-			g.mu.RUnlock()
+			wt.mu.RLock()
+			client := wt.Clients[n.ID]
+			wt.mu.RUnlock()
 			go func() {
 				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 				client.DelValue(subctx, pair.Key, n.Idx)

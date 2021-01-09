@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Gateway holds the router and the grpc clients
-type Gateway struct {
+// WatchTower holds the router and the grpc clients
+type WatchTower struct {
 	router        *mux.Router
 	clientFactory models.ClientFactory
 	Clients       map[string]models.ClientInterface
@@ -21,37 +21,37 @@ type Gateway struct {
 	replicas      int
 }
 
-// NewGateway will initialize the application
-func NewGateway(numServers, weight int, factory models.ClientFactory) *Gateway {
-	g := Gateway{}
+// NewWatchTower will initialize the application
+func NewWatchTower(numServers, weight int, factory models.ClientFactory) *WatchTower {
+	wt := WatchTower{}
 
-	g.router = mux.NewRouter()
-	g.router.HandleFunc("/get/{key}", g.Get).Methods("GET")
-	g.router.HandleFunc("/set", g.Set).Methods("POST")
-	g.router.HandleFunc("/register", g.RegisterCacheServer).Methods("POST")
+	wt.router = mux.NewRouter()
+	wt.router.HandleFunc("/get/{key}", wt.Get).Methods("GET")
+	wt.router.HandleFunc("/set", wt.Set).Methods("POST")
+	wt.router.HandleFunc("/register", wt.RegisterCacheServer).Methods("POST")
 
-	g.clientFactory = factory
+	wt.clientFactory = factory
 
-	g.Clients = make(map[string]models.ClientInterface)
-	g.numServers = numServers
-	g.mu = sync.RWMutex{}
-	g.hashRing = hashring.New(weight)
-	g.replicas = 2
-	return &g
+	wt.Clients = make(map[string]models.ClientInterface)
+	wt.numServers = numServers
+	wt.mu = sync.RWMutex{}
+	wt.hashRing = hashring.New(weight)
+	wt.replicas = 2
+	return &wt
 }
 
 //ServeHTTP will serve and route a request
-func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	g.router.ServeHTTP(w, r)
+func (wt *WatchTower) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	wt.router.ServeHTTP(w, r)
 }
 
-// Stop will close all grpc connections the gateway holds
-func (g *Gateway) Stop() {
-	g.mu.Lock()
-	for num, client := range g.Clients {
+// Stop will close all grpc connections the watchtower holds
+func (wt *WatchTower) Stop() {
+	wt.mu.Lock()
+	for num, client := range wt.Clients {
 		serverNum := num
 		client.Close()
-		delete(g.Clients, serverNum)
+		delete(wt.Clients, serverNum)
 	}
 	logrus.Info("Closed connections to storage servers")
 }

@@ -27,20 +27,20 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-		g := NewGateway(2, 2, factory)
+		wt := NewWatchTower(2, 2, factory)
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		mockHR.EXPECT().AddNode("127.0.0.1:8080")
-		g.hashRing = mockHR
+		wt.hashRing = mockHR
 
 		var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
 		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+		wt.ServeHTTP(rec, req)
 
 		require.Equal(t, rec.Code, http.StatusCreated)
-		require.Len(t, g.Clients, 1)
+		require.Len(t, wt.Clients, 1)
 	})
 
 	t.Run("repopulate existing node", func(t *testing.T) {
@@ -59,9 +59,9 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-		g := NewGateway(2, 10, factory)
-		g.Clients["ip:port"] = mockClientOne
-		g.Clients["127.0.0.1:8080"] = mocks.NewMockClientInterface(ctrl)
+		wt := NewWatchTower(2, 10, factory)
+		wt.Clients["ip:port"] = mockClientOne
+		wt.Clients["127.0.0.1:8080"] = mocks.NewMockClientInterface(ctrl)
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		instrs := []models.Instruction{
@@ -74,16 +74,16 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 			},
 		}
 		mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
-		g.hashRing = mockHR
+		wt.hashRing = mockHR
 
 		var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
 		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
 		req.Header.Set("Content-Type", "application/json")
 		rec := httptest.NewRecorder()
-		g.ServeHTTP(rec, req)
+		wt.ServeHTTP(rec, req)
 
 		require.Equal(t, rec.Code, http.StatusCreated)
-		require.Len(t, g.Clients, 2)
+		require.Len(t, wt.Clients, 2)
 
 		<-ctx.Done() // wait for rebalance goroutine to execute
 	})
@@ -115,9 +115,9 @@ func TestRegisterServerRebalanceToNewNode(t *testing.T) {
 	factory := mocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-	g := NewGateway(2, 10, factory)
-	g.Clients["ip:port"] = mockClientOne
-	g.Clients["server:port"] = mockClientTwo
+	wt := NewWatchTower(2, 10, factory)
+	wt.Clients["ip:port"] = mockClientOne
+	wt.Clients["server:port"] = mockClientTwo
 
 	mockHR := mocks.NewMockHashRing(ctrl)
 	mockHR.EXPECT().AddNode("127.0.0.1:8080")
@@ -138,16 +138,16 @@ func TestRegisterServerRebalanceToNewNode(t *testing.T) {
 		},
 	}
 	mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
-	g.hashRing = mockHR
+	wt.hashRing = mockHR
 
 	var payload = []byte(`{"ip":"127.0.0.1", "port": "8080"}`)
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	g.ServeHTTP(rec, req)
+	wt.ServeHTTP(rec, req)
 
 	require.Equal(t, rec.Code, http.StatusCreated)
-	require.Len(t, g.Clients, 3)
+	require.Len(t, wt.Clients, 3)
 
 	wg.Wait() // wait for rebalance goroutine to execute
 
@@ -181,9 +181,9 @@ func TestRebalanceData(t *testing.T) {
 
 		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server2", uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server2", uint32(7000), uint32(10)).Return(nil)
-		g := setUpTestGateway(mockClientOne, mockClientTwo, mockClientThree)
+		wt := setUpTestWatchTower(mockClientOne, mockClientTwo, mockClientThree)
 
-		g.rebalanceData("server2", instrs, false)
+		wt.rebalanceData("server2", instrs, false)
 		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})
@@ -201,9 +201,9 @@ func TestRebalanceData(t *testing.T) {
 		mockClientOne.EXPECT().BatchDelete(gomock.Any(), 0, uint32(100), uint32(1000)).Return(nil)
 		mockClientTwo.EXPECT().BatchDelete(gomock.Any(), 1, uint32(7000), uint32(10)).Return(nil)
 
-		g := setUpTestGateway(mockClientOne, mockClientTwo, mockClientThree)
+		wt := setUpTestWatchTower(mockClientOne, mockClientTwo, mockClientThree)
 
-		g.rebalanceData("server2", instrs, true)
+		wt.rebalanceData("server2", instrs, true)
 		time.Sleep(100 * time.Millisecond) // want to check the gorountines execute
 
 	})

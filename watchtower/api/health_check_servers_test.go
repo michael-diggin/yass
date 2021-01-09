@@ -24,7 +24,7 @@ func TestPingStorageServers(t *testing.T) {
 			return true, nil
 		})
 
-	g := setUpTestGateway(mockClientOne, mockClientTwo)
+	wt := setUpTestWatchTower(mockClientOne, mockClientTwo)
 
-	g.PingStorageServers(ctx, 50*time.Millisecond)
+	wt.PingStorageServers(ctx, 50*time.Millisecond)
 }

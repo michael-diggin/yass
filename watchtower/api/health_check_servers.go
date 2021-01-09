@@ -9,13 +9,13 @@ import (
 
 // PingStorageServers will health check the storage servers that are registered with the gateway every
 // `freq` seconds until the context is cancelled
-func (g *Gateway) PingStorageServers(ctx context.Context, freq time.Duration) {
+func (wt *WatchTower) PingStorageServers(ctx context.Context, freq time.Duration) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(freq):
-			for addr, client := range g.Clients {
+			for addr, client := range wt.Clients {
 				serverAddr := addr
 				logrus.Infof("Checking storage server %s", serverAddr)
 				tCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
