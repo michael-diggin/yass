@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/michael-diggin/yass/common/client"
-	"github.com/michael-diggin/yass/gateway/api"
+	"github.com/michael-diggin/yass/watchtower/api"
 	"github.com/sirupsen/logrus"
 )
 
