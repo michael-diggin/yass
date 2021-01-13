@@ -11,19 +11,22 @@ import (
 	"syscall"
 	"time"
 
+	pb "github.com/michael-diggin/yass/proto"
+
 	"github.com/michael-diggin/yass/common/retry"
 	"github.com/michael-diggin/yass/server/core"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/michael-diggin/yass/server/storage"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
 
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	port := flag.Int("p", 8080, "port for cache server to listen on")
-	gateway := flag.String("g", "localhost:8010", "location of the gateway server")
-	numStores := flag.Int("s", 10, "The number of data stores the server manages")
+	port := flag.Int("p", 8080, "port for storage server to listen on")
+	gateway := flag.String("g", "localhost:8010", "location of the watchtower")
+	weights := flag.Int("w", 10, "The number of weights/data stores the server manages")
 	flag.Parse()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
@@ -32,8 +35,8 @@ func main() {
 	}
 
 	// set up cache
-	stores := make([]model.Service, *numStores)
-	for i := 0; i < *numStores; i++ {
+	stores := make([]model.Service, *weights)
+	for i := 0; i < *weights; i++ {
 		store := storage.New()
 		stores[i] = store
 	}
@@ -47,7 +50,7 @@ func main() {
 	go func() {
 		logrus.Infof("Starting cache server on port: %d", *port)
 		select {
-		case err = <-srv.Start():
+		case err = <-srv.Serve():
 			logrus.Errorf("error from server: %v", err)
 		case <-ctx.Done():
 		}
@@ -67,20 +70,31 @@ func main() {
 		}
 	}()
 
+	// adding itself as a node to the hash ring
+	_, err = srv.AddNode(ctx, &pb.AddNodeRequest{Node: fmt.Sprintf("localhost:%d", *port)})
+	if err != nil {
+		logrus.Fatalf("could not add own node: %v", err)
+	}
+
 	localIP, err := GetLocalIP()
 	if err != nil {
 		logrus.Fatal("Cannot get node IP")
 	}
-	logrus.Info("Registering cache server with api gateway")
+	logrus.Info("Registering storage server with watchtower")
 	err = retry.WithBackOff(func() error {
-		return srv.RegisterServerWithGateway(*gateway, localIP, *port)
+		conn, err := grpc.DialContext(ctx, *gateway, grpc.WithInsecure()) //TODO: add security and credentials
+		if err != nil {
+			return err
+		}
+		gatewayClient := pb.NewWatchTowerClient(conn)
+		return srv.RegisterNodeWithWatchTower(gatewayClient, localIP, *port)
 	},
 		5,
 		1*time.Second,
-		"register data server with gateway",
+		"register data server with watchtower",
 	)
 	if err != nil {
-		logrus.Fatalf("could not register server with gateway: %v", err)
+		logrus.Fatalf("could not register server with watchtower: %v", err)
 	}
 
 	wg.Wait()
@@ -93,7 +107,7 @@ func GetLocalIP() (string, error) {
 		return "", errors.Wrap(err, "failed to get local IP")
 	}
 	for _, address := range addrs {
-		// check the address type and if it is not a loopback the display it
+		// check the address type and if it is not a loopback then display it
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
 				return ipnet.IP.String(), nil

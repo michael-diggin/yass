@@ -29,8 +29,8 @@ func New(lis net.Listener, dataStores ...model.Service) YassServer {
 	return YassServer{lis: lis, srv: s, server: srv}
 }
 
-// Start starts the grpc server
-func (y YassServer) Start() <-chan error {
+// Serve starts the grpc server
+func (y YassServer) Serve() <-chan error {
 	errChan := make(chan error)
 	go func() {
 		err := y.srv.Serve(y.lis)

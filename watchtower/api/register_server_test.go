@@ -17,6 +17,7 @@ import (
 )
 
 func TestRegisterServerNoRebalancing(t *testing.T) {
+	t.Skip("No longer testing")
 	t.Run("add new node below limit", func(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
@@ -90,6 +91,7 @@ func TestRegisterServerNoRebalancing(t *testing.T) {
 }
 
 func TestRegisterServerRebalanceToNewNode(t *testing.T) {
+	t.Skip("No longer testing")
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

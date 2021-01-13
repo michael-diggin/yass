@@ -34,14 +34,14 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 		}
 		existingNodes = append(existingNodes, nodeAddr)
 		go func(address string, client models.ClientInterface) {
-			subCtx, subCancel := context.WithTimeout(ctx, 3*time.Second)
+			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Second)
 			client.AddNode(subCtx, address)
 			subCancel()
-		}(nodeAddr, otherClient)
+		}(addr, otherClient)
 	}
 	if len(wt.Clients) < wt.numServers {
 		// new node for initial creation -> no rebalancing
-		logrus.Info("Registering a new server for gateway")
+		logrus.Info("Registering a new server with watchtower")
 		wt.Clients[addr] = dbClient
 		wt.hashRing.AddNode(addr)
 		wt.mu.Unlock()

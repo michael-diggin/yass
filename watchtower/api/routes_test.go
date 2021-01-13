@@ -29,6 +29,7 @@ func setUpTestWatchTower(clients ...*mocks.MockClientInterface) *WatchTower {
 }
 
 func TestWatchTowerSet(t *testing.T) {
+	t.Skip("No longer testing")
 	key := "test"
 	hashkey := hashring.Hash(key)
 	value := "test-value"
@@ -108,6 +109,7 @@ func TestWatchTowerSet(t *testing.T) {
 }
 
 func TestGatewayGetSuccess(t *testing.T) {
+	t.Skip("No longer testing")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -137,6 +139,7 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 }
 func TestGatewayGetNotFound(t *testing.T) {
+	t.Skip("No longer testing")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -165,6 +168,7 @@ func TestGatewayGetNotFound(t *testing.T) {
 }
 
 func TestGatewayGetTimeout(t *testing.T) {
+	t.Skip("No longer testing")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -193,6 +197,7 @@ func TestGatewayGetTimeout(t *testing.T) {
 }
 
 func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
+	t.Skip("No longer testing")
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

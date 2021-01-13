@@ -26,6 +26,6 @@ func (s server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null, 
 	s.nodeClients[req.Node] = client
 	s.hashRing.AddNode(req.Node)
 
-	logrus.Debug("Successfully added a new node")
+	logrus.Debugf("Successfully added a new node: %s", req.Node)
 	return &pb.Null{}, nil
 }

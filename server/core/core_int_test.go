@@ -31,7 +31,7 @@ func TestRunAndPingServer(t *testing.T) {
 	mockFollower := mocks.NewMockService(ctrl)
 
 	srv := New(lis, mockLeader, mockFollower)
-	srv.Start()
+	srv.Serve()
 	defer srv.ShutDown()
 
 	ctx := context.Background()
