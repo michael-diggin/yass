@@ -4,16 +4,19 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
+	"net"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
+	pb "github.com/michael-diggin/yass/proto"
+
 	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/watchtower/api"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -25,39 +28,26 @@ func main() {
 	weight = flag.Int("w", 10, "the number of virtual nodes for each node on the hash ring")
 	flag.Parse()
 
-	wt := api.NewWatchTower(*numServers, *weight, client.Factory{})
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", *port),
-		Handler:      wt,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		logrus.Fatalf("Cannot listen on port: %v", err)
 	}
 
-	defer func() {
-		ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+	srv := grpc.NewServer()
+	wt := api.NewWatchTower(*numServers, *weight, client.Factory{})
+	pb.RegisterWatchTowerServer(srv, wt)
 
-		if err := srv.Shutdown(ctxShutDown); err != nil {
-			logrus.Fatalf("server shutdown failed:%v", err)
-		}
+	defer func() {
+		srv.GracefulStop()
 		logrus.Info("server stopped")
 		wt.Stop()
 	}()
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
 	go func() {
-		logrus.Infof("Running the server on port %d", *port)
-		err := srv.ListenAndServe()
-		switch err {
-		case nil:
-			return
-		case http.ErrServerClosed:
-			logrus.Info("Server closed")
-			return
-		default:
-			logrus.Errorf("encountered error when running gateway: %v", err)
+		logrus.Infof("Running watchtower on port %d", *port)
+		err = srv.Serve(lis)
+		if err != nil {
+			logrus.Errorf("encountered error when running watchtower: %v", err)
 		}
 	}()
 
@@ -66,6 +56,8 @@ func main() {
 
 	go wt.PingStorageServers(ctx, 30*time.Second)
 
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
 		// Check for a closing signal
 		sigChan := make(chan os.Signal, 1)
@@ -75,5 +67,5 @@ func main() {
 		wg.Done()
 	}()
 
-	wg.Wait() // wait for server go routine to exit
+	wg.Wait()
 }
