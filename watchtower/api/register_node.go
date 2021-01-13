@@ -19,6 +19,26 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 		return nil, status.Error(codes.InvalidArgument, "no node address given")
 	}
 
+	wt.mu.RLock()
+	// get all the other nodes in the hash ring
+	existingNodes := []string{}
+	for nodeAddr := range wt.Clients {
+		if nodeAddr == addr {
+			continue
+		}
+		existingNodes = append(existingNodes, nodeAddr)
+	}
+	// quick check to see if this is a restarted node
+	if _, ok := wt.Clients[addr]; ok {
+		wt.mu.RUnlock()
+		// node failed and restarted -> repopulate from other nodes
+		logrus.Info("Registering a failed node that restarted")
+		instructions := wt.hashRing.RebalanceInstructions(addr)
+		wt.rebalanceData(addr, instructions, false)
+		return &pb.RegisterNodeResponse{ExistingNodes: existingNodes}, nil
+	}
+	wt.mu.RUnlock()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	dbClient, err := wt.clientFactory.New(ctx, addr)
@@ -27,12 +47,8 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 	}
 	wt.mu.Lock()
 	// send add Node instruction to existing nodes
-	existingNodes := []string{}
-	for nodeAddr, otherClient := range wt.Clients {
-		if nodeAddr == addr {
-			continue
-		}
-		existingNodes = append(existingNodes, nodeAddr)
+	for _, nodeAddr := range existingNodes {
+		otherClient := wt.Clients[nodeAddr]
 		go func(address string, client models.ClientInterface) {
 			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Second)
 			client.AddNode(subCtx, address)
@@ -47,15 +63,7 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 		wt.mu.Unlock()
 		return &pb.RegisterNodeResponse{ExistingNodes: existingNodes}, nil
 	}
-	if _, ok := wt.Clients[addr]; ok {
-		// node failed and restarted -> repopulate from other nodes
-		logrus.Info("Registering a failed node that restarted")
-		wt.Clients[addr] = dbClient
-		instructions := wt.hashRing.RebalanceInstructions(addr)
-		wt.mu.Unlock()
-		wt.rebalanceData(addr, instructions, false)
-		return &pb.RegisterNodeResponse{ExistingNodes: existingNodes}, nil
-	}
+
 	// must be a new node added for scaling -> rebalance data from other nodes
 	logrus.Info("Registering a new node for scaling")
 	wt.Clients[addr] = dbClient
