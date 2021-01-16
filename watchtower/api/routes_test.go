@@ -19,7 +19,7 @@ import (
 )
 
 func setUpTestWatchTower(clients ...*mocks.MockClientInterface) *WatchTower {
-	wt := NewWatchTower(2, 2, nil)
+	wt := NewWatchTower(2, 2, nil, "")
 	for i, c := range clients {
 		addr := fmt.Sprintf("server%d", i)
 		wt.Clients[addr] = c

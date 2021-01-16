@@ -2,6 +2,9 @@ package api
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -19,12 +22,15 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		tmpfile := setUpTestFile(t, "node-1")
+		defer os.Remove(tmpfile.Name())
+
 		newClient := mocks.NewMockClientInterface(ctrl)
 
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-		wt := NewWatchTower(2, 2, factory)
+		wt := NewWatchTower(2, 2, factory, tmpfile.Name())
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		mockHR.EXPECT().AddNode("127.0.0.1:8080")
@@ -35,6 +41,12 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, rec.ExistingNodes, []string{})
+
+		f, _ := os.Open(tmpfile.Name())
+		b, err := ioutil.ReadAll(f)
+		require.NoError(t, err)
+		addr := strings.Split(string(b), "\n")
+		require.Equal(t, []string{"node-1", "127.0.0.1:8080"}, addr)
 	})
 
 	t.Run("repopulate existing node", func(t *testing.T) {
@@ -55,7 +67,7 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		mockClientTwo := mocks.NewMockClientInterface(ctrl)
 		factory := mocks.NewMockClientFactory(ctrl)
 
-		wt := NewWatchTower(2, 10, factory)
+		wt := NewWatchTower(2, 10, factory, "")
 		wt.Clients["ip:port"] = mockClientOne
 		wt.Clients["127.0.0.1:8080"] = mockClientTwo
 
@@ -85,6 +97,9 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 func TestRebalanceDataToNewNode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	tmpfile := setUpTestFile(t, "ip:port\nserver:port")
+	defer os.Remove(tmpfile.Name())
 
 	wg := sync.WaitGroup{}
 	wg.Add(4)
@@ -117,7 +132,7 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 	factory := mocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
-	wt := NewWatchTower(2, 10, factory)
+	wt := NewWatchTower(2, 10, factory, tmpfile.Name())
 	wt.Clients["ip:port"] = mockClientOne
 	wt.Clients["server:port"] = mockClientTwo
 
@@ -147,6 +162,12 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, rec.ExistingNodes, []string{"ip:port", "server:port"})
+
+	f, _ := os.Open(tmpfile.Name())
+	b, err := ioutil.ReadAll(f)
+	require.NoError(t, err)
+	addr := strings.Split(string(b), "\n")
+	require.Equal(t, []string{"ip:port", "server:port", "127.0.0.1:8080"}, addr)
 
 	wg.Wait() // wait for rebalance goroutine to execute
 

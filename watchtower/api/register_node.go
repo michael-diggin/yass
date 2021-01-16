@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/michael-diggin/yass/common/models"
@@ -37,6 +38,17 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 		wt.rebalanceData(addr, instructions, false)
 		return &pb.RegisterNodeResponse{ExistingNodes: existingNodes}, nil
 	}
+
+	// add node data to the file
+	f, err := os.OpenFile(wt.nodeFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to open node file")
+	}
+	if _, err := f.Write([]byte("\n" + addr)); err != nil {
+		return nil, status.Error(codes.Internal, "unable to append node to node file")
+	}
+	f.Close()
+
 	wt.mu.RUnlock()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

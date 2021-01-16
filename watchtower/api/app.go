@@ -17,10 +17,11 @@ type WatchTower struct {
 	mu            sync.RWMutex
 	hashRing      models.HashRing
 	replicas      int
+	nodeFile      string
 }
 
 // NewWatchTower will initialize the application
-func NewWatchTower(numServers, weight int, factory models.ClientFactory) *WatchTower {
+func NewWatchTower(numServers, weight int, factory models.ClientFactory, nodeFile string) *WatchTower {
 	wt := WatchTower{}
 
 	wt.clientFactory = factory
@@ -30,6 +31,7 @@ func NewWatchTower(numServers, weight int, factory models.ClientFactory) *WatchT
 	wt.mu = sync.RWMutex{}
 	wt.hashRing = hashring.New(weight)
 	wt.replicas = 2
+	wt.nodeFile = nodeFile
 	return &wt
 }
 
