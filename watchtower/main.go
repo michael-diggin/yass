@@ -17,6 +17,7 @@ import (
 	"github.com/michael-diggin/yass/watchtower/api"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -36,6 +37,7 @@ func main() {
 	srv := grpc.NewServer()
 	wt := api.NewWatchTower(*numServers, *weight, client.Factory{})
 	pb.RegisterWatchTowerServer(srv, wt)
+	grpc_health_v1.RegisterHealthServer(srv, wt)
 
 	defer func() {
 		srv.GracefulStop()
