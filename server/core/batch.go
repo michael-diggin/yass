@@ -13,7 +13,7 @@ import (
 )
 
 // BatchGet returns all of the stored data in a given replica
-func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
+func (s *server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.BatchGetResponse, error) {
 	logrus.Info("Serving BatchGet request")
 	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
@@ -39,7 +39,7 @@ func (s server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Batc
 }
 
 // BatchSet sets the values into the store
-func (s server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
+func (s *server) BatchSet(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchSet request")
 	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
@@ -79,7 +79,7 @@ func batchSet(store model.Service, newData []*pb.Pair) <-chan error {
 }
 
 // BatchSend gets data in certain hash ranges and send it to another data node
-func (s server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Null, error) {
+func (s *server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchSend request")
 	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {
@@ -117,7 +117,7 @@ func (s server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.Nu
 }
 
 // BatchDelete deletes data where the hash of the key lies in a hash range.
-func (s server) BatchDelete(ctx context.Context, req *pb.BatchDeleteRequest) (*pb.Null, error) {
+func (s *server) BatchDelete(ctx context.Context, req *pb.BatchDeleteRequest) (*pb.Null, error) {
 	logrus.Info("Serving BatchDelete request")
 	store, err := s.getStoreForRequest(req.GetReplica())
 	if err != nil {

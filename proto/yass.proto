@@ -4,6 +4,7 @@ package proto;
 
 option go_package = "github.com/michael-diggin/yass/proto;proto";
 
+// Storage is the internal interface
 service Storage {
     rpc Set(SetRequest) returns(Null){}
     rpc Get(GetRequest) returns(Pair){}
@@ -15,6 +16,12 @@ service Storage {
     rpc BatchSet(BatchSetRequest) returns(Null){}
     rpc BatchSend(BatchSendRequest) returns(Null){}
     rpc BatchDelete(BatchDeleteRequest) returns(Null){}
+}
+
+// YassService is the external service to put and get
+service YassService {
+    rpc Put(Pair) returns(Null){}
+    rpc Retrieve(Key) returns(Pair){}
 }
 
 message SetRequest {
