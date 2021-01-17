@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null, error) {
+func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null, error) {
 	logrus.Debug("Adding a new node")
 	if req.Node == "" {
 		return nil, status.Error(codes.InvalidArgument, "Cannot add a node without an address")

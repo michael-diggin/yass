@@ -2,6 +2,7 @@ package core
 
 import (
 	"net"
+	"sync"
 
 	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/common/hashring"
@@ -25,6 +26,7 @@ func New(lis net.Listener, dataStores ...model.Service) YassServer {
 	s := grpc.NewServer()
 	srv := newServer(client.Factory{}, dataStores...)
 	pb.RegisterStorageServer(s, srv)
+	pb.RegisterYassServiceServer(s, srv)
 	grpc_health_v1.RegisterHealthServer(s, srv)
 	return YassServer{lis: lis, srv: s, server: srv}
 }
@@ -54,7 +56,9 @@ type server struct {
 	DataStores  []model.Service
 	factory     models.ClientFactory
 	nodeClients map[string]models.ClientInterface
+	mu          sync.RWMutex
 	hashRing    models.HashRing
+	minServers  int
 }
 
 func newServer(factory models.ClientFactory, dataStores ...model.Service) *server {
@@ -63,7 +67,9 @@ func newServer(factory models.ClientFactory, dataStores ...model.Service) *serve
 		DataStores:  dataStores,
 		factory:     factory,
 		nodeClients: make(map[string]models.ClientInterface),
+		mu:          sync.RWMutex{},
 		hashRing:    hashRing,
+		minServers:  3,
 	}
 	return &srv
 }

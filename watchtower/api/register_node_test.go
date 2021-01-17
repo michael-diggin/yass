@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -15,6 +16,16 @@ import (
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"
 )
+
+func setUpTestWatchTower(clients ...*mocks.MockClientInterface) *WatchTower {
+	wt := NewWatchTower(2, 2, nil, "")
+	for i, c := range clients {
+		addr := fmt.Sprintf("server%d", i)
+		wt.Clients[addr] = c
+		wt.hashRing.AddNode(addr)
+	}
+	return wt
+}
 
 func TestRegisterNodeNoRebalancing(t *testing.T) {
 	t.Run("add new node below limit", func(t *testing.T) {
@@ -161,7 +172,8 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 	rec, err := wt.RegisterNode(context.Background(), req)
 
 	require.NoError(t, err)
-	require.Equal(t, rec.ExistingNodes, []string{"ip:port", "server:port"})
+	require.Contains(t, rec.ExistingNodes, "ip:port")
+	require.Contains(t, rec.ExistingNodes, "server:port")
 
 	f, _ := os.Open(tmpfile.Name())
 	b, err := ioutil.ReadAll(f)
