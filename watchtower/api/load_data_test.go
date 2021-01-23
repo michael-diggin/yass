@@ -33,7 +33,7 @@ func TestWTLoadData(t *testing.T) {
 	factory := mocks.NewMockClientFactory(ctrl)
 	ring := mocks.NewMockHashRing(ctrl)
 	for _, node := range []string{"node-1", "node-2", "node-3"} {
-		factory.EXPECT().New(gomock.Any(), node).Return(mocks.NewMockClientInterface(ctrl), nil)
+		factory.EXPECT().NewProtoClient(gomock.Any(), node).Return(mocks.NewMockStorageClient(ctrl), nil)
 		ring.EXPECT().AddNode(node)
 	}
 	wt := NewWatchTower(3, 10, factory, tmpfile.Name())

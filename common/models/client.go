@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+
+	pb "github.com/michael-diggin/yass/proto"
 )
 
 //go:generate mockgen -destination=../mocks/mock_client_interface.go -package=mocks . ClientInterface
@@ -29,4 +31,5 @@ type ClientInterface interface {
 // ClientFactory is the interface for creating a new instance of the Client Interface
 type ClientFactory interface {
 	New(context.Context, string) (ClientInterface, error)
+	NewProtoClient(context.Context, string) (pb.StorageClient, error)
 }

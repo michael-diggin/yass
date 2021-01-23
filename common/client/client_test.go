@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/michael-diggin/yass/common/client/mocks"
+	"github.com/michael-diggin/yass/common/mocks"
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"

@@ -8,6 +8,7 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/michael-diggin/yass/common/models"
+	proto "github.com/michael-diggin/yass/proto"
 	reflect "reflect"
 )
 
@@ -47,4 +48,19 @@ func (m *MockClientFactory) New(arg0 context.Context, arg1 string) (models.Clien
 func (mr *MockClientFactoryMockRecorder) New(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockClientFactory)(nil).New), arg0, arg1)
+}
+
+// NewProtoClient mocks base method
+func (m *MockClientFactory) NewProtoClient(arg0 context.Context, arg1 string) (proto.StorageClient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewProtoClient", arg0, arg1)
+	ret0, _ := ret[0].(proto.StorageClient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewProtoClient indicates an expected call of NewProtoClient
+func (mr *MockClientFactoryMockRecorder) NewProtoClient(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewProtoClient", reflect.TypeOf((*MockClientFactory)(nil).NewProtoClient), arg0, arg1)
 }

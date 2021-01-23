@@ -6,6 +6,7 @@ import (
 
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/proto/convert"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,7 +30,7 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	}
 	req.Hash = hashkey
 
-	modelReq, err := req.ToModel()
+	modelReq, err := convert.ToModel(req)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "data format not allowed")
 	}
@@ -116,7 +117,7 @@ func (s *server) Retrieve(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 	}
 
 	resp := models.Pair{Key: req.Key, Value: value}
-	return pb.ToPair(&resp)
+	return convert.ToPair(&resp)
 }
 
 type internalResponse struct {
