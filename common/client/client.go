@@ -29,13 +29,17 @@ func (f Factory) New(ctx context.Context, addr string) (models.ClientInterface, 
 }
 
 // NewProtoClient returns a new gprc client
-func (f Factory) NewProtoClient(ctx context.Context, addr string) (pb.StorageClient, error) {
+func (f Factory) NewProtoClient(ctx context.Context, addr string) (*models.StorageClient, error) {
 	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure()) //TODO: add security and credentials
 	if err != nil {
 		return nil, err
 	}
-	client := pb.NewStorageClient(conn)
-	return client, nil
+	protoClient := pb.NewStorageClient(conn)
+	healthClient := grpc_health_v1.NewHealthClient(conn)
+	return &models.StorageClient{StorageClient: protoClient,
+		HealthClient: healthClient,
+		ClientConn:   conn,
+	}, nil
 }
 
 // NewClient returns a new client that connects to the cache server

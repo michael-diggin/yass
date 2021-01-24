@@ -20,8 +20,9 @@ import (
 func setUpTestWatchTower(clients ...*mocks.MockStorageClient) *WatchTower {
 	wt := NewWatchTower(2, 2, nil, "")
 	for i, c := range clients {
+		sc := &models.StorageClient{StorageClient: c}
 		addr := fmt.Sprintf("server%d", i)
-		wt.Clients[addr] = c
+		wt.Clients[addr] = sc
 		wt.hashRing.AddNode(addr)
 	}
 	return wt
@@ -36,7 +37,9 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		tmpfile := setUpTestFile(t, "node-1")
 		defer os.Remove(tmpfile.Name())
 
-		newClient := mocks.NewMockStorageClient(ctrl)
+		newClient := &models.StorageClient{
+			StorageClient: mocks.NewMockStorageClient(ctrl),
+		}
 
 		factory := mocks.NewMockClientFactory(ctrl)
 		factory.EXPECT().NewProtoClient(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
@@ -81,8 +84,8 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		factory := mocks.NewMockClientFactory(ctrl)
 
 		wt := NewWatchTower(2, 10, factory, "")
-		wt.Clients["ip:port"] = mockClientOne
-		wt.Clients["127.0.0.1:8080"] = mockClientTwo
+		wt.Clients["ip:port"] = &models.StorageClient{StorageClient: mockClientOne}
+		wt.Clients["127.0.0.1:8080"] = &models.StorageClient{StorageClient: mockClientTwo}
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		instrs := []models.Instruction{
@@ -148,13 +151,15 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 			wg.Done()
 			return nil, nil
 		})
-	newClient := mocks.NewMockStorageClient(ctrl)
+	newClient := &models.StorageClient{
+		StorageClient: mocks.NewMockStorageClient(ctrl),
+	}
 	factory := mocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().NewProtoClient(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
 	wt := NewWatchTower(2, 10, factory, tmpfile.Name())
-	wt.Clients["ip:port"] = mockClientOne
-	wt.Clients["server:port"] = mockClientTwo
+	wt.Clients["ip:port"] = &models.StorageClient{StorageClient: mockClientOne}
+	wt.Clients["server:port"] = &models.StorageClient{StorageClient: mockClientTwo}
 
 	mockHR := mocks.NewMockHashRing(ctrl)
 	mockHR.EXPECT().AddNode("127.0.0.1:8080")

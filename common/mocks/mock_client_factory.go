@@ -8,7 +8,6 @@ import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
 	models "github.com/michael-diggin/yass/common/models"
-	proto "github.com/michael-diggin/yass/proto"
 	reflect "reflect"
 )
 
@@ -51,10 +50,10 @@ func (mr *MockClientFactoryMockRecorder) New(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // NewProtoClient mocks base method
-func (m *MockClientFactory) NewProtoClient(arg0 context.Context, arg1 string) (proto.StorageClient, error) {
+func (m *MockClientFactory) NewProtoClient(arg0 context.Context, arg1 string) (*models.StorageClient, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewProtoClient", arg0, arg1)
-	ret0, _ := ret[0].(proto.StorageClient)
+	ret0, _ := ret[0].(*models.StorageClient)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
