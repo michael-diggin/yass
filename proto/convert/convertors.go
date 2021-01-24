@@ -1,14 +1,16 @@
-package proto
+package convert
 
 import (
 	"encoding/json"
 
 	"github.com/michael-diggin/yass/common/models"
 	"github.com/pkg/errors"
+
+	pb "github.com/michael-diggin/yass/proto"
 )
 
 // ToModel converts the proto type to a model type
-func (p *Pair) ToModel() (*models.Pair, error) {
+func ToModel(p *pb.Pair) (*models.Pair, error) {
 	var val interface{}
 	if p.Value != nil {
 		err := json.Unmarshal(p.Value, &val)
@@ -20,7 +22,7 @@ func (p *Pair) ToModel() (*models.Pair, error) {
 }
 
 // ToPair converts the model type to a proto type
-func ToPair(p *models.Pair) (*Pair, error) {
+func ToPair(p *models.Pair) (*pb.Pair, error) {
 	var val = []byte{}
 	var err error
 	if p.Value != nil {
@@ -29,5 +31,5 @@ func ToPair(p *models.Pair) (*Pair, error) {
 			return nil, errors.Wrap(err, "failed to marshal value")
 		}
 	}
-	return &Pair{Key: p.Key, Hash: p.Hash, Value: val}, nil
+	return &pb.Pair{Key: p.Key, Hash: p.Hash, Value: val}, nil
 }

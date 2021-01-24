@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/michael-diggin/yass/common/mocks"
+	"github.com/michael-diggin/yass/common/models"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +34,8 @@ func TestWTLoadData(t *testing.T) {
 	factory := mocks.NewMockClientFactory(ctrl)
 	ring := mocks.NewMockHashRing(ctrl)
 	for _, node := range []string{"node-1", "node-2", "node-3"} {
-		factory.EXPECT().New(gomock.Any(), node).Return(mocks.NewMockClientInterface(ctrl), nil)
+		c := &models.StorageClient{StorageClient: mocks.NewMockStorageClient(ctrl)}
+		factory.EXPECT().NewProtoClient(gomock.Any(), node).Return(c, nil)
 		ring.EXPECT().AddNode(node)
 	}
 	wt := NewWatchTower(3, 10, factory, tmpfile.Name())

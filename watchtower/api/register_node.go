@@ -53,7 +53,7 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	dbClient, err := wt.clientFactory.New(ctx, addr)
+	dbClient, err := wt.clientFactory.NewProtoClient(ctx, addr)
 	if err != nil {
 		return nil, status.Error(codes.Aborted, "failed to dial server")
 	}
@@ -61,9 +61,10 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 	// send add Node instruction to existing nodes
 	for _, nodeAddr := range existingNodes {
 		otherClient := wt.Clients[nodeAddr]
-		go func(address string, client models.ClientInterface) {
+		go func(address string, client pb.StorageClient) {
 			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Second)
-			client.AddNode(subCtx, address)
+			req := &pb.AddNodeRequest{Node: address}
+			client.AddNode(subCtx, req)
 			subCancel()
 		}(addr, otherClient)
 	}
@@ -94,13 +95,25 @@ func (wt *WatchTower) rebalanceData(addr string, instructions []models.Instructi
 			wt.mu.RUnlock()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
-			err := dbClient.BatchSend(ctx, instr.FromIdx, instr.ToIdx, addr, instr.LowHash, instr.HighHash)
+			req := &pb.BatchSendRequest{
+				Replica:   int32(instr.FromIdx),
+				Address:   addr,
+				ToReplica: int32(instr.ToIdx),
+				Low:       instr.LowHash,
+				High:      instr.HighHash,
+			}
+			_, err := dbClient.BatchSend(ctx, req)
 			if err != nil {
 				logrus.Errorf("failed to send data from node %v: %v", instr.FromNode, err)
 				return
 			}
 			if delete {
-				dbClient.BatchDelete(ctx, instr.FromIdx, instr.LowHash, instr.HighHash)
+				req := &pb.BatchDeleteRequest{
+					Replica: int32(instr.FromIdx),
+					Low:     instr.LowHash,
+					High:    instr.HighHash,
+				}
+				dbClient.BatchDelete(ctx, req)
 			}
 			return
 		}(instr)

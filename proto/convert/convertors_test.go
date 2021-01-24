@@ -1,15 +1,16 @@
-package proto
+package convert
 
 import (
 	"testing"
 
 	"github.com/michael-diggin/yass/common/models"
+	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"
 )
 
 func TestToModelPair(t *testing.T) {
-	pbPair := Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
-	modelPair, err := pbPair.ToModel()
+	pbPair := pb.Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
+	modelPair, err := ToModel(&pbPair)
 
 	require.NoError(t, err)
 	require.Equal(t, "test-key", modelPair.Key)
@@ -18,8 +19,8 @@ func TestToModelPair(t *testing.T) {
 }
 
 func TestToModelPairWithNoValues(t *testing.T) {
-	pbPair := Pair{}
-	modelPair, err := pbPair.ToModel()
+	pbPair := &pb.Pair{}
+	modelPair, err := ToModel(pbPair)
 
 	require.NoError(t, err)
 	require.Equal(t, "", modelPair.Key)
@@ -28,15 +29,15 @@ func TestToModelPairWithNoValues(t *testing.T) {
 }
 
 func TestToModelPairWithBadData(t *testing.T) {
-	pbPair := Pair{Value: []byte(`bad-data`)}
-	modelPair, err := pbPair.ToModel()
+	pbPair := &pb.Pair{Value: []byte(`bad-data`)}
+	modelPair, err := ToModel(pbPair)
 
 	require.Error(t, err)
 	require.Nil(t, modelPair)
 }
 
 func TestToProtoPair(t *testing.T) {
-	pbPair := Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
+	pbPair := &pb.Pair{Key: "test-key", Hash: uint32(100), Value: []byte(`"test-value"`)}
 	modelPair := &models.Pair{Key: "test-key", Hash: uint32(100), Value: "test-value"}
 
 	pair, err := ToPair(modelPair)

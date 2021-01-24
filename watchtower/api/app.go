@@ -12,7 +12,7 @@ import (
 // WatchTower holds the router and the grpc clients
 type WatchTower struct {
 	clientFactory models.ClientFactory
-	Clients       map[string]models.ClientInterface
+	Clients       map[string]*models.StorageClient
 	numServers    int
 	mu            sync.RWMutex
 	hashRing      models.HashRing
@@ -26,7 +26,7 @@ func NewWatchTower(numServers, weight int, factory models.ClientFactory, nodeFil
 
 	wt.clientFactory = factory
 
-	wt.Clients = make(map[string]models.ClientInterface)
+	wt.Clients = make(map[string]*models.StorageClient)
 	wt.numServers = numServers
 	wt.mu = sync.RWMutex{}
 	wt.hashRing = hashring.New(weight)
@@ -43,7 +43,7 @@ func (wt *WatchTower) Stop() {
 	wt.mu.Lock()
 	for num, client := range wt.Clients {
 		serverNum := num
-		client.Close()
+		client.Close() // TODO: should use an interface with a close method
 		delete(wt.Clients, serverNum)
 	}
 	logrus.Info("Closed connections to storage servers")

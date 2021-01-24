@@ -7,6 +7,7 @@ import (
 
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/proto/convert"
 )
 
 // Client is a struct containing the grpc client
@@ -33,7 +34,7 @@ func (c *Client) Close() error {
 // Put sets a key/value pair
 func (c *Client) Put(ctx context.Context, key string, value interface{}) error {
 	pair := &models.Pair{Key: key, Value: value}
-	pbPair, err := pb.ToPair(pair)
+	pbPair, err := convert.ToPair(pair)
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (c *Client) Fetch(ctx context.Context, key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	pair, err := pbPair.ToModel()
+	pair, err := convert.ToModel(pbPair)
 	if err != nil {
 		return nil, err
 	}

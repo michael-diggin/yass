@@ -6,6 +6,7 @@ import (
 
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
+	"github.com/michael-diggin/yass/proto/convert"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -17,7 +18,7 @@ import (
 func (s *server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) {
 	logrus.Debug("Serving Set request")
 	pbPair := req.GetPair()
-	pair, err := pbPair.ToModel()
+	pair, err := convert.ToModel(pbPair)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -60,7 +61,7 @@ func (s *server) Get(ctx context.Context, req *pb.GetRequest) (*pb.Pair, error) 
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.NotFound, cacheResp.Err.Error())
 		}
-		pair, err := pb.ToPair(&models.Pair{Key: req.Key, Value: cacheResp.Value})
+		pair, err := convert.ToPair(&models.Pair{Key: req.Key, Value: cacheResp.Value})
 		if err != nil {
 			return nil, status.Error(codes.Internal, "failed to marshal data")
 		}

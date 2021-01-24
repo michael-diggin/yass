@@ -17,11 +17,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setUpTestWatchTower(clients ...*mocks.MockClientInterface) *WatchTower {
+func setUpTestWatchTower(clients ...*mocks.MockStorageClient) *WatchTower {
 	wt := NewWatchTower(2, 2, nil, "")
 	for i, c := range clients {
+		sc := &models.StorageClient{StorageClient: c}
 		addr := fmt.Sprintf("server%d", i)
-		wt.Clients[addr] = c
+		wt.Clients[addr] = sc
 		wt.hashRing.AddNode(addr)
 	}
 	return wt
@@ -36,10 +37,12 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		tmpfile := setUpTestFile(t, "node-1")
 		defer os.Remove(tmpfile.Name())
 
-		newClient := mocks.NewMockClientInterface(ctrl)
+		newClient := &models.StorageClient{
+			StorageClient: mocks.NewMockStorageClient(ctrl),
+		}
 
 		factory := mocks.NewMockClientFactory(ctrl)
-		factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
+		factory.EXPECT().NewProtoClient(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
 		wt := NewWatchTower(2, 2, factory, tmpfile.Name())
 
@@ -68,19 +71,21 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
 
-		mockClientOne := mocks.NewMockClientInterface(ctrl)
+		mockClientOne := mocks.NewMockStorageClient(ctrl)
 
-		mockClientOne.EXPECT().BatchSend(gomock.Any(), 3, 7, "127.0.0.1:8080", uint32(100), uint32(150)).
-			DoAndReturn(func(...interface{}) error {
+		req := &pb.BatchSendRequest{Replica: int32(3), Address: "127.0.0.1:8080",
+			ToReplica: int32(7), Low: uint32(100), High: uint32(150)}
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), req).
+			DoAndReturn(func(...interface{}) (*pb.Null, error) {
 				wg.Done()
-				return nil
+				return nil, nil
 			})
-		mockClientTwo := mocks.NewMockClientInterface(ctrl)
+		mockClientTwo := mocks.NewMockStorageClient(ctrl)
 		factory := mocks.NewMockClientFactory(ctrl)
 
 		wt := NewWatchTower(2, 10, factory, "")
-		wt.Clients["ip:port"] = mockClientOne
-		wt.Clients["127.0.0.1:8080"] = mockClientTwo
+		wt.Clients["ip:port"] = &models.StorageClient{StorageClient: mockClientOne}
+		wt.Clients["127.0.0.1:8080"] = &models.StorageClient{StorageClient: mockClientTwo}
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		instrs := []models.Instruction{
@@ -95,8 +100,8 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 		mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
 		wt.hashRing = mockHR
 
-		req := &pb.RegisterNodeRequest{Address: "127.0.0.1:8080"}
-		rec, err := wt.RegisterNode(context.Background(), req)
+		regReq := &pb.RegisterNodeRequest{Address: "127.0.0.1:8080"}
+		rec, err := wt.RegisterNode(context.Background(), regReq)
 
 		require.NoError(t, err)
 		require.Equal(t, rec.ExistingNodes, []string{"ip:port"})
@@ -115,37 +120,46 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(4)
 
-	mockClientOne := mocks.NewMockClientInterface(ctrl)
-	mockClientTwo := mocks.NewMockClientInterface(ctrl)
-	mockClientOne.EXPECT().AddNode(gomock.Any(), "127.0.0.1:8080").
-		DoAndReturn(func(...interface{}) error {
+	mockClientOne := mocks.NewMockStorageClient(ctrl)
+	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	req := &pb.AddNodeRequest{Node: "127.0.0.1:8080"}
+	mockClientOne.EXPECT().AddNode(gomock.Any(), req).
+		DoAndReturn(func(...interface{}) (*pb.Null, error) {
 			wg.Done()
-			return nil
+			return nil, nil
 		})
-	mockClientTwo.EXPECT().AddNode(gomock.Any(), "127.0.0.1:8080").
-		DoAndReturn(func(...interface{}) error {
+	mockClientTwo.EXPECT().AddNode(gomock.Any(), req).
+		DoAndReturn(func(...interface{}) (*pb.Null, error) {
 			wg.Done()
-			return nil
+			return nil, nil
 		})
-	mockClientOne.EXPECT().BatchSend(gomock.Any(), 3, 7, "127.0.0.1:8080", uint32(100), uint32(150)).Return(nil)
-	mockClientOne.EXPECT().BatchDelete(gomock.Any(), 3, uint32(100), uint32(150)).
-		DoAndReturn(func(...interface{}) error {
+	bsReq := &pb.BatchSendRequest{Replica: int32(3), Address: "127.0.0.1:8080",
+		ToReplica: int32(7), Low: uint32(100), High: uint32(150)}
+	bdReq := &pb.BatchDeleteRequest{Replica: int32(3), Low: uint32(100), High: uint32(150)}
+	mockClientOne.EXPECT().BatchSend(gomock.Any(), bsReq).Return(nil, nil)
+	mockClientOne.EXPECT().BatchDelete(gomock.Any(), bdReq).
+		DoAndReturn(func(...interface{}) (*pb.Null, error) {
 			wg.Done()
-			return nil
+			return nil, nil
 		})
-	mockClientTwo.EXPECT().BatchSend(gomock.Any(), 6, 1, "127.0.0.1:8080", uint32(900), uint32(1500)).Return(nil)
-	mockClientTwo.EXPECT().BatchDelete(gomock.Any(), 6, uint32(900), uint32(1500)).
-		DoAndReturn(func(...interface{}) error {
+	bsReq2 := &pb.BatchSendRequest{Replica: int32(6), Address: "127.0.0.1:8080",
+		ToReplica: int32(1), Low: uint32(900), High: uint32(1500)}
+	bdReq2 := &pb.BatchDeleteRequest{Replica: int32(6), Low: uint32(900), High: uint32(1500)}
+	mockClientTwo.EXPECT().BatchSend(gomock.Any(), bsReq2).Return(nil, nil)
+	mockClientTwo.EXPECT().BatchDelete(gomock.Any(), bdReq2).
+		DoAndReturn(func(...interface{}) (*pb.Null, error) {
 			wg.Done()
-			return nil
+			return nil, nil
 		})
-	newClient := mocks.NewMockClientInterface(ctrl)
+	newClient := &models.StorageClient{
+		StorageClient: mocks.NewMockStorageClient(ctrl),
+	}
 	factory := mocks.NewMockClientFactory(ctrl)
-	factory.EXPECT().New(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
+	factory.EXPECT().NewProtoClient(gomock.Any(), "127.0.0.1:8080").Return(newClient, nil)
 
 	wt := NewWatchTower(2, 10, factory, tmpfile.Name())
-	wt.Clients["ip:port"] = mockClientOne
-	wt.Clients["server:port"] = mockClientTwo
+	wt.Clients["ip:port"] = &models.StorageClient{StorageClient: mockClientOne}
+	wt.Clients["server:port"] = &models.StorageClient{StorageClient: mockClientTwo}
 
 	mockHR := mocks.NewMockHashRing(ctrl)
 	mockHR.EXPECT().AddNode("127.0.0.1:8080")
@@ -168,8 +182,8 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 	mockHR.EXPECT().RebalanceInstructions("127.0.0.1:8080").Return(instrs)
 	wt.hashRing = mockHR
 
-	req := &pb.RegisterNodeRequest{Address: "127.0.0.1:8080"}
-	rec, err := wt.RegisterNode(context.Background(), req)
+	addReq := &pb.RegisterNodeRequest{Address: "127.0.0.1:8080"}
+	rec, err := wt.RegisterNode(context.Background(), addReq)
 
 	require.NoError(t, err)
 	require.Contains(t, rec.ExistingNodes, "ip:port")
@@ -203,16 +217,23 @@ func TestRebalanceData(t *testing.T) {
 		},
 	}
 
+	bsReq1 := &pb.BatchSendRequest{Replica: int32(0), Address: "server2",
+		ToReplica: int32(1), Low: uint32(100), High: uint32(1000)}
+	bdReq1 := &pb.BatchDeleteRequest{Replica: int32(0), Low: uint32(100), High: uint32(1000)}
+	bsReq2 := &pb.BatchSendRequest{Replica: int32(1), Address: "server2",
+		ToReplica: int32(0), Low: uint32(7000), High: uint32(10)}
+	bdReq2 := &pb.BatchDeleteRequest{Replica: int32(1), Low: uint32(7000), High: uint32(10)}
+
 	t.Run("repopulate failed node", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockClientInterface(ctrl)
-		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		mockClientThree := mocks.NewMockClientInterface(ctrl)
+		mockClientOne := mocks.NewMockStorageClient(ctrl)
+		mockClientTwo := mocks.NewMockStorageClient(ctrl)
+		mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server2", uint32(100), uint32(1000)).Return(nil)
-		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server2", uint32(7000), uint32(10)).Return(nil)
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), bsReq1).Return(nil, nil)
+		mockClientTwo.EXPECT().BatchSend(gomock.Any(), bsReq2).Return(nil, nil)
 		wt := setUpTestWatchTower(mockClientOne, mockClientTwo, mockClientThree)
 
 		wt.rebalanceData("server2", instrs, false)
@@ -223,15 +244,15 @@ func TestRebalanceData(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		mockClientOne := mocks.NewMockClientInterface(ctrl)
-		mockClientTwo := mocks.NewMockClientInterface(ctrl)
-		mockClientThree := mocks.NewMockClientInterface(ctrl)
+		mockClientOne := mocks.NewMockStorageClient(ctrl)
+		mockClientTwo := mocks.NewMockStorageClient(ctrl)
+		mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-		mockClientOne.EXPECT().BatchSend(gomock.Any(), 0, 1, "server2", uint32(100), uint32(1000)).Return(nil)
-		mockClientTwo.EXPECT().BatchSend(gomock.Any(), 1, 0, "server2", uint32(7000), uint32(10)).Return(nil)
+		mockClientOne.EXPECT().BatchSend(gomock.Any(), bsReq1).Return(nil, nil)
+		mockClientTwo.EXPECT().BatchSend(gomock.Any(), bsReq2).Return(nil, nil)
 
-		mockClientOne.EXPECT().BatchDelete(gomock.Any(), 0, uint32(100), uint32(1000)).Return(nil)
-		mockClientTwo.EXPECT().BatchDelete(gomock.Any(), 1, uint32(7000), uint32(10)).Return(nil)
+		mockClientOne.EXPECT().BatchDelete(gomock.Any(), bdReq1).Return(nil, nil)
+		mockClientTwo.EXPECT().BatchDelete(gomock.Any(), bdReq2).Return(nil, nil)
 
 		wt := setUpTestWatchTower(mockClientOne, mockClientTwo, mockClientThree)
 

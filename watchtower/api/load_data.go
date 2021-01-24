@@ -32,7 +32,7 @@ func (wt *WatchTower) LoadData() error {
 			continue
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-		dbClient, err := wt.clientFactory.New(ctx, nodeAddr)
+		dbClient, err := wt.clientFactory.NewProtoClient(ctx, nodeAddr)
 		cancel()
 		if err != nil {
 			return fmt.Errorf("failed to dial node %s: %v", nodeAddr, err)
