@@ -18,7 +18,7 @@ func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null,
 
 	newCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	client, err := s.factory.New(newCtx, req.Node)
+	client, err := s.factory.NewProtoClient(newCtx, req.Node)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "could not connect to new node")
 	}

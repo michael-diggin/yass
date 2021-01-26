@@ -3,6 +3,8 @@ package core
 import (
 	"testing"
 
+	"github.com/michael-diggin/yass/common/models"
+
 	"github.com/golang/mock/gomock"
 	cmocks "github.com/michael-diggin/yass/common/mocks"
 	pb "github.com/michael-diggin/yass/proto"
@@ -24,8 +26,10 @@ func TestRegisterNodeWithWatchTower(t *testing.T) {
 	factory := cmocks.NewMockClientFactory(ctrl)
 
 	for _, node := range nodeStrings {
-		newClient := cmocks.NewMockClientInterface(ctrl)
-		factory.EXPECT().New(gomock.Any(), node).Return(newClient, nil)
+		newClient := &models.StorageClient{
+			StorageClient: cmocks.NewMockStorageClient(ctrl),
+		}
+		factory.EXPECT().NewProtoClient(gomock.Any(), node).Return(newClient, nil)
 		mockRing.EXPECT().AddNode(node)
 	}
 

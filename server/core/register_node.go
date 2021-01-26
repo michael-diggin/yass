@@ -30,7 +30,7 @@ func (s *server) RegisterNodeWithWatchTower(watchtowerClient pb.WatchTowerClient
 	for _, node := range otherNodes {
 		newCtx, newCancel := context.WithTimeout(ctx, 3*time.Second)
 		defer newCancel()
-		client, err := s.factory.New(newCtx, node)
+		client, err := s.factory.NewProtoClient(newCtx, node)
 		if err != nil {
 			return errors.Wrap(err, "could not connect to existing node")
 		}

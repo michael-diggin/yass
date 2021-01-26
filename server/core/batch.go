@@ -106,7 +106,8 @@ func (s *server) BatchSend(ctx context.Context, req *pb.BatchSendRequest) (*pb.N
 		if !ok {
 			return nil, status.Error(codes.Internal, "could not connect to node")
 		}
-		err = client.BatchSet(newCtx, int(req.ToReplica), data)
+		setReq := &pb.BatchSetRequest{Replica: req.ToReplica, Data: data}
+		_, err = client.BatchSet(newCtx, setReq)
 		if err != nil {
 			return nil, status.Error(codes.Internal, "could not set data on node")
 		}

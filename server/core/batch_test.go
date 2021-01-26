@@ -5,8 +5,10 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/michael-diggin/yass/common/models"
+
 	"github.com/golang/mock/gomock"
-	factorymocks "github.com/michael-diggin/yass/common/mocks"
+	commonmocks "github.com/michael-diggin/yass/common/mocks"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -116,23 +118,19 @@ func TestBatchSend(t *testing.T) {
 
 	mockBackup.EXPECT().BatchGet(uint32(50), uint32(150)).Return(resp)
 
-	newClient := factorymocks.NewMockClientInterface(ctrl)
-	newClient.EXPECT().BatchSet(gomock.Any(), 1, gomock.Any()).
-		DoAndReturn(func(ctx context.Context, rep int, data interface{}) error {
-			pairs, ok := data.([]*pb.Pair)
-			if !ok {
-				return errors.New("did not pass in corect data type")
+	newClient := commonmocks.NewMockStorageClient(ctrl)
+	newClient.EXPECT().BatchSet(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, req *pb.BatchSetRequest) (*pb.Null, error) {
+			if len(req.Data) != 2 {
+				return nil, errors.New("failed to set correct data")
 			}
-			if len(pairs) != 2 {
-				return errors.New("failed to set correct data")
-			}
-			return nil
+			return nil, nil
 		})
 
-	factory := factorymocks.NewMockClientFactory(ctrl)
+	factory := commonmocks.NewMockClientFactory(ctrl)
 
 	srv := newServer(factory, mockMain, mockBackup)
-	srv.nodeClients["localhost:8081"] = newClient
+	srv.nodeClients["localhost:8081"] = &models.StorageClient{StorageClient: newClient}
 
 	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 1, Low: uint32(50), High: uint32(150)}
 
