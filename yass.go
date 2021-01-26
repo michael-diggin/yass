@@ -45,7 +45,7 @@ func (c *Client) Put(ctx context.Context, key string, value interface{}) error {
 // Fetch returns the value of a given key
 func (c *Client) Fetch(ctx context.Context, key string) (interface{}, error) {
 	req := &pb.Key{Key: key}
-	pbPair, err := c.GrpcClient.Retrieve(ctx, req)
+	pbPair, err := c.GrpcClient.Fetch(ctx, req)
 	if err != nil {
 		return nil, err
 	}
