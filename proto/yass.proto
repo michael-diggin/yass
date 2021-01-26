@@ -21,7 +21,7 @@ service Storage {
 // YassService is the external service to put and get
 service YassService {
     rpc Put(Pair) returns(Null){}
-    rpc Retrieve(Key) returns(Pair){}
+    rpc Fetch(Key) returns(Pair){}
 }
 
 message SetRequest {

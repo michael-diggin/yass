@@ -35,6 +35,26 @@ func (m *MockYassServiceClient) EXPECT() *MockYassServiceClientMockRecorder {
 	return m.recorder
 }
 
+// Fetch mocks base method
+func (m *MockYassServiceClient) Fetch(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Pair, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Fetch", varargs...)
+	ret0, _ := ret[0].(*proto.Pair)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Fetch indicates an expected call of Fetch
+func (mr *MockYassServiceClientMockRecorder) Fetch(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fetch", reflect.TypeOf((*MockYassServiceClient)(nil).Fetch), varargs...)
+}
+
 // Put mocks base method
 func (m *MockYassServiceClient) Put(arg0 context.Context, arg1 *proto.Pair, arg2 ...grpc.CallOption) (*proto.Null, error) {
 	m.ctrl.T.Helper()
@@ -53,24 +73,4 @@ func (mr *MockYassServiceClientMockRecorder) Put(arg0, arg1 interface{}, arg2 ..
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockYassServiceClient)(nil).Put), varargs...)
-}
-
-// Retrieve mocks base method
-func (m *MockYassServiceClient) Retrieve(arg0 context.Context, arg1 *proto.Key, arg2 ...grpc.CallOption) (*proto.Pair, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "Retrieve", varargs...)
-	ret0, _ := ret[0].(*proto.Pair)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Retrieve indicates an expected call of Retrieve
-func (mr *MockYassServiceClientMockRecorder) Retrieve(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Retrieve", reflect.TypeOf((*MockYassServiceClient)(nil).Retrieve), varargs...)
 }

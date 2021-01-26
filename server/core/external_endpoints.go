@@ -68,12 +68,12 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	return &pb.Null{}, nil
 }
 
-// Retrieve will return the value for a given key if it is in the data nodes
-func (s *server) Retrieve(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
+// Fetch will return the value for a given key if it is in the data nodes
+func (s *server) Fetch(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 	if len(s.nodeClients) < s.minServers {
 		return nil, status.Error(codes.Unavailable, "server is not ready yet")
 	}
-	logrus.Debug("Serving Retrieve request")
+	logrus.Debug("Serving Fetch request")
 	if req.GetKey() == "" {
 		return nil, status.Error(codes.InvalidArgument, "key not present in request")
 	}

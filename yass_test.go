@@ -46,7 +46,7 @@ func TestClientGetValue(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockgRPC := mocks.NewMockYassServiceClient(ctrl)
-			mockgRPC.EXPECT().Retrieve(gomock.Any(), &pb.Key{Key: tc.key}).
+			mockgRPC.EXPECT().Fetch(gomock.Any(), &pb.Key{Key: tc.key}).
 				Return(&pb.Pair{Key: tc.key, Value: []byte(`"value"`)}, tc.err)
 
 			cc := Client{GrpcClient: mockgRPC, conn: nil}

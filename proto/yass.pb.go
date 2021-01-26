@@ -765,16 +765,16 @@ var file_yass_proto_rawDesc = []byte{
 	0x12, 0x37, 0x0a, 0x0b, 0x42, 0x61, 0x74, 0x63, 0x68, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12,
 	0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x44, 0x65, 0x6c,
 	0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x32, 0x57, 0x0a, 0x0b, 0x59, 0x61, 0x73,
+	0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x32, 0x54, 0x0a, 0x0b, 0x59, 0x61, 0x73,
 	0x73, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x21, 0x0a, 0x03, 0x50, 0x75, 0x74, 0x12,
 	0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x0b, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x25, 0x0a, 0x08, 0x52,
-	0x65, 0x74, 0x72, 0x69, 0x65, 0x76, 0x65, 0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72,
-	0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f,
-	0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x22, 0x0a, 0x05, 0x46,
+	0x65, 0x74, 0x63, 0x68, 0x12, 0x0a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79,
+	0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x42,
+	0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69,
+	0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73,
+	0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -817,7 +817,7 @@ var file_yass_proto_depIdxs = []int32{
 	8,  // 9: proto.Storage.BatchSend:input_type -> proto.BatchSendRequest
 	9,  // 10: proto.Storage.BatchDelete:input_type -> proto.BatchDeleteRequest
 	3,  // 11: proto.YassService.Put:input_type -> proto.Pair
-	4,  // 12: proto.YassService.Retrieve:input_type -> proto.Key
+	4,  // 12: proto.YassService.Fetch:input_type -> proto.Key
 	5,  // 13: proto.Storage.Set:output_type -> proto.Null
 	3,  // 14: proto.Storage.Get:output_type -> proto.Pair
 	5,  // 15: proto.Storage.Delete:output_type -> proto.Null
@@ -827,7 +827,7 @@ var file_yass_proto_depIdxs = []int32{
 	5,  // 19: proto.Storage.BatchSend:output_type -> proto.Null
 	5,  // 20: proto.Storage.BatchDelete:output_type -> proto.Null
 	5,  // 21: proto.YassService.Put:output_type -> proto.Null
-	3,  // 22: proto.YassService.Retrieve:output_type -> proto.Pair
+	3,  // 22: proto.YassService.Fetch:output_type -> proto.Pair
 	13, // [13:23] is the sub-list for method output_type
 	3,  // [3:13] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
@@ -1343,7 +1343,7 @@ var _Storage_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type YassServiceClient interface {
 	Put(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Null, error)
-	Retrieve(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
+	Fetch(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
 }
 
 type yassServiceClient struct {
@@ -1363,9 +1363,9 @@ func (c *yassServiceClient) Put(ctx context.Context, in *Pair, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *yassServiceClient) Retrieve(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error) {
+func (c *yassServiceClient) Fetch(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error) {
 	out := new(Pair)
-	err := c.cc.Invoke(ctx, "/proto.YassService/Retrieve", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.YassService/Fetch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1375,7 +1375,7 @@ func (c *yassServiceClient) Retrieve(ctx context.Context, in *Key, opts ...grpc.
 // YassServiceServer is the server API for YassService service.
 type YassServiceServer interface {
 	Put(context.Context, *Pair) (*Null, error)
-	Retrieve(context.Context, *Key) (*Pair, error)
+	Fetch(context.Context, *Key) (*Pair, error)
 }
 
 // UnimplementedYassServiceServer can be embedded to have forward compatible implementations.
@@ -1385,8 +1385,8 @@ type UnimplementedYassServiceServer struct {
 func (*UnimplementedYassServiceServer) Put(context.Context, *Pair) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
 }
-func (*UnimplementedYassServiceServer) Retrieve(context.Context, *Key) (*Pair, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Retrieve not implemented")
+func (*UnimplementedYassServiceServer) Fetch(context.Context, *Key) (*Pair, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Fetch not implemented")
 }
 
 func RegisterYassServiceServer(s *grpc.Server, srv YassServiceServer) {
@@ -1411,20 +1411,20 @@ func _YassService_Put_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _YassService_Retrieve_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _YassService_Fetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Key)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(YassServiceServer).Retrieve(ctx, in)
+		return srv.(YassServiceServer).Fetch(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.YassService/Retrieve",
+		FullMethod: "/proto.YassService/Fetch",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(YassServiceServer).Retrieve(ctx, req.(*Key))
+		return srv.(YassServiceServer).Fetch(ctx, req.(*Key))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1438,8 +1438,8 @@ var _YassService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _YassService_Put_Handler,
 		},
 		{
-			MethodName: "Retrieve",
-			Handler:    _YassService_Retrieve_Handler,
+			MethodName: "Fetch",
+			Handler:    _YassService_Fetch_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

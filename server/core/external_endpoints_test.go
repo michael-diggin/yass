@@ -128,7 +128,7 @@ func TestGatewayGetSuccess(t *testing.T) {
 	srv.minServers = 2
 
 	req := &pb.Key{Key: key}
-	retPair, err := srv.Retrieve(context.Background(), req)
+	retPair, err := srv.Fetch(context.Background(), req)
 
 	require.NoError(t, err)
 	require.Equal(t, key, retPair.Key)
@@ -164,7 +164,7 @@ func TestGatewayGetNotFound(t *testing.T) {
 	srv.minServers = 2
 
 	req := &pb.Key{Key: key}
-	retPair, err := srv.Retrieve(context.Background(), req)
+	retPair, err := srv.Fetch(context.Background(), req)
 
 	require.Error(t, err)
 	require.Nil(t, retPair)
@@ -207,7 +207,7 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	srv.nodeClients["node-3"] = &models.StorageClient{StorageClient: mockClientThree}
 
 	req := &pb.Key{Key: key}
-	retPair, err := srv.Retrieve(context.Background(), req)
+	retPair, err := srv.Fetch(context.Background(), req)
 
 	require.NoError(t, err)
 	require.Equal(t, key, retPair.Key)
