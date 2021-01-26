@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/michael-diggin/yass/common/models"
+
 	"github.com/golang/mock/gomock"
 	cmocks "github.com/michael-diggin/yass/common/mocks"
 	pb "github.com/michael-diggin/yass/proto"
@@ -19,10 +21,12 @@ func TestServerAddNode(t *testing.T) {
 	mockMain := mocks.NewMockService(ctrl)
 	mockBackup := mocks.NewMockService(ctrl)
 
-	newClient := cmocks.NewMockClientInterface(ctrl)
+	newClient := &models.StorageClient{
+		StorageClient: cmocks.NewMockStorageClient(ctrl),
+	}
 
 	factory := cmocks.NewMockClientFactory(ctrl)
-	factory.EXPECT().New(gomock.Any(), "localhost:8081").Return(newClient, nil)
+	factory.EXPECT().NewProtoClient(gomock.Any(), "localhost:8081").Return(newClient, nil)
 
 	srv := newServer(factory, mockMain, mockBackup)
 

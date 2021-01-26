@@ -6,7 +6,6 @@ import (
 
 	"github.com/michael-diggin/yass/common/models"
 	pb "github.com/michael-diggin/yass/proto"
-	"github.com/michael-diggin/yass/proto/convert"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,11 +29,6 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	}
 	req.Hash = hashkey
 
-	modelReq, err := convert.ToModel(req)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "data format not allowed")
-	}
-
 	// synchronously set the key/value on the storage servers
 	revertSetNodes := []models.Node{}
 	var returnErr error
@@ -43,7 +37,8 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 		client := s.nodeClients[node.ID]
 		s.mu.RUnlock()
 		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-		err := client.SetValue(subctx, modelReq, node.Idx)
+		setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
+		_, err := client.Set(subctx, setReq)
 		cancel()
 		if err != nil {
 			returnErr = err
@@ -62,7 +57,7 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 			s.mu.RUnlock()
 			go func() {
 				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-				client.DelValue(subctx, req.Key, n.Idx)
+				client.Delete(subctx, &pb.DeleteRequest{Replica: int32(n.Idx), Key: req.Key})
 				cancel()
 			}()
 		}
@@ -101,7 +96,8 @@ func (s *server) Retrieve(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 		go func() {
 			subctx, cancel := context.WithTimeout(newctx, 3*time.Second)
 			defer cancel()
-			pair, err := client.GetValue(subctx, req.Key, n.Idx)
+			getReq := &pb.GetRequest{Replica: int32(n.Idx), Key: req.Key}
+			pair, err := client.Get(subctx, getReq)
 			if err != nil {
 				resps <- internalResponse{err: err}
 				return
@@ -116,18 +112,17 @@ func (s *server) Retrieve(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 		return nil, status.Error(status.Code(retErr), retErr.Error())
 	}
 
-	resp := models.Pair{Key: req.Key, Value: value}
-	return convert.ToPair(&resp)
+	return &pb.Pair{Key: req.Key, Value: value}, nil
 }
 
 type internalResponse struct {
-	value interface{}
+	value []byte
 	err   error
 }
 
-func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) (interface{}, error) {
+func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) ([]byte, error) {
 	var err error
-	var value interface{}
+	var value []byte
 	for i := 0; i < n; i++ {
 		r := <-resps
 		if r.err != nil && err == nil {

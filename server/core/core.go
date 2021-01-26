@@ -55,7 +55,7 @@ func (y YassServer) ShutDown() {
 type server struct {
 	DataStores  []model.Service
 	factory     models.ClientFactory
-	nodeClients map[string]models.ClientInterface
+	nodeClients map[string]*models.StorageClient
 	mu          sync.RWMutex
 	hashRing    models.HashRing
 	minServers  int
@@ -66,7 +66,7 @@ func newServer(factory models.ClientFactory, dataStores ...model.Service) *serve
 	srv := server{
 		DataStores:  dataStores,
 		factory:     factory,
-		nodeClients: make(map[string]models.ClientInterface),
+		nodeClients: make(map[string]*models.StorageClient),
 		mu:          sync.RWMutex{},
 		hashRing:    hashRing,
 		minServers:  3,
