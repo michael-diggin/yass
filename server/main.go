@@ -17,7 +17,6 @@ import (
 	"github.com/michael-diggin/yass/server/core"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/michael-diggin/yass/server/storage"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
 	"github.com/sirupsen/logrus"
@@ -76,9 +75,10 @@ func main() {
 		logrus.Fatalf("could not add own node: %v", err)
 	}
 
-	localIP, err := GetLocalIP()
-	if err != nil {
-		logrus.Fatal("Cannot get node IP")
+	localDNS := os.Getenv("POD_NAME")
+	if localDNS == "" {
+		logrus.Warning("No pod name specified, defaulting to localhost")
+		localDNS = "localhost"
 	}
 	logrus.Info("Registering storage server with watchtower")
 	err = retry.WithBackOff(func() error {
@@ -87,7 +87,7 @@ func main() {
 			return err
 		}
 		gatewayClient := pb.NewWatchTowerClient(conn)
-		return srv.RegisterNodeWithWatchTower(gatewayClient, localIP, *port)
+		return srv.RegisterNodeWithWatchTower(gatewayClient, localDNS, *port)
 	},
 		5,
 		1*time.Second,
@@ -98,21 +98,4 @@ func main() {
 	}
 
 	wg.Wait()
-}
-
-// GetLocalIP returns the first non loopback local IP of the host
-func GetLocalIP() (string, error) {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return "", errors.Wrap(err, "failed to get local IP")
-	}
-	for _, address := range addrs {
-		// check the address type and if it is not a loopback then display it
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String(), nil
-			}
-		}
-	}
-	return "", errors.New("No IP found")
 }

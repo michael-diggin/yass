@@ -28,8 +28,8 @@ func TestServerPut(t *testing.T) {
 		mockRing.EXPECT().Hash(key).Return(hashkey)
 		mockRing.EXPECT().GetN(hashkey, 2).Return(
 			[]models.Node{
-				models.Node{ID: "node-0", Idx: 0},
-				models.Node{ID: "node-1", Idx: 1},
+				{ID: "node-0", Idx: 0},
+				{ID: "node-1", Idx: 1},
 			}, nil)
 
 		mockClientOne := mocks.NewMockStorageClient(ctrl)
@@ -59,8 +59,8 @@ func TestServerPut(t *testing.T) {
 		mockRing.EXPECT().Hash(key).Return(hashkey)
 		mockRing.EXPECT().GetN(hashkey, 2).Return(
 			[]models.Node{
-				models.Node{ID: "node-0", Idx: 0},
-				models.Node{ID: "node-1", Idx: 1},
+				{ID: "node-0", Idx: 0},
+				{ID: "node-1", Idx: 1},
 			}, nil)
 
 		mockClientOne := mocks.NewMockStorageClient(ctrl)
@@ -111,8 +111,8 @@ func TestGatewayGetSuccess(t *testing.T) {
 	mockRing.EXPECT().Hash(key).Return(uint32(100))
 	mockRing.EXPECT().GetN(uint32(100), 2).Return(
 		[]models.Node{
-			models.Node{ID: "node-0", Idx: 0},
-			models.Node{ID: "node-1", Idx: 1},
+			{ID: "node-0", Idx: 0},
+			{ID: "node-1", Idx: 1},
 		}, nil)
 
 	mockClientOne := mocks.NewMockStorageClient(ctrl)
@@ -145,8 +145,8 @@ func TestGatewayGetNotFound(t *testing.T) {
 	mockRing.EXPECT().Hash(key).Return(uint32(100))
 	mockRing.EXPECT().GetN(uint32(100), 2).Return(
 		[]models.Node{
-			models.Node{ID: "node-0", Idx: 0},
-			models.Node{ID: "node-1", Idx: 1},
+			{ID: "node-0", Idx: 0},
+			{ID: "node-1", Idx: 1},
 		}, nil)
 
 	mockClientOne := mocks.NewMockStorageClient(ctrl)
@@ -189,8 +189,8 @@ func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
 	mockRing.EXPECT().Hash(key).Return(uint32(100))
 	mockRing.EXPECT().GetN(uint32(100), 2).Return(
 		[]models.Node{
-			models.Node{ID: "node-3", Idx: 0},
-			models.Node{ID: "node-1", Idx: 1},
+			{ID: "node-3", Idx: 0},
+			{ID: "node-1", Idx: 1},
 		}, nil)
 
 	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, errMock).AnyTimes()

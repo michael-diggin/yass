@@ -89,7 +89,7 @@ func TestRegisterNodeNoRebalancing(t *testing.T) {
 
 		mockHR := mocks.NewMockHashRing(ctrl)
 		instrs := []models.Instruction{
-			models.Instruction{
+			{
 				FromNode: "ip:port",
 				FromIdx:  3,
 				ToIdx:    7,
@@ -164,14 +164,14 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 	mockHR := mocks.NewMockHashRing(ctrl)
 	mockHR.EXPECT().AddNode("127.0.0.1:8080")
 	instrs := []models.Instruction{
-		models.Instruction{
+		{
 			FromNode: "ip:port",
 			FromIdx:  3,
 			ToIdx:    7,
 			LowHash:  uint32(100),
 			HighHash: uint32(150),
 		},
-		models.Instruction{
+		{
 			FromNode: "server:port",
 			FromIdx:  6,
 			ToIdx:    1,
@@ -201,14 +201,14 @@ func TestRebalanceDataToNewNode(t *testing.T) {
 
 func TestRebalanceData(t *testing.T) {
 	instrs := []models.Instruction{
-		models.Instruction{
+		{
 			FromNode: "server0",
 			FromIdx:  0,
 			ToIdx:    1,
 			LowHash:  uint32(100),
 			HighHash: uint32(1000),
 		},
-		models.Instruction{
+		{
 			FromNode: "server1",
 			FromIdx:  1,
 			ToIdx:    0,
