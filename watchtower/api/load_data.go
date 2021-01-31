@@ -14,7 +14,8 @@ import (
 // LoadData loads the data from a file containing the existing node address
 // and populates the WT hash ring and client map
 func (wt *WatchTower) LoadData() error {
-	r, err := os.Open(wt.nodeFile)
+	// create file if it does not exist
+	r, err := os.OpenFile(wt.nodeFile, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
