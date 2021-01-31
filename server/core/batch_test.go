@@ -53,8 +53,8 @@ func TestBatchGetFromStorage(t *testing.T) {
 	mockBackup := mocks.NewMockService(ctrl)
 	resp := make(chan map[string]model.Data, 1)
 	data := map[string]model.Data{
-		"key-1": model.Data{Value: "value-1", Hash: uint32(100)},
-		"key-2": model.Data{Value: 2, Hash: uint32(101)},
+		"key-1": {Value: "value-1", Hash: uint32(100)},
+		"key-2": {Value: 2, Hash: uint32(101)},
 	}
 	resp <- data
 	close(resp)
@@ -110,8 +110,8 @@ func TestBatchSend(t *testing.T) {
 	mockBackup := mocks.NewMockService(ctrl)
 	resp := make(chan map[string]model.Data, 1)
 	data := map[string]model.Data{
-		"key-1": model.Data{Value: "value-1", Hash: uint32(100)},
-		"key-2": model.Data{Value: 2, Hash: uint32(101)},
+		"key-1": {Value: "value-1", Hash: uint32(100)},
+		"key-2": {Value: 2, Hash: uint32(101)},
 	}
 	resp <- data
 	close(resp)
