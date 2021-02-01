@@ -36,7 +36,7 @@ func main() {
 
 	level, err := parseLogLevel(*loglevel)
 	if err != nil {
-		logrus.Warningf("Could not parse log level %s, defaulting to info", loglevel)
+		logrus.Warningf("Could not parse log level %s, defaulting to info", *loglevel)
 		level = logrus.InfoLevel
 	}
 	logrus.SetLevel(level)
