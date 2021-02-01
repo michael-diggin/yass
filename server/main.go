@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -26,7 +27,15 @@ func main() {
 	port := flag.Int("p", 8080, "port for storage server to listen on")
 	gateway := flag.String("g", "localhost:8010", "location of the watchtower")
 	weights := flag.Int("w", 10, "The number of weights/data stores the server manages")
+	loglevel := flag.String("v", "info", "the logging level verbosity")
 	flag.Parse()
+
+	level, err := parseLogLevel(*loglevel)
+	if err != nil {
+		logrus.Warningf("Could not parse log level %s, defaulting to info", *loglevel)
+		level = logrus.InfoLevel
+	}
+	logrus.SetLevel(level)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
@@ -98,4 +107,27 @@ func main() {
 	}
 
 	wg.Wait()
+}
+
+func parseLogLevel(level string) (logrus.Level, error) {
+	level = strings.ToLower(level)
+	var lev logrus.Level
+	switch level {
+	case "trace":
+		lev = logrus.TraceLevel
+	case "debug":
+		lev = logrus.DebugLevel
+	case "info":
+		lev = logrus.InfoLevel
+	case "warning":
+		lev = logrus.WarnLevel
+	case "error":
+		lev = logrus.ErrorLevel
+	case "fatal":
+		lev = logrus.FatalLevel
+	default:
+		return logrus.InfoLevel, fmt.Errorf("cannot parse level %s", level)
+	}
+
+	return lev, nil
 }
