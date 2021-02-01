@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -25,15 +26,24 @@ func main() {
 	var numServers *int
 	var weight *int
 	var fileName *string
+	var loglevel *string
 	port = flag.Int("p", 8010, "port for server to listen on")
 	numServers = flag.Int("s", 3, "the initial number of storage servers")
 	weight = flag.Int("w", 10, "the number of virtual nodes for each node on the hash ring")
-	fileName = flag.String("f", "/etc/yass/node_data", "location of the file for storing node addresses")
+	fileName = flag.String("f", "/usr/yass/node_data", "location of the file for storing node addresses")
+	loglevel = flag.String("v", "info", "the logging level verbosity")
 	flag.Parse()
+
+	level, err := parseLogLevel(*loglevel)
+	if err != nil {
+		logrus.Warningf("Could not parse log level %s, defaulting to info", loglevel)
+		level = logrus.InfoLevel
+	}
+	logrus.SetLevel(level)
 
 	wt := api.NewWatchTower(*numServers, *weight, client.Factory{}, *fileName)
 
-	err := wt.LoadData()
+	err = wt.LoadData()
 	if err != nil {
 		logrus.Fatalf("failed to load node data from file: %v", err)
 	}
@@ -79,4 +89,27 @@ func main() {
 	}()
 
 	wg.Wait()
+}
+
+func parseLogLevel(level string) (logrus.Level, error) {
+	level = strings.ToLower(level)
+	var lev logrus.Level
+	switch level {
+	case "trace":
+		lev = logrus.TraceLevel
+	case "debug":
+		lev = logrus.DebugLevel
+	case "info":
+		lev = logrus.InfoLevel
+	case "warning":
+		lev = logrus.WarnLevel
+	case "error":
+		lev = logrus.ErrorLevel
+	case "fatal":
+		lev = logrus.FatalLevel
+	default:
+		return logrus.InfoLevel, fmt.Errorf("cannot parse level %s", level)
+	}
+
+	return lev, nil
 }
