@@ -31,7 +31,7 @@ fi
 
 # watchtower needs to be deployed first
 echo "deploying watchtower..."
-docker run -d --name watchtower -p 8010:8010 --network yass-net local-watchtower -f "node_data.txt" >/dev/null
+docker run -d --name watchtower -p 8010:8010 --network yass-net local-watchtower >/dev/null
 
 
 # next the 3 server nodes
