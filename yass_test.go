@@ -28,7 +28,7 @@ func TestClientPutValue(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestClientGetValue(t *testing.T) {
+func TestClientFetchValue(t *testing.T) {
 	errTest := errors.New("Not in storage")
 
 	tt := []struct {
