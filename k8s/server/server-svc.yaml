@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  # This is the service that clients will interact with
+  # and automatically load balance across the server nodes
+  name: yass
+spec:
+  selector:
+    app: yass
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

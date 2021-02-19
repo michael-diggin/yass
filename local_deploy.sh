@@ -38,7 +38,7 @@ docker run -d --name watchtower -p 8010:8010 --network yass-net local-watchtower
 for i in {0..2};
 do
 echo "deploying server-$i..." 
-docker run -d --name server-$i --env POD_NAME=server-$i -p 808$i:808$i --network yass-net local-server -g "watchtower:8010" -p 808$i >/dev/null;
+docker run -d --name server-$i --env POD_NAME=server-$i:808$i -p 808$i:808$i --network yass-net local-server -g "watchtower:8010" -p 808$i >/dev/null;
 done
 
 echo -e "\nYass Servers accessible on:"
