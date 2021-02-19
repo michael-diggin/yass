@@ -62,7 +62,7 @@ func (wt *WatchTower) RegisterNode(ctx context.Context, req *pb.RegisterNodeRequ
 	for _, nodeAddr := range existingNodes {
 		otherClient := wt.Clients[nodeAddr]
 		go func(address string, client pb.StorageClient) {
-			subCtx, subCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			subCtx, subCancel := context.WithTimeout(context.Background(), 10*time.Second)
 			req := &pb.AddNodeRequest{Node: address}
 			client.AddNode(subCtx, req)
 			subCancel()

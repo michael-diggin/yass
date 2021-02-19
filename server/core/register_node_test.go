@@ -26,9 +26,12 @@ func TestRegisterNodeWithWatchTower(t *testing.T) {
 	factory := cmocks.NewMockClientFactory(ctrl)
 
 	for _, node := range nodeStrings {
+		cc := cmocks.NewMockStorageClient(ctrl)
+		cc.EXPECT().AddNode(gomock.Any(), gomock.Any())
 		newClient := &models.StorageClient{
-			StorageClient: cmocks.NewMockStorageClient(ctrl),
+			StorageClient: cc,
 		}
+
 		factory.EXPECT().NewProtoClient(gomock.Any(), node).Return(newClient, nil)
 		mockRing.EXPECT().AddNode(node)
 	}

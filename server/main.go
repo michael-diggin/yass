@@ -85,6 +85,7 @@ func main() {
 	}
 
 	localDNS := os.Getenv("POD_NAME")
+	logrus.Infof("POD_NAME is %s", localDNS)
 	if localDNS == "" {
 		logrus.Warning("No pod name specified, defaulting to localhost")
 		localDNS = "localhost"

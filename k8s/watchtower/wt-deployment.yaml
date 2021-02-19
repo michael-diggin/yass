@@ -1,9 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: watchtower-deployment
+  name: watchtower
 spec:
-  serviceName: "wt"
   replicas: 1
   selector:
     matchLabels:
@@ -13,26 +12,29 @@ spec:
       labels:
         app: watchtower
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: watchtower
         image: docker.io/mdiggin/yass-watchtower:0.1
-        imagePullPolicy: IfNotPresent
+        command: ["./watchtower"]
+        args: ["-f", "/wt/node_data"]
+        imagePullPolicy: Always
         ports:
         - containerPort: 8010
         resources:
           requests:
-            cpu: "200m"
-            memory: "32Mb"
+            cpu: 200m
+            memory: 256Mi
           limits:
-            cpu: "200m"
-            memory: "32Mb" 
+            cpu: 200m
+            memory: 256Mi
         livenessProbe:
           exec:
             command: ["./grpc_health_probe", "-addr=:8010"]
           initialDelaySeconds: 10
-      volumeMounts:
-        - mountPath: /root
-          name: cache-volume
+        volumeMounts:
+          - mountPath: /wt
+            name: wt-volume
       volumes:
-        - name: cache-volume
         - emptyDir: {}
+          name: wt-volume

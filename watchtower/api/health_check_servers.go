@@ -22,8 +22,10 @@ func (wt *WatchTower) PingStorageServers(ctx context.Context, freq time.Duration
 				logrus.Infof("Checking storage server %s", serverAddr)
 				tCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 				resp, err := client.Check(tCtx, &grpc_health_v1.HealthCheckRequest{Service: "Storage"})
-				if resp.Status != grpc_health_v1.HealthCheckResponse_SERVING || err != nil {
-					logrus.Warningf("Storage server %s not serving. Response %v, error: %v", serverAddr, resp, err)
+				if err != nil {
+					logrus.Warningf("Error checking server %s: %v", serverAddr, err)
+				} else if resp.Status != grpc_health_v1.HealthCheckResponse_SERVING {
+					logrus.Warningf("Storage server %s not serving. Response %v", serverAddr, resp)
 				}
 				cancel()
 			}

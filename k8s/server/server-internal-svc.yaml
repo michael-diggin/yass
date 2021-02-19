@@ -3,7 +3,7 @@ apiVersion: v1
 metadata:
 # This service exists so the pods in the stateful state have DNS entries
 # So that they can reach each other
-  name: server-internal
+  name: yassdb
 spec:
   selector:
     app: yass
@@ -11,4 +11,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8080
-  ClusterIP: None
+  clusterIP: None

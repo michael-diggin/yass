@@ -23,9 +23,11 @@ func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null,
 		return nil, status.Error(codes.Internal, "could not connect to new node")
 	}
 
-	s.nodeClients[req.Node] = client
-	s.hashRing.AddNode(req.Node)
+	if _, ok := s.nodeClients[req.Node]; !ok {
+		s.hashRing.AddNode(req.Node)
+		s.nodeClients[req.Node] = client
+	}
 
-	logrus.Debugf("Successfully added a new node: %s", req.Node)
+	logrus.Infof("Successfully added a new node: %s", req.Node)
 	return &pb.Null{}, nil
 }
