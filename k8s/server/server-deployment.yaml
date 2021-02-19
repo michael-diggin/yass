@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: yass-deployment
+spec:
+  serviceName: "yassdb"
+  podManagementPolicy: "Parallel"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: yass
+  template:
+    metadata:
+      labels:
+        app: yass
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: yass
+        image: docker.io/mdiggin/yass-server:0.1
+        imagePullPolicy: IfNotPresent
+        command:
+          - "./server"
+          - "-g watchtower-service"
+          - "-p 8080"
+          - "POD_NAME=$(POD_NAME).yassdb"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        livenessProbe:
+          exec:
+            command: ["./grpc_health_probe", "-addr=:8080"]
+          initialDelaySeconds: 10
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "256Mb"
+          limits:
+            cpu: "300m"
+            memory: "256Mb" 

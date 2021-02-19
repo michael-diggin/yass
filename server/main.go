@@ -96,7 +96,7 @@ func main() {
 			return err
 		}
 		gatewayClient := pb.NewWatchTowerClient(conn)
-		return srv.RegisterNodeWithWatchTower(gatewayClient, localDNS, *port)
+		return srv.RegisterNodeWithWatchTower(gatewayClient, localDNS)
 	},
 		5,
 		1*time.Second,

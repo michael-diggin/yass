@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	pb "github.com/michael-diggin/yass/proto"
@@ -15,13 +14,12 @@ type location struct {
 }
 
 // RegisterNodeWithWatchTower will register the storage node with the watchtower
-func (s *server) RegisterNodeWithWatchTower(watchtowerClient pb.WatchTowerClient, nodeAddress string, port int) error {
+func (s *server) RegisterNodeWithWatchTower(watchtowerClient pb.WatchTowerClient, nodeAddress string) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	addr := fmt.Sprintf("%s:%d", nodeAddress, port)
-	req := &pb.RegisterNodeRequest{Address: addr}
+	req := &pb.RegisterNodeRequest{Address: nodeAddress}
 	resp, err := watchtowerClient.RegisterNode(ctx, req)
 	if err != nil {
 		return errors.Wrap(err, "failed to register node")

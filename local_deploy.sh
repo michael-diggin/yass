@@ -31,14 +31,14 @@ fi
 
 # watchtower needs to be deployed first
 echo "deploying watchtower..."
-docker run -d --name watchtower -p 8010:8010 --network yass-net local-watchtower -f "node_data.txt" >/dev/null
+docker run -d --name watchtower -p 8010:8010 --network yass-net local-watchtower >/dev/null
 
 
 # next the 3 server nodes
 for i in {0..2};
 do
 echo "deploying server-$i..." 
-docker run -d --name server-$i --env POD_NAME=server-$i -p 808$i:808$i --network yass-net local-server -g "watchtower:8010" -p 808$i >/dev/null;
+docker run -d --name server-$i --env POD_NAME=server-$i:808$i -p 808$i:808$i --network yass-net local-server -g "watchtower:8010" -p 808$i >/dev/null;
 done
 
 echo -e "\nYass Servers accessible on:"

@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: watchtower-service
+spec:
+  selector:
+    app: watchtower
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8010

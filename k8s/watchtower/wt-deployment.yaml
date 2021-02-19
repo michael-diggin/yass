@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watchtower-deployment
+spec:
+  serviceName: "wt"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: watchtower
+  template:
+    metadata:
+      labels:
+        app: watchtower
+    spec:
+      containers:
+      - name: watchtower
+        image: docker.io/mdiggin/yass-watchtower:0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8010
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "32Mb"
+          limits:
+            cpu: "200m"
+            memory: "32Mb" 
+        livenessProbe:
+          exec:
+            command: ["./grpc_health_probe", "-addr=:8010"]
+          initialDelaySeconds: 10
+      volumeMounts:
+        - mountPath: /root
+          name: cache-volume
+      volumes:
+        - name: cache-volume
+        - emptyDir: {}

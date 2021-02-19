@@ -30,7 +30,7 @@ func main() {
 	port = flag.Int("p", 8010, "port for server to listen on")
 	numServers = flag.Int("s", 3, "the initial number of storage servers")
 	weight = flag.Int("w", 10, "the number of virtual nodes for each node on the hash ring")
-	fileName = flag.String("f", "/usr/yass/node_data", "location of the file for storing node addresses")
+	fileName = flag.String("f", "node_data", "location of the file for storing node addresses")
 	loglevel = flag.String("v", "info", "the logging level verbosity")
 	flag.Parse()
 

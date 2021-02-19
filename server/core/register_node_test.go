@@ -40,6 +40,6 @@ func TestRegisterNodeWithWatchTower(t *testing.T) {
 	mockWT.EXPECT().RegisterNode(gomock.Any(), &pb.RegisterNodeRequest{Address: "yass-db-2:8080"}).
 		Return(&pb.RegisterNodeResponse{ExistingNodes: nodeStrings}, nil)
 
-	err := srv.RegisterNodeWithWatchTower(mockWT, "yass-db-2", 8080)
+	err := srv.RegisterNodeWithWatchTower(mockWT, "yass-db-2:8080")
 	r.NoError(err)
 }
