@@ -91,12 +91,14 @@ func main() {
 		logrus.Fatalf("could not add own node: %v", err)
 	}
 
-	otherNodes := strings.Split(*cluster, ",")
-	for _, node := range otherNodes {
+	allNodes := strings.Split(*cluster, ",")
+	newNodes := []string{}
+	for _, node := range allNodes {
 		if strings.Contains(node, podName) {
 			// this node is already added
 			continue
 		}
+		newNodes = append(newNodes, node)
 
 		logrus.Infof("Registering server with node %s", node)
 		err = retry.WithBackOff(func() error {
@@ -117,7 +119,11 @@ func main() {
 		}
 	}
 
-	srv.RepopulateNodes(ctx, podName)
+	if false {
+		// the AddNode response needs to be altered
+		// use the response to decide if the node should request data from other nodes
+		srv.RepopulateFromNodes(newNodes...)
+	}
 
 	wg.Wait()
 }

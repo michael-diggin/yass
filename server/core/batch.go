@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"time"
 
 	pb "github.com/michael-diggin/yass/proto"
@@ -22,7 +23,7 @@ func (s *server) BatchGet(ctx context.Context, req *pb.BatchGetRequest) (*pb.Bat
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case storedData := <-store.BatchGet(uint32(0), uint32(1)):
+	case storedData := <-store.BatchGet(uint32(0), uint32(math.MaxUint32)):
 		data := make([]*pb.Pair, 0, len(storedData))
 		for k, d := range storedData {
 			valueBytes, err := json.Marshal(d.Value)
