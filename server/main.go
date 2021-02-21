@@ -79,11 +79,10 @@ func main() {
 	}()
 
 	podName := os.Getenv("POD_NAME")
-	logrus.Infof("POD_NAME is %s", podName)
 	if podName == "" {
-		logrus.Warning("No pod name specified, defaulting to localhost")
-		podName = "localhost"
+		logrus.Fatalf("No pod name specified, cannot join cluster")
 	}
+	logrus.Infof("POD_NAME is %s", podName)
 
 	// adding itself as a node to the hash ring on
 	addReq := &pb.AddNodeRequest{Node: fmt.Sprintf("%s:%d", podName, *port)}
@@ -94,7 +93,8 @@ func main() {
 
 	otherNodes := strings.Split(*cluster, ",")
 	for _, node := range otherNodes {
-		if node == podName {
+		if strings.Contains(node, podName) {
+			// this node is already added
 			continue
 		}
 
@@ -116,6 +116,8 @@ func main() {
 			logrus.Fatalf("could not register server with node %s: %v", node, err)
 		}
 	}
+
+	srv.RepopulateNodes(ctx, podName)
 
 	wg.Wait()
 }

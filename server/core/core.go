@@ -53,23 +53,25 @@ func (y YassServer) ShutDown() {
 
 // server (unexported) implements the StorageServer interface
 type server struct {
-	DataStores  []model.Service
-	factory     models.ClientFactory
-	nodeClients map[string]*models.StorageClient
-	mu          sync.RWMutex
-	hashRing    models.HashRing
-	minServers  int
+	DataStores     []model.Service
+	factory        models.ClientFactory
+	nodeClients    map[string]*models.StorageClient
+	mu             sync.RWMutex
+	hashRing       models.HashRing
+	minServers     int
+	repopulateChan chan string
 }
 
 func newServer(factory models.ClientFactory, dataStores ...model.Service) *server {
 	hashRing := hashring.New(len(dataStores))
 	srv := server{
-		DataStores:  dataStores,
-		factory:     factory,
-		nodeClients: make(map[string]*models.StorageClient),
-		mu:          sync.RWMutex{},
-		hashRing:    hashRing,
-		minServers:  3,
+		DataStores:     dataStores,
+		factory:        factory,
+		nodeClients:    make(map[string]*models.StorageClient),
+		mu:             sync.RWMutex{},
+		hashRing:       hashRing,
+		minServers:     3,
+		repopulateChan: make(chan string, 3),
 	}
 	return &srv
 }

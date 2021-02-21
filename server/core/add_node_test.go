@@ -40,3 +40,32 @@ func TestServerAddNode(t *testing.T) {
 	_, err := srv.AddNode(ctx, req)
 	r.NoError(err)
 }
+
+func TestServerAddNodeThatAlreadyExists(t *testing.T) {
+	r := require.New(t)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockMain := mocks.NewMockService(ctrl)
+	mockBackup := mocks.NewMockService(ctrl)
+
+	newClient := &models.StorageClient{
+		StorageClient: cmocks.NewMockStorageClient(ctrl),
+	}
+
+	factory := cmocks.NewMockClientFactory(ctrl)
+	factory.EXPECT().NewProtoClient(gomock.Any(), "localhost:8081").Return(newClient, nil)
+
+	srv := newServer(factory, mockMain, mockBackup)
+	srv.nodeClients["localhost:8081"] = newClient
+
+	req := &pb.AddNodeRequest{Node: "localhost:8081"}
+
+	ctx := context.Background()
+	_, err := srv.AddNode(ctx, req)
+	r.NoError(err)
+	r.Len(srv.repopulateChan, 1)
+
+	node := <-srv.repopulateChan
+	r.Equal("localhost:8081", node)
+}

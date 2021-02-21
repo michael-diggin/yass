@@ -26,10 +26,11 @@ func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null,
 	if _, ok := s.nodeClients[req.Node]; !ok {
 		s.hashRing.AddNode(req.Node)
 		s.nodeClients[req.Node] = client
+		logrus.Infof("Successfully added a new node: %s", req.Node)
+	} else {
+		s.repopulateChan <- req.Node
+		logrus.Infof("Reconnected to node %s", req.Node)
 	}
 
-	// TODO: add logic for repopulating node
-
-	logrus.Infof("Successfully added a new node: %s", req.Node)
 	return &pb.Null{}, nil
 }
