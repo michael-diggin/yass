@@ -23,49 +23,63 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 
 	// get node Addrs from hash ring
 	hashkey := s.hashRing.Hash(req.Key)
-	nodes, err := s.hashRing.GetN(hashkey, 2)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "something went wrong")
-	}
+	node := s.hashRing.Get(hashkey)
 	req.Hash = hashkey
+	setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
+	subctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
-	// synchronously set the key/value on the storage servers
-	revertSetNodes := []models.Node{}
+	// propose write to all nodes
+	respChan := make(chan error, 3)
+	for _, client := range s.nodeClients {
+		go func(c *models.StorageClient, errChan chan error) {
+			_, err := c.Set(subctx, setReq)
+			errChan <- err
+		}(client, respChan)
+	}
+
+	// wait and listen for responses
+	var commit, abort int = 0, 0
 	var returnErr error
-	for _, node := range nodes {
-		s.mu.RLock()
-		client := s.nodeClients[node.ID]
-		s.mu.RUnlock()
-		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-		setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
-		_, err := client.Set(subctx, setReq)
-		cancel()
-		if err != nil {
+	for err := range respChan {
+		if err == nil {
+			commit++
+		} else {
+			abort++
 			returnErr = err
+		}
+		if commit >= 2 || abort >= 2 {
 			break
 		}
-		revertSetNodes = append(revertSetNodes, node)
 	}
 
-	if returnErr != nil {
-		logrus.Errorf("Encountered error: %v", returnErr)
-		// revert any changes that were made before an error
-		for _, node := range revertSetNodes {
-			n := node
-			s.mu.RLock()
-			client := s.nodeClients[n.ID]
-			s.mu.RUnlock()
-			go func() {
-				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-				client.Delete(subctx, &pb.DeleteRequest{Replica: int32(n.Idx), Key: req.Key})
-				cancel()
-			}()
-		}
-
-		return nil, status.Error(status.Code(returnErr), returnErr.Error())
+	if commit >= 2 {
+		// write successful, exit here
+		// in future edits, there will be a commit call made to each node
+		logrus.Info("Committing")
+		return &pb.Null{}, nil
 	}
 
-	return &pb.Null{}, nil
+	// else, abort the write, delete
+	cancel() // this is in case we got two errors, can cancel the 3rd request
+
+	// revert any changes that were made before an error
+	subctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	delReq := &pb.DeleteRequest{Replica: int32(node.Idx), Key: req.Key}
+	defer cancel()
+	for id, client := range s.nodeClients {
+		id := id
+		c := client
+		go func() {
+			_, err := c.Delete(subctx, delReq)
+			if err != nil {
+				logrus.Errorf("err aborting write from node %s: %v", id, err)
+			}
+		}()
+	}
+
+	logrus.Errorf("Encountered error: %v", returnErr)
+	return nil, status.Error(status.Code(returnErr), returnErr.Error())
 }
 
 // Fetch will return the value for a given key if it is in the data nodes
@@ -79,34 +93,25 @@ func (s *server) Fetch(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 	}
 
 	hashkey := s.hashRing.Hash(req.Key)
-	nodes, err := s.hashRing.GetN(hashkey, 2)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "something went wrong")
-	}
+	node := s.hashRing.Get(hashkey)
 
-	newctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	newctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	getReq := &pb.GetRequest{Replica: int32(node.Idx), Key: req.Key}
 
-	resps := make(chan internalResponse, len(nodes))
-	for _, node := range nodes {
-		n := node
-		s.mu.RLock()
-		client := s.nodeClients[n.ID]
-		s.mu.RUnlock()
-		go func() {
-			subctx, cancel := context.WithTimeout(newctx, 3*time.Second)
-			defer cancel()
-			getReq := &pb.GetRequest{Replica: int32(n.Idx), Key: req.Key}
-			pair, err := client.Get(subctx, getReq)
+	resps := make(chan internalResponse, s.minServers)
+	for _, client := range s.nodeClients {
+		go func(c *models.StorageClient, resps chan internalResponse) {
+			pair, err := c.Get(newctx, getReq)
 			if err != nil {
 				resps <- internalResponse{err: err}
 				return
 			}
 			resps <- internalResponse{value: pair.Value, err: err}
-		}()
+		}(client, resps)
 	}
 
-	value, retErr := getValueFromRequests(resps, len(nodes), cancel)
+	value, retErr := getValueFromRequests(resps, s.minServers)
+	cancel()
 
 	if value == nil && retErr != nil {
 		return nil, status.Error(status.Code(retErr), retErr.Error())
@@ -120,19 +125,37 @@ type internalResponse struct {
 	err   error
 }
 
-func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) ([]byte, error) {
+func getValueFromRequests(resps chan internalResponse, n int) ([]byte, error) {
 	var err error
-	var value []byte
-	for i := 0; i < n; i++ {
-		r := <-resps
-		if r.err != nil && err == nil {
+	valMap := make(map[string]int)
+	stringValMap := make(map[string][]byte)
+	numErrs := 0
+	responses := 0
+	for r := range resps {
+		responses++
+		if r.err != nil {
 			err = r.err
+			numErrs++
 		}
 		if r.value != nil {
-			value = r.value
-			cancel()
+			str := string(r.value)
+			stringValMap[str] = r.value
+			valMap[str]++
+			if valMap[str] >= 2 {
+				return stringValMap[str], nil
+			}
+		}
+
+		if numErrs >= 2 {
+			return nil, err
+		}
+		if responses >= n {
 			break
 		}
 	}
-	return value, err
+	// weird case where there's no consensus on value or error
+	// should only happen when more than one node is down and they haven't caught up yet
+	// for now respond with aborted: eVEntUaL COnsIsTeNCy
+	// TODO: return value with highest txn key maybe?
+	return nil, status.Error(codes.Aborted, "no quorum was reached")
 }

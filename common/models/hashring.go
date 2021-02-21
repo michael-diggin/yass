@@ -23,6 +23,7 @@ type Instruction struct {
 type HashRing interface {
 	AddNode(id string)
 	RemoveNode(id string) error
+	Get(uint32) Node
 	GetN(uint32, int) ([]Node, error)
 	RebalanceInstructions(string) []Instruction
 	Hash(string) uint32
