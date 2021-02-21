@@ -23,49 +23,63 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 
 	// get node Addrs from hash ring
 	hashkey := s.hashRing.Hash(req.Key)
-	nodes, err := s.hashRing.GetN(hashkey, 2)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "something went wrong")
-	}
+	node := s.hashRing.Get(hashkey)
 	req.Hash = hashkey
+	setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
+	subctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
-	// synchronously set the key/value on the storage servers
-	revertSetNodes := []models.Node{}
+	// propose write to all nodes
+	respChan := make(chan error, 3)
+	for _, client := range s.nodeClients {
+		go func(c *models.StorageClient, errChan chan error) {
+			_, err := c.Set(subctx, setReq)
+			errChan <- err
+		}(client, respChan)
+	}
+
+	// wait and listen for responses
+	var commit, abort int = 0, 0
 	var returnErr error
-	for _, node := range nodes {
-		s.mu.RLock()
-		client := s.nodeClients[node.ID]
-		s.mu.RUnlock()
-		subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-		setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
-		_, err := client.Set(subctx, setReq)
-		cancel()
-		if err != nil {
+	for err := range respChan {
+		if err == nil {
+			commit++
+		} else {
+			abort++
 			returnErr = err
+		}
+		if commit >= 2 || abort >= 2 {
 			break
 		}
-		revertSetNodes = append(revertSetNodes, node)
 	}
 
-	if returnErr != nil {
-		logrus.Errorf("Encountered error: %v", returnErr)
-		// revert any changes that were made before an error
-		for _, node := range revertSetNodes {
-			n := node
-			s.mu.RLock()
-			client := s.nodeClients[n.ID]
-			s.mu.RUnlock()
-			go func() {
-				subctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-				client.Delete(subctx, &pb.DeleteRequest{Replica: int32(n.Idx), Key: req.Key})
-				cancel()
-			}()
-		}
-
-		return nil, status.Error(status.Code(returnErr), returnErr.Error())
+	if commit >= 2 {
+		// write successful, exit here
+		// in future edits, there will be a commit call made to each node
+		logrus.Info("Committing")
+		return &pb.Null{}, nil
 	}
 
-	return &pb.Null{}, nil
+	// else, abort the write, delete
+	cancel() // this is in case we got two errors, can cancel the 3rd request
+
+	// revert any changes that were made before an error
+	subctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	delReq := &pb.DeleteRequest{Replica: int32(node.Idx), Key: req.Key}
+	defer cancel()
+	for id, client := range s.nodeClients {
+		id := id
+		c := client
+		go func() {
+			_, err := c.Delete(subctx, delReq)
+			if err != nil {
+				logrus.Errorf("err aborting write from node %s: %v", id, err)
+			}
+		}()
+	}
+
+	logrus.Errorf("Encountered error: %v", returnErr)
+	return nil, status.Error(status.Code(returnErr), returnErr.Error())
 }
 
 // Fetch will return the value for a given key if it is in the data nodes

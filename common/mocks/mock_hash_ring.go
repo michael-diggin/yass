@@ -45,6 +45,20 @@ func (mr *MockHashRingMockRecorder) AddNode(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNode", reflect.TypeOf((*MockHashRing)(nil).AddNode), arg0)
 }
 
+// Get mocks base method
+func (m *MockHashRing) Get(arg0 uint32) models.Node {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", arg0)
+	ret0, _ := ret[0].(models.Node)
+	return ret0
+}
+
+// Get indicates an expected call of Get
+func (mr *MockHashRingMockRecorder) Get(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHashRing)(nil).Get), arg0)
+}
+
 // GetN mocks base method
 func (m *MockHashRing) GetN(arg0 uint32, arg1 int) ([]models.Node, error) {
 	m.ctrl.T.Helper()

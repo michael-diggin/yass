@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -26,29 +27,55 @@ func TestServerPut(t *testing.T) {
 
 		mockRing := mocks.NewMockHashRing(ctrl)
 		mockRing.EXPECT().Hash(key).Return(hashkey)
-		mockRing.EXPECT().GetN(hashkey, 2).Return(
-			[]models.Node{
-				{ID: "node-0", Idx: 0},
-				{ID: "node-1", Idx: 1},
-			}, nil)
+		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 0})
 
 		mockClientOne := mocks.NewMockStorageClient(ctrl)
 		mockClientTwo := mocks.NewMockStorageClient(ctrl)
+		mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
-		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, nil)
+		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
+		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
+		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
 
 		srv := newServer(nil, nil)
 		srv.hashRing = mockRing
 		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-		srv.minServers = 2
+		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientTwo}
 
 		req := &pb.Pair{Key: key, Value: valueBytes}
 		_, err := srv.Put(context.Background(), req)
 
 		require.NoError(t, err)
+	})
 
+	t.Run("quorum reached 2/3", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockRing := mocks.NewMockHashRing(ctrl)
+		mockRing.EXPECT().Hash(key).Return(hashkey)
+		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 0})
+
+		mockClientOne := mocks.NewMockStorageClient(ctrl)
+		mockClientTwo := mocks.NewMockStorageClient(ctrl)
+		mockClientThree := mocks.NewMockStorageClient(ctrl)
+
+		transientErr := errors.New("transient error")
+		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
+		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, transientErr).AnyTimes()
+		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
+
+		srv := newServer(nil, nil)
+		srv.hashRing = mockRing
+		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
+		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
+
+		req := &pb.Pair{Key: key, Value: valueBytes}
+		_, err := srv.Put(context.Background(), req)
+
+		require.NoError(t, err)
 	})
 
 	t.Run("already exists", func(t *testing.T) {
@@ -57,25 +84,26 @@ func TestServerPut(t *testing.T) {
 
 		mockRing := mocks.NewMockHashRing(ctrl)
 		mockRing.EXPECT().Hash(key).Return(hashkey)
-		mockRing.EXPECT().GetN(hashkey, 2).Return(
-			[]models.Node{
-				{ID: "node-0", Idx: 0},
-				{ID: "node-1", Idx: 1},
-			}, nil)
+		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 1})
 
 		mockClientOne := mocks.NewMockStorageClient(ctrl)
 		mockClientTwo := mocks.NewMockStorageClient(ctrl)
+		mockClientThree := mocks.NewMockStorageClient(ctrl)
 
 		errMock := status.Error(codes.AlreadyExists, "key in cache already")
-		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
-		mockClientOne.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 0, Key: key}).Return(nil, nil).AnyTimes()
+		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, nil).AnyTimes()
 		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
+		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
+
+		mockClientOne.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
+		mockClientTwo.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
+		mockClientThree.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
 
 		srv := newServer(nil, nil)
 		srv.hashRing = mockRing
 		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-		srv.minServers = 2
+		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
 		req := &pb.Pair{Key: key, Value: valueBytes}
 		_, err := srv.Put(context.Background(), req)
