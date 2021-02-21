@@ -28,6 +28,8 @@ func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null,
 		s.nodeClients[req.Node] = client
 	}
 
+	// TODO: add logic for repopulating node
+
 	logrus.Infof("Successfully added a new node: %s", req.Node)
 	return &pb.Null{}, nil
 }

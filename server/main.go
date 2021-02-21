@@ -25,7 +25,7 @@ import (
 
 func main() {
 	port := flag.Int("p", 8080, "port for storage server to listen on")
-	gateway := flag.String("g", "localhost:8010", "location of the watchtower")
+	cluster := flag.String("join", "yass-0,yass-1,yass-2", "nodes in the cluster")
 	weights := flag.Int("w", 10, "The number of weights/data stores the server manages")
 	loglevel := flag.String("v", "info", "the logging level verbosity")
 	flag.Parse()
@@ -78,33 +78,43 @@ func main() {
 		}
 	}()
 
-	// adding itself as a node to the hash ring
-	_, err = srv.AddNode(ctx, &pb.AddNodeRequest{Node: fmt.Sprintf("localhost:%d", *port)})
+	podName := os.Getenv("POD_NAME")
+	logrus.Infof("POD_NAME is %s", podName)
+	if podName == "" {
+		logrus.Warning("No pod name specified, defaulting to localhost")
+		podName = "localhost"
+	}
+
+	// adding itself as a node to the hash ring on
+	addReq := &pb.AddNodeRequest{Node: fmt.Sprintf("%s:%d", podName, *port)}
+	_, err = srv.AddNode(ctx, addReq)
 	if err != nil {
 		logrus.Fatalf("could not add own node: %v", err)
 	}
 
-	localDNS := os.Getenv("POD_NAME")
-	logrus.Infof("POD_NAME is %s", localDNS)
-	if localDNS == "" {
-		logrus.Warning("No pod name specified, defaulting to localhost")
-		localDNS = "localhost"
-	}
-	logrus.Info("Registering storage server with watchtower")
-	err = retry.WithBackOff(func() error {
-		conn, err := grpc.DialContext(ctx, *gateway, grpc.WithInsecure()) //TODO: add security and credentials
-		if err != nil {
-			return err
+	otherNodes := strings.Split(*cluster, ",")
+	for _, node := range otherNodes {
+		if node == podName {
+			continue
 		}
-		gatewayClient := pb.NewWatchTowerClient(conn)
-		return srv.RegisterNodeWithWatchTower(gatewayClient, localDNS)
-	},
-		5,
-		1*time.Second,
-		"register data server with watchtower",
-	)
-	if err != nil {
-		logrus.Fatalf("could not register server with watchtower: %v", err)
+
+		logrus.Infof("Registering server with node %s", node)
+		err = retry.WithBackOff(func() error {
+			conn, err := grpc.DialContext(ctx, node, grpc.WithInsecure()) //TODO: add security and credentials
+			if err != nil {
+				return err
+			}
+			client := pb.NewStorageClient(conn)
+			_, err = client.AddNode(ctx, addReq)
+			return err
+		},
+			5,
+			1*time.Second,
+			"register data server with other nodes in cluster",
+		)
+		if err != nil {
+			logrus.Fatalf("could not register server with node %s: %v", node, err)
+		}
 	}
 
 	wg.Wait()
