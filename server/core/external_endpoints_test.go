@@ -137,23 +137,60 @@ func TestGatewayGetSuccess(t *testing.T) {
 
 	mockRing := mocks.NewMockHashRing(ctrl)
 	mockRing.EXPECT().Hash(key).Return(uint32(100))
-	mockRing.EXPECT().GetN(uint32(100), 2).Return(
-		[]models.Node{
-			{ID: "node-0", Idx: 0},
-			{ID: "node-1", Idx: 1},
-		}, nil)
+	mockRing.EXPECT().Get(uint32(100)).Return(models.Node{Idx: 0})
 
 	mockClientOne := mocks.NewMockStorageClient(ctrl)
 	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
 	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
-	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(pair, nil).AnyTimes()
+	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
+	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
 
 	srv := newServer(nil, nil)
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-	srv.minServers = 2
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
+
+	req := &pb.Key{Key: key}
+	retPair, err := srv.Fetch(context.Background(), req)
+
+	require.NoError(t, err)
+	require.Equal(t, key, retPair.Key)
+	require.Equal(t, value, retPair.Value)
+}
+
+func TestGatewayFetchQuorumReached(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	key := "test-get-key"
+	value := []byte(`"test-value"`)
+	pair := &pb.Pair{Key: key, Value: value}
+
+	mockRing := mocks.NewMockHashRing(ctrl)
+	mockRing.EXPECT().Hash(key).Return(uint32(100))
+	mockRing.EXPECT().Get(uint32(100)).Return(models.Node{Idx: 0})
+
+	mockClientOne := mocks.NewMockStorageClient(ctrl)
+	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
+
+	mockErr := errors.New("not found")
+	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).
+		DoAndReturn(func(...interface{}) (*pb.Pair, error) {
+			time.Sleep(50 * time.Millisecond)
+			return pair, nil
+		})
+	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil)
+	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, mockErr).AnyTimes()
+
+	srv := newServer(nil, nil)
+	srv.hashRing = mockRing
+	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
+	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
 	req := &pb.Key{Key: key}
 	retPair, err := srv.Fetch(context.Background(), req)
@@ -171,25 +208,23 @@ func TestGatewayGetNotFound(t *testing.T) {
 
 	mockRing := mocks.NewMockHashRing(ctrl)
 	mockRing.EXPECT().Hash(key).Return(uint32(100))
-	mockRing.EXPECT().GetN(uint32(100), 2).Return(
-		[]models.Node{
-			{ID: "node-0", Idx: 0},
-			{ID: "node-1", Idx: 1},
-		}, nil)
+	mockRing.EXPECT().Get(uint32(100)).Return(models.Node{Idx: 1})
 
 	mockClientOne := mocks.NewMockStorageClient(ctrl)
 	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
 	errMock := status.Error(codes.NotFound, "key not found in cache")
 
-	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, errMock).AnyTimes()
+	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(nil, errMock).AnyTimes()
 	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(nil, errMock).AnyTimes()
+	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(nil, errMock).AnyTimes()
 
 	srv := newServer(nil, nil)
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-	srv.minServers = 2
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
 	req := &pb.Key{Key: key}
 	retPair, err := srv.Fetch(context.Background(), req)
@@ -199,45 +234,37 @@ func TestGatewayGetNotFound(t *testing.T) {
 	require.Equal(t, codes.NotFound, status.Code(err))
 }
 
-func TestGatewayGetOneSuccessOneFailure(t *testing.T) {
-
+func TestGatewayFetchNoQuorumReached(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
+
+	key := "test-get-key"
+	value := []byte(`"test-value"`)
+	pair := &pb.Pair{Key: key, Value: value}
+	pairTwo := &pb.Pair{Key: key, Value: []byte(`"different-value"`)}
+
+	mockRing := mocks.NewMockHashRing(ctrl)
+	mockRing.EXPECT().Hash(key).Return(uint32(100))
+	mockRing.EXPECT().Get(uint32(100)).Return(models.Node{Idx: 0})
 
 	mockClientOne := mocks.NewMockStorageClient(ctrl)
 	mockClientTwo := mocks.NewMockStorageClient(ctrl)
 	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-	key := "test-get-key"
-	value := []byte(`"test-value"`)
-	pair := &pb.Pair{Key: key, Value: value}
-	errMock := status.Error(codes.Canceled, "request timed out")
-
-	mockRing := mocks.NewMockHashRing(ctrl)
-	mockRing.EXPECT().Hash(key).Return(uint32(100))
-	mockRing.EXPECT().GetN(uint32(100), 2).Return(
-		[]models.Node{
-			{ID: "node-3", Idx: 0},
-			{ID: "node-1", Idx: 1},
-		}, nil)
-
-	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, errMock).AnyTimes()
-	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).
-		DoAndReturn(func(...interface{}) (*pb.Pair, error) {
-			time.Sleep(50 * time.Millisecond)
-			return pair, nil
-		}).AnyTimes()
+	mockClientOne.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pairTwo, nil).AnyTimes()
+	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
+	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, errors.New("err")).AnyTimes()
 
 	srv := newServer(nil, nil)
 	srv.hashRing = mockRing
-	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientOne}
-	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientTwo}
-	srv.nodeClients["node-3"] = &models.StorageClient{StorageClient: mockClientThree}
+	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
+	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
 	req := &pb.Key{Key: key}
 	retPair, err := srv.Fetch(context.Background(), req)
 
-	require.NoError(t, err)
-	require.Equal(t, key, retPair.Key)
-	require.Equal(t, value, retPair.Value)
+	require.Error(t, err)
+	require.Nil(t, retPair)
+	require.Equal(t, codes.Aborted, status.Code(err))
 }

@@ -93,34 +93,25 @@ func (s *server) Fetch(ctx context.Context, req *pb.Key) (*pb.Pair, error) {
 	}
 
 	hashkey := s.hashRing.Hash(req.Key)
-	nodes, err := s.hashRing.GetN(hashkey, 2)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "something went wrong")
-	}
+	node := s.hashRing.Get(hashkey)
 
-	newctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	newctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	getReq := &pb.GetRequest{Replica: int32(node.Idx), Key: req.Key}
 
-	resps := make(chan internalResponse, len(nodes))
-	for _, node := range nodes {
-		n := node
-		s.mu.RLock()
-		client := s.nodeClients[n.ID]
-		s.mu.RUnlock()
-		go func() {
-			subctx, cancel := context.WithTimeout(newctx, 3*time.Second)
-			defer cancel()
-			getReq := &pb.GetRequest{Replica: int32(n.Idx), Key: req.Key}
-			pair, err := client.Get(subctx, getReq)
+	resps := make(chan internalResponse, s.minServers)
+	for _, client := range s.nodeClients {
+		go func(c *models.StorageClient, resps chan internalResponse) {
+			pair, err := c.Get(newctx, getReq)
 			if err != nil {
 				resps <- internalResponse{err: err}
 				return
 			}
 			resps <- internalResponse{value: pair.Value, err: err}
-		}()
+		}(client, resps)
 	}
 
-	value, retErr := getValueFromRequests(resps, len(nodes), cancel)
+	value, retErr := getValueFromRequests(resps, s.minServers)
+	cancel()
 
 	if value == nil && retErr != nil {
 		return nil, status.Error(status.Code(retErr), retErr.Error())
@@ -134,19 +125,37 @@ type internalResponse struct {
 	err   error
 }
 
-func getValueFromRequests(resps chan internalResponse, n int, cancel context.CancelFunc) ([]byte, error) {
+func getValueFromRequests(resps chan internalResponse, n int) ([]byte, error) {
 	var err error
-	var value []byte
-	for i := 0; i < n; i++ {
-		r := <-resps
-		if r.err != nil && err == nil {
+	valMap := make(map[string]int)
+	stringValMap := make(map[string][]byte)
+	numErrs := 0
+	responses := 0
+	for r := range resps {
+		responses++
+		if r.err != nil {
 			err = r.err
+			numErrs++
 		}
 		if r.value != nil {
-			value = r.value
-			cancel()
+			str := string(r.value)
+			stringValMap[str] = r.value
+			valMap[str]++
+			if valMap[str] >= 2 {
+				return stringValMap[str], nil
+			}
+		}
+
+		if numErrs >= 2 {
+			return nil, err
+		}
+		if responses >= n {
 			break
 		}
 	}
-	return value, err
+	// weird case where there's no consensus on value or error
+	// should only happen when more than one node is down and they haven't caught up yet
+	// for now respond with aborted: eVEntUaL COnsIsTeNCy
+	// TODO: return value with highest txn key maybe?
+	return nil, status.Error(codes.Aborted, "no quorum was reached")
 }
