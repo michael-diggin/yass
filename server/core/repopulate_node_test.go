@@ -1,8 +1,7 @@
 package core
 
 import (
-	"context"
-	"math"
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -11,36 +10,57 @@ import (
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRepopulateNode(t *testing.T) {
-
-	ctx, cancel := context.WithCancel(context.Background())
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockMain := mocks.NewMockService(ctrl)
 	mockBackup := mocks.NewMockService(ctrl)
 
-	respMain := make(chan map[string]model.Data, 1)
-	//respBackup := make(chan map[string]model.Data, 1)
-	data := map[string]model.Data{
-		"key-1": {Value: "value-1", Hash: uint32(100)},
-		"key-2": {Value: 2, Hash: uint32(101)},
-	}
-	respMain <- data
+	respMain := make(chan error, 1)
+	respMain <- nil
 	close(respMain)
-	//	respBackup <- data
-	//	close(respBackup)
+	respBackup := make(chan error, 1)
+	respBackup <- nil
+	close(respBackup)
 
-	mockMain.EXPECT().BatchGet(uint32(0), uint32(math.MaxUint32)).Return(respMain)
-	//	mockBackup.EXPECT().BatchGet(uint32(0), uint32(math.MaxUint32)).Return(respBackup)
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	mockMain.EXPECT().BatchSet(gomock.Any()).DoAndReturn(
+		func(d map[string]model.Data) <-chan error {
+			if len(d) != 2 {
+				t.FailNow()
+			}
+			wg.Done()
+			return respMain
+		})
+	mockBackup.EXPECT().BatchSet(gomock.Any()).DoAndReturn(
+		func(d map[string]model.Data) <-chan error {
+			if len(d) != 2 {
+				t.FailNow()
+			}
+			wg.Done()
+			return respBackup
+		})
+
+	pairData := []*pb.Pair{
+		{Key: "key-1", Hash: uint32(100), Value: []byte(`"value-1"`)},
+		{Key: "key-2", Hash: uint32(101), Value: []byte(`2`)},
+	}
 
 	cc := cmocks.NewMockStorageClient(ctrl)
-	cc.EXPECT().BatchSet(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(_ ...interface{}) (*pb.Null, error) {
-			cancel()
-			return &pb.Null{}, nil
+	resp := &pb.BatchGetResponse{Data: pairData}
+	cc.EXPECT().BatchGet(gomock.Any(), &pb.BatchGetRequest{Replica: int32(0)}).DoAndReturn(
+		func(_ ...interface{}) (*pb.BatchGetResponse, error) {
+			return resp, nil
+		})
+	cc.EXPECT().BatchGet(gomock.Any(), &pb.BatchGetRequest{Replica: int32(1)}).DoAndReturn(
+		func(_ ...interface{}) (*pb.BatchGetResponse, error) {
+			return resp, nil
 		})
 
 	newClient := &models.StorageClient{
@@ -52,9 +72,10 @@ func TestRepopulateNode(t *testing.T) {
 	srv := newServer(factory, mockMain, mockBackup)
 	srv.nodeClients["yass-0.yassdb:8080"] = newClient
 
-	podName := "yass-1.yassdb:8080"
+	podName := "yass-0.yassdb:8080"
 
-	srv.repopulateChan <- "yass-0.yassdb:8080"
-	srv.RepopulateNodes(ctx, podName)
+	err := srv.RepopulateFromNodes(podName)
+	require.NoError(t, err)
+	wg.Wait()
 
 }
