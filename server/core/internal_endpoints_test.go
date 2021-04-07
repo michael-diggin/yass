@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/michael-diggin/yass/common/yasserrors"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/mocks"
 	"github.com/michael-diggin/yass/server/model"
@@ -23,11 +24,13 @@ func TestSettoStorage(t *testing.T) {
 		key     string
 		hash    uint32
 		value   []byte
+		dbErr   error
 		errCode codes.Code
 		timeout time.Duration
 	}{
-		{"valid case", "newKey", uint32(100), []byte(`"newValue"`), codes.OK, time.Second},
-		{"already set key", "testKey", uint32(101), []byte(`"testVal"`), codes.AlreadyExists, time.Second},
+		{"valid case", "newKey", uint32(100), []byte(`"newValue"`), nil, codes.OK, time.Second},
+		{"already set key", "testKey", uint32(101), []byte(`"testVal"`), yasserrors.AlreadySet{Key: "testKey"}, codes.AlreadyExists, time.Second},
+		{"already set key", "testKey", uint32(101), []byte(`"testVal"`), yasserrors.TransactionError{Key: "testKey"}, codes.Aborted, time.Second},
 	}
 
 	for _, tc := range tt {
@@ -40,14 +43,14 @@ func TestSettoStorage(t *testing.T) {
 			resp <- &model.StorageResponse{
 				Key:   tc.key,
 				Value: string(tc.value),
-				Err:   status.Error(tc.errCode, "")}
+				Err:   tc.dbErr}
 			close(resp)
 
 			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any(), true).Return(resp)
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
 			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}
-			req := &pb.SetRequest{Replica: 0, Pair: testKV}
+			req := &pb.SetRequest{Replica: 0, Pair: testKV, Commit: true}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Set(ctx, req)
