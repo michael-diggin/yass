@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/michael-diggin/yass/common/models"
+	"github.com/michael-diggin/yass/common/retry"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -32,7 +33,7 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	hashkey := s.hashRing.Hash(req.Key)
 	node := s.hashRing.Get(hashkey)
 	req.Hash = hashkey
-	setReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req}
+	proposeReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: false}
 	subctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -40,7 +41,7 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	respChan := make(chan error, 3)
 	for _, client := range s.nodeClients {
 		go func(c *models.StorageClient, errChan chan error) {
-			_, err := c.Set(subctx, setReq)
+			_, err := c.Set(subctx, proposeReq)
 			errChan <- err
 		}(client, respChan)
 	}
@@ -63,14 +64,12 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	if commit >= 2 {
 		// write successful, exit here
 		// in future edits, there will be a commit call made to each node
-		logrus.Info("Committing")
+		commitReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: true}
+		s.commitWrite(ctx, commitReq)
 		return &pb.Null{}, nil
 	}
 
-	// else, abort the write, delete
-	cancel() // this is in case we got two errors, can cancel the 3rd request
-
-	// revert any changes that were made before an error
+	// revert any changes to the proposed data that were made before an error
 	subctx, cancel = context.WithTimeout(ctx, 5*time.Second)
 	delReq := &pb.DeleteRequest{Replica: int32(node.Idx), Key: req.Key}
 	defer cancel()
@@ -87,6 +86,30 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 
 	logrus.Errorf("Encountered error: %v", returnErr)
 	return nil, status.Error(status.Code(returnErr), returnErr.Error())
+}
+
+func (s *server) commitWrite(ctx context.Context, commitReq *pb.SetRequest) {
+	// new context as retries might need longer
+	subctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// commit write to all nodes
+	for node, client := range s.nodeClients {
+		go func(n string, c *models.StorageClient) {
+			err := retry.WithBackOff(func() error {
+				_, err := c.Set(subctx, commitReq)
+				return err
+			},
+				5,
+				1*time.Second,
+				"commiting data",
+			)
+			if err != nil {
+				logrus.Fatalf("could not commit data to node %s: %v", n, err)
+			}
+		}(node, client)
+	}
+	return
 }
 
 // Fetch will return the value for a given key if it is in the data nodes

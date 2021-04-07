@@ -20,116 +20,102 @@ func testServer() *server {
 	return newServer(nil, "leader", "leader", nil)
 }
 
-func TestServerPut(t *testing.T) {
+func TestServerPutQuorumReached(t *testing.T) {
+
 	key := "test"
 	hashkey := uint32(100)
 	valueBytes := []byte(`"test-value"`)
 	pair := &pb.Pair{Key: key, Hash: hashkey, Value: valueBytes}
 
-	t.Run("success", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		mockRing := mocks.NewMockHashRing(ctrl)
-		mockRing.EXPECT().Hash(key).Return(hashkey)
-		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 0})
+	mockRing := mocks.NewMockHashRing(ctrl)
+	mockRing.EXPECT().Hash(key).Return(hashkey)
+	mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 0})
 
-		mockClientOne := mocks.NewMockStorageClient(ctrl)
-		mockClientTwo := mocks.NewMockStorageClient(ctrl)
-		mockClientThree := mocks.NewMockStorageClient(ctrl)
+	mockClientOne := mocks.NewMockStorageClient(ctrl)
+	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
-		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
-		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
+	transientErr := errors.New("transient error")
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).Return(nil, nil)
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).Return(nil, transientErr)
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).
+		DoAndReturn(func(...interface{}) (*pb.Null, error) {
+			time.Sleep(10 * time.Millisecond)
+			return nil, nil
+		})
 
-		srv := testServer()
-		srv.hashRing = mockRing
-		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
-		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientTwo}
+	// committed
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
 
-		req := &pb.Pair{Key: key, Value: valueBytes}
-		_, err := srv.Put(context.Background(), req)
+	srv := testServer()
+	srv.hashRing = mockRing
+	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
+	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
-		require.NoError(t, err)
-	})
+	req := &pb.Pair{Key: key, Value: valueBytes}
+	_, err := srv.Put(context.Background(), req)
 
-	t.Run("quorum reached 2/3", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	require.NoError(t, err)
+}
 
-		mockRing := mocks.NewMockHashRing(ctrl)
-		mockRing.EXPECT().Hash(key).Return(hashkey)
-		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 0})
+func TestServerPutErrors(t *testing.T) {
 
-		mockClientOne := mocks.NewMockStorageClient(ctrl)
-		mockClientTwo := mocks.NewMockStorageClient(ctrl)
-		mockClientThree := mocks.NewMockStorageClient(ctrl)
+	key := "test"
+	hashkey := uint32(100)
+	valueBytes := []byte(`"test-value"`)
+	pair := &pb.Pair{Key: key, Hash: hashkey, Value: valueBytes}
 
-		transientErr := errors.New("transient error")
-		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
-		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, transientErr).AnyTimes()
-		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		srv := testServer()
-		srv.hashRing = mockRing
-		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
-		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
+	mockRing := mocks.NewMockHashRing(ctrl)
+	mockRing.EXPECT().Hash(key).Return(hashkey)
+	mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 1})
 
-		req := &pb.Pair{Key: key, Value: valueBytes}
-		_, err := srv.Put(context.Background(), req)
+	mockClientOne := mocks.NewMockStorageClient(ctrl)
+	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
-		require.NoError(t, err)
-	})
+	errMock := status.Error(codes.AlreadyExists, "key in cache already")
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, nil).AnyTimes()
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
 
-	t.Run("already exists", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	mockClientOne.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
+	mockClientTwo.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
+	mockClientThree.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
 
-		mockRing := mocks.NewMockHashRing(ctrl)
-		mockRing.EXPECT().Hash(key).Return(hashkey)
-		mockRing.EXPECT().Get(hashkey).Return(models.Node{Idx: 1})
+	srv := testServer()
+	srv.hashRing = mockRing
+	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
+	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
 
-		mockClientOne := mocks.NewMockStorageClient(ctrl)
-		mockClientTwo := mocks.NewMockStorageClient(ctrl)
-		mockClientThree := mocks.NewMockStorageClient(ctrl)
+	req := &pb.Pair{Key: key, Value: valueBytes}
+	_, err := srv.Put(context.Background(), req)
 
-		errMock := status.Error(codes.AlreadyExists, "key in cache already")
-		mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, nil).AnyTimes()
-		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
-		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
+	require.Error(t, err)
+	require.Equal(t, codes.AlreadyExists, status.Code(err))
+}
 
-		mockClientOne.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
-		mockClientTwo.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
-		mockClientThree.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
+func TestServerPutNoKey(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		srv := testServer()
-		srv.hashRing = mockRing
-		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
-		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
-		srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
+	srv := testServer()
+	srv.minServers = 0
 
-		req := &pb.Pair{Key: key, Value: valueBytes}
-		_, err := srv.Put(context.Background(), req)
+	req := &pb.Pair{Key: "", Value: []byte(`"test-value"`)}
+	_, err := srv.Put(context.Background(), req)
 
-		require.Error(t, err)
-		require.Equal(t, codes.AlreadyExists, status.Code(err))
-	})
-
-	t.Run("no key specified", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		srv := testServer()
-		srv.minServers = 0
-
-		req := &pb.Pair{Key: "", Value: []byte(`"test-value"`)}
-		_, err := srv.Put(context.Background(), req)
-
-		require.Error(t, err)
-		require.Equal(t, codes.InvalidArgument, status.Code(err))
-	})
+	require.Error(t, err)
+	require.Equal(t, codes.InvalidArgument, status.Code(err))
 }
 
 func TestServerPutRedirectsToLeader(t *testing.T) {

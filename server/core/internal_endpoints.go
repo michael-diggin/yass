@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/michael-diggin/yass/common/models"
+	"github.com/michael-diggin/yass/common/yasserrors"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/proto/convert"
 	"github.com/michael-diggin/yass/server/model"
@@ -14,7 +15,6 @@ import (
 )
 
 // Set takes a key/value pair and adds it to the storage
-// It returns an error if the key is already set
 func (s *server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) {
 	logrus.Debug("Serving Set request")
 	pbPair := req.GetPair()
@@ -33,9 +33,17 @@ func (s *server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) 
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-store.Set(pair.Key, pair.Hash, pair.Value):
+	case cacheResp := <-store.Set(pair.Key, pair.Hash, pair.Value, req.Commit):
 		if cacheResp.Err != nil {
-			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
+			err = cacheResp.Err
+			if (err == yasserrors.AlreadySet{Key: pair.Key}) {
+				return nil, status.Error(codes.AlreadyExists, err.Error())
+			}
+			if (err == yasserrors.TransactionError{Key: pair.Key}) {
+				return nil, status.Error(codes.Aborted, err.Error())
+			}
+			logrus.Errorf("encountered internal error: %v", err)
+			return nil, status.Error(codes.Internal, "something went wrong")
 		}
 		logrus.Debug("Set request succeeded")
 		return &pb.Null{}, nil

@@ -32,7 +32,7 @@ fi
 for i in {0..2};
 do
 echo "deploying yass-$i..." 
-docker run -d --name yass-$i --env POD_NAME=yass-$i:808$i -p 808$i:808$i --network yass-net local-server -join "yass-0:8080,yass-1:8081,yass-2:8082" -p 808$i >/dev/null;
+docker run -d --name yass-$i --env POD_NAME=yass-$i:808$i -p 808$i:808$i --network yass-net local-server -join "yass-0:8080,yass-1:8081,yass-2:8082" -leader "yass-0:8080" -p 808$i >/dev/null;
 done
 
 echo -e "\nYass Servers accessible on:"
