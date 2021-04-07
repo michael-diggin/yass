@@ -92,13 +92,13 @@ func getValue(db map[string]model.Data, key string) (interface{}, error) {
 	return data.Value, nil
 }
 
-// Delete removes a key from the db
+// Delete removes a key from the proposed db
 func (s *Service) Delete(key string) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
-		s.mu.Lock()
-		delete(s.db, key)
-		s.mu.Unlock()
+		s.pmu.Lock()
+		delete(s.proposed, key)
+		s.pmu.Unlock()
 		respChan <- &model.StorageResponse{}
 		close(respChan)
 	}()

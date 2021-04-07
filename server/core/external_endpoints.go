@@ -69,9 +69,8 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 		return &pb.Null{}, nil
 	}
 
-	// revert any changes that were made before an error
+	// revert any changes to the proposed data that were made before an error
 	subctx, cancel = context.WithTimeout(ctx, 5*time.Second)
-	// TODO: add call to abort - remove from temp db
 	delReq := &pb.DeleteRequest{Replica: int32(node.Idx), Key: req.Key}
 	defer cancel()
 	for id, client := range s.nodeClients {

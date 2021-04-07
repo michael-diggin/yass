@@ -128,7 +128,7 @@ func TestDelFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", false)
 
 	tt := []struct {
 		name string
