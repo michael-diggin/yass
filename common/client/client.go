@@ -21,9 +21,11 @@ func (f Factory) NewProtoClient(ctx context.Context, addr string) (*models.Stora
 		return nil, err
 	}
 	protoClient := pb.NewStorageClient(conn)
+	yassClient := pb.NewYassServiceClient(conn)
 	healthClient := grpc_health_v1.NewHealthClient(conn)
 	return &models.StorageClient{StorageClient: protoClient,
-		HealthClient: healthClient,
-		ClientConn:   conn,
+		YassServiceClient: yassClient,
+		HealthClient:      healthClient,
+		ClientConn:        conn,
 	}, nil
 }

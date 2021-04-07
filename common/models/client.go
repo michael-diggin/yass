@@ -8,9 +8,10 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-// StorageClient satisfies the internal proto interface
+// StorageClient satisfies the internal and external proto interface
 type StorageClient struct {
 	pb.StorageClient
+	pb.YassServiceClient
 	grpc_health_v1.HealthClient
 	*grpc.ClientConn
 }

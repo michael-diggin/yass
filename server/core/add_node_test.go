@@ -64,8 +64,4 @@ func TestServerAddNodeThatAlreadyExists(t *testing.T) {
 	ctx := context.Background()
 	_, err := srv.AddNode(ctx, req)
 	r.NoError(err)
-	r.Len(srv.repopulateChan, 1)
-
-	node := <-srv.repopulateChan
-	r.Equal("localhost:8081", node)
 }

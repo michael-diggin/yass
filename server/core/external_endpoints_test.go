@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/michael-diggin/yass/common/mocks"
 	"github.com/michael-diggin/yass/common/models"
+	yassmocks "github.com/michael-diggin/yass/mocks"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -16,7 +17,7 @@ import (
 )
 
 func testServer() *server {
-	return newServer(nil, "name", "leader", nil)
+	return newServer(nil, "leader", "leader", nil)
 }
 
 func TestServerPut(t *testing.T) {
@@ -129,6 +130,27 @@ func TestServerPut(t *testing.T) {
 		require.Error(t, err)
 		require.Equal(t, codes.InvalidArgument, status.Code(err))
 	})
+}
+
+func TestServerPutRedirectsToLeader(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClientOne := yassmocks.NewMockYassServiceClient(ctrl)
+	mockClientTwo := mocks.NewMockStorageClient(ctrl)
+	mockClientThree := mocks.NewMockStorageClient(ctrl)
+
+	req := &pb.Pair{Key: "key", Value: []byte(`"value"`)}
+
+	mockClientOne.EXPECT().Put(gomock.Any(), req).Return(&pb.Null{}, nil).AnyTimes()
+
+	srv := newServer(nil, "node-1", "node-0", nil)
+	srv.nodeClients["node-0"] = &models.StorageClient{YassServiceClient: mockClientOne}
+	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
+	srv.nodeClients["node-2"] = &models.StorageClient{StorageClient: mockClientThree}
+
+	_, err := srv.Put(context.Background(), req)
+	require.NoError(t, err)
 }
 
 func TestGatewayGetSuccess(t *testing.T) {
