@@ -15,6 +15,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func testServer() *server {
+	return newServer(nil, "name", "leader", nil)
+}
+
 func TestServerPut(t *testing.T) {
 	key := "test"
 	hashkey := uint32(100)
@@ -37,7 +41,7 @@ func TestServerPut(t *testing.T) {
 		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
 		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil).AnyTimes()
 
-		srv := newServer(nil, nil)
+		srv := testServer()
 		srv.hashRing = mockRing
 		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -66,7 +70,7 @@ func TestServerPut(t *testing.T) {
 		mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, transientErr).AnyTimes()
 		mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair}).Return(nil, nil)
 
-		srv := newServer(nil, nil)
+		srv := testServer()
 		srv.hashRing = mockRing
 		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -99,7 +103,7 @@ func TestServerPut(t *testing.T) {
 		mockClientTwo.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
 		mockClientThree.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
 
-		srv := newServer(nil, nil)
+		srv := testServer()
 		srv.hashRing = mockRing
 		srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 		srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -116,7 +120,7 @@ func TestServerPut(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		srv := newServer(nil, nil)
+		srv := testServer()
 		srv.minServers = 0
 
 		req := &pb.Pair{Key: "", Value: []byte(`"test-value"`)}
@@ -147,7 +151,7 @@ func TestGatewayGetSuccess(t *testing.T) {
 	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
 	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
 
-	srv := newServer(nil, nil)
+	srv := testServer()
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -186,7 +190,7 @@ func TestGatewayFetchQuorumReached(t *testing.T) {
 	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil)
 	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, mockErr).AnyTimes()
 
-	srv := newServer(nil, nil)
+	srv := testServer()
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -220,7 +224,7 @@ func TestGatewayGetNotFound(t *testing.T) {
 	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(nil, errMock).AnyTimes()
 	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 1, Key: key}).Return(nil, errMock).AnyTimes()
 
-	srv := newServer(nil, nil)
+	srv := testServer()
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}
@@ -255,7 +259,7 @@ func TestGatewayFetchNoQuorumReached(t *testing.T) {
 	mockClientTwo.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(pair, nil).AnyTimes()
 	mockClientThree.EXPECT().Get(gomock.Any(), &pb.GetRequest{Replica: 0, Key: key}).Return(nil, errors.New("err")).AnyTimes()
 
-	srv := newServer(nil, nil)
+	srv := testServer()
 	srv.hashRing = mockRing
 	srv.nodeClients["node-0"] = &models.StorageClient{StorageClient: mockClientOne}
 	srv.nodeClients["node-1"] = &models.StorageClient{StorageClient: mockClientTwo}

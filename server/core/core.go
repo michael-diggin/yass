@@ -22,9 +22,9 @@ type YassServer struct {
 }
 
 // New sets up the server
-func New(lis net.Listener, dataStores ...model.Service) YassServer {
+func New(lis net.Listener, name, leader string, dataStores ...model.Service) YassServer {
 	s := grpc.NewServer()
-	srv := newServer(client.Factory{}, dataStores...)
+	srv := newServer(client.Factory{}, name, leader, dataStores...)
 	pb.RegisterStorageServer(s, srv)
 	pb.RegisterYassServiceServer(s, srv)
 	grpc_health_v1.RegisterHealthServer(s, srv)
@@ -60,9 +60,11 @@ type server struct {
 	hashRing       models.HashRing
 	minServers     int
 	repopulateChan chan string
+	Name           string
+	RaftLeader     string
 }
 
-func newServer(factory models.ClientFactory, dataStores ...model.Service) *server {
+func newServer(factory models.ClientFactory, name, leader string, dataStores ...model.Service) *server {
 	hashRing := hashring.New(len(dataStores))
 	srv := server{
 		DataStores:     dataStores,
@@ -72,6 +74,12 @@ func newServer(factory models.ClientFactory, dataStores ...model.Service) *serve
 		hashRing:       hashRing,
 		minServers:     3,
 		repopulateChan: make(chan string, 3),
+		Name:           name,
+		RaftLeader:     leader,
 	}
 	return &srv
+}
+
+func (srv *server) IsLeader() bool {
+	return srv.Name == srv.RaftLeader
 }

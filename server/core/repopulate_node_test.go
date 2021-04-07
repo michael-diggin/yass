@@ -69,7 +69,7 @@ func TestRepopulateNode(t *testing.T) {
 
 	factory := cmocks.NewMockClientFactory(ctrl)
 
-	srv := newServer(factory, mockMain, mockBackup)
+	srv := newServer(factory, "yass-0", "yass-0", mockMain, mockBackup)
 	srv.nodeClients["yass-0.yassdb:8080"] = newClient
 
 	podName := "yass-0.yassdb:8080"
