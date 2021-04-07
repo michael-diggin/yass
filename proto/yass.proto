@@ -27,6 +27,7 @@ service YassService {
 message SetRequest {
     int32 replica = 1;
     Pair pair = 2;
+    bool commit = 3;
 }
 
 message GetRequest {

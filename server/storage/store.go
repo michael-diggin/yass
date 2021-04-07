@@ -9,52 +9,74 @@ import (
 
 // Service implements the model.Service interface
 type Service struct {
-	store map[string]model.Data
-	mu    sync.RWMutex
+	db       map[string]model.Data
+	proposed map[string]model.Data
+	mu       sync.RWMutex
+	pmu      sync.RWMutex
 }
 
 // New returns an instance of Service
 func New() *Service {
-	store := make(map[string]model.Data)
-	return &Service{store: store, mu: sync.RWMutex{}}
+	db := make(map[string]model.Data)
+	proposed := make(map[string]model.Data)
+	return &Service{db: db, proposed: proposed, mu: sync.RWMutex{}, pmu: sync.RWMutex{}}
 }
 
 // Ping performs healthcheck on service
 func (s *Service) Ping() error {
-	if s.store == nil {
+	if s.db == nil {
 		return yasserrors.NotServing{}
 	}
 	return nil
 }
 
-// Set adds a key/value pair to the store
-func (s *Service) Set(key string, hash uint32, value interface{}) <-chan *model.StorageResponse {
+// Set adds a key/value pair to the db
+func (s *Service) Set(key string, hash uint32, value interface{}, commit bool) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
-	go func() {
-		data := model.Data{Value: value, Hash: hash}
-		s.mu.Lock()
-		err := setValue(s.store, key, data)
-		s.mu.Unlock()
-		respChan <- &model.StorageResponse{Key: key, Err: err}
-		close(respChan)
-	}()
+	if commit {
+		go func() {
+			data := model.Data{Value: value, Hash: hash}
+			s.mu.Lock()
+			s.pmu.Lock()
+			err := setValue(s.db, s.proposed, key, data)
+			s.mu.Unlock()
+			s.pmu.Unlock()
+			respChan <- &model.StorageResponse{Key: key, Err: err}
+			close(respChan)
+		}()
+	} else {
+		go func() {
+			data := model.Data{Value: value, Hash: hash}
+			s.pmu.Lock()
+			err := proposeValue(s.proposed, key, data)
+			s.pmu.Unlock()
+			respChan <- &model.StorageResponse{Key: key, Err: err}
+			close(respChan)
+		}()
+	}
 	return respChan
 }
 
-func setValue(store map[string]model.Data, key string, data model.Data) error {
-	if _, ok := store[key]; ok {
-		return yasserrors.AlreadySet{Key: key}
-	}
-	store[key] = data
+func setValue(db, proposed map[string]model.Data, key string, data model.Data) error {
+	delete(proposed, key)
+	db[key] = data
 	return nil
 }
 
-// Get returns the value of a key in the store
+func proposeValue(db map[string]model.Data, key string, data model.Data) error {
+	if _, ok := db[key]; ok {
+		return yasserrors.TransactionError{Key: key}
+	}
+	db[key] = data
+	return nil
+}
+
+// Get returns the value of a key in the db
 func (s *Service) Get(key string) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
 		s.mu.RLock()
-		val, err := getValue(s.store, key)
+		val, err := getValue(s.db, key)
 		s.mu.RUnlock()
 		respChan <- &model.StorageResponse{Key: key, Value: val, Err: err}
 		close(respChan)
@@ -62,20 +84,20 @@ func (s *Service) Get(key string) <-chan *model.StorageResponse {
 	return respChan
 }
 
-func getValue(store map[string]model.Data, key string) (interface{}, error) {
-	data, ok := store[key]
+func getValue(db map[string]model.Data, key string) (interface{}, error) {
+	data, ok := db[key]
 	if !ok {
 		return nil, yasserrors.NotFound{Key: key}
 	}
 	return data.Value, nil
 }
 
-// Delete removes a key from the store
+// Delete removes a key from the db
 func (s *Service) Delete(key string) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
 		s.mu.Lock()
-		delete(s.store, key)
+		delete(s.db, key)
 		s.mu.Unlock()
 		respChan <- &model.StorageResponse{}
 		close(respChan)
@@ -83,7 +105,7 @@ func (s *Service) Delete(key string) <-chan *model.StorageResponse {
 	return respChan
 }
 
-// Close clears the store
+// Close clears the db
 func (s *Service) Close() {
 	s = &Service{} // let GC handle the freeing up of memory
 }
@@ -107,7 +129,7 @@ func (s *Service) BatchGet(low, high uint32) <-chan map[string]model.Data {
 	go func() {
 		data := make(map[string]model.Data)
 		s.mu.RLock()
-		for k, v := range s.store {
+		for k, v := range s.db {
 			if constraintFunc(v.Hash) {
 				data[k] = v
 			}
@@ -119,13 +141,13 @@ func (s *Service) BatchGet(low, high uint32) <-chan map[string]model.Data {
 	return resp
 }
 
-// BatchSet sets all of the passed data to the data store
+// BatchSet sets all of the passed data to the data db
 func (s *Service) BatchSet(newData map[string]model.Data) <-chan error {
 	resp := make(chan error)
 	go func() {
 		s.mu.Lock()
 		for key, data := range newData {
-			s.store[key] = data
+			s.db[key] = data
 		}
 		s.mu.Unlock()
 		resp <- nil
@@ -134,7 +156,7 @@ func (s *Service) BatchSet(newData map[string]model.Data) <-chan error {
 	return resp
 }
 
-// BatchDelete removes all the keys and data from the data store
+// BatchDelete removes all the keys and data from the data db
 func (s *Service) BatchDelete(low, high uint32) <-chan error {
 	resp := make(chan error)
 
@@ -152,10 +174,10 @@ func (s *Service) BatchDelete(low, high uint32) <-chan error {
 
 	go func() {
 		s.mu.Lock()
-		for k, v := range s.store {
+		for k, v := range s.db {
 			key := k
 			if constraintFunc(v.Hash) {
-				delete(s.store, key)
+				delete(s.db, key)
 			}
 		}
 		s.mu.Unlock()

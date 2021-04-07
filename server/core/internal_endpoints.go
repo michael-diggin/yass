@@ -33,7 +33,7 @@ func (s *server) Set(ctx context.Context, req *pb.SetRequest) (*pb.Null, error) 
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "Context timeout")
-	case cacheResp := <-store.Set(pair.Key, pair.Hash, pair.Value):
+	case cacheResp := <-store.Set(pair.Key, pair.Hash, pair.Value, true):
 		if cacheResp.Err != nil {
 			return nil, status.Error(codes.AlreadyExists, cacheResp.Err.Error())
 		}

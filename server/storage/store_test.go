@@ -30,7 +30,7 @@ func TestSetInCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
 
 	tt := []struct {
 		name  string
@@ -40,24 +40,70 @@ func TestSetInCache(t *testing.T) {
 		err   error
 	}{
 		{"valid", "key", "value", uint32(77), nil},
-		{"already set", "test-key", "test-value", uint32(100), yasserrors.AlreadySet{Key: "test-key"}},
+		{"already set", "test-key", "test-value", uint32(100), nil},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 
-			resp := <-ser.Set(tc.key, tc.hash, tc.value)
+			resp := <-ser.Set(tc.key, tc.hash, tc.value, true)
 			r.Equal(tc.err, resp.Err)
 			r.Equal(tc.key, resp.Key)
 		})
 	}
 }
 
+func TestSetInCacheWithCommit(t *testing.T) {
+	r := require.New(t)
+	ser := New()
+	defer ser.Close()
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+
+	resp := <-ser.Set("test-key", uint32(100), "new-value", false)
+	r.NoError(resp.Err)
+	r.Equal("test-key", resp.Key)
+
+	// check it hasn't changed the commit data
+	r.Equal("test-value", ser.db["test-key"].Value)
+	r.Equal("new-value", ser.proposed["test-key"].Value)
+
+	resp = <-ser.Set("test-key", uint32(100), "new-value", true)
+	r.NoError(resp.Err)
+	r.Equal("test-key", resp.Key)
+
+	// now it should overwrite the data
+	r.Equal("new-value", ser.db["test-key"].Value)
+	r.Empty(ser.proposed["test-key"])
+}
+
+func TestSetInCacheWithTransacionError(t *testing.T) {
+	r := require.New(t)
+	ser := New()
+	defer ser.Close()
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+
+	resp := <-ser.Set("test-key", uint32(100), "new-value", false)
+	r.NoError(resp.Err)
+	r.Equal("test-key", resp.Key)
+
+	// check it hasn't changed the commit data
+	r.Equal("test-value", ser.db["test-key"].Value)
+	r.Equal("new-value", ser.proposed["test-key"].Value)
+
+	resp = <-ser.Set("test-key", uint32(100), "different-value", false)
+	r.Error(resp.Err)
+	r.Equal(yasserrors.TransactionError{Key: "test-key"}, resp.Err)
+
+	// check it hasn't changed the commit data
+	r.Equal("test-value", ser.db["test-key"].Value)
+	r.Equal("new-value", ser.proposed["test-key"].Value)
+}
+
 func TestGetFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
 
 	tt := []struct {
 		name  string
@@ -82,7 +128,7 @@ func TestDelFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value")
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
 
 	tt := []struct {
 		name string
@@ -105,8 +151,8 @@ func TestBatchGet(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	ser.store["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
-	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(201)}
+	ser.db["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
+	ser.db["test-key-2"] = model.Data{Value: 2, Hash: uint32(201)}
 
 	t.Run("get all", func(t *testing.T) {
 		data := <-ser.BatchGet(uint32(0), uint32(1000))
@@ -141,9 +187,9 @@ func TestBatchSet(t *testing.T) {
 
 	err := <-ser.BatchSet(data)
 	r.NoError(err)
-	r.Len(ser.store, 2)
-	r.Equal(ser.store["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
-	r.Equal(ser.store["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
+	r.Len(ser.db, 2)
+	r.Equal(ser.db["test-key-1"], model.Data{Value: "value-1", Hash: uint32(100)})
+	r.Equal(ser.db["test-key-2"], model.Data{Value: 2, Hash: uint32(101)})
 }
 
 func TestBatchDelete(t *testing.T) {
@@ -151,12 +197,12 @@ func TestBatchDelete(t *testing.T) {
 	ser := New()
 	defer ser.Close()
 
-	ser.store["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
-	ser.store["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
-	ser.store["test-key-3"] = model.Data{Value: 12, Hash: uint32(201)}
+	ser.db["test-key-1"] = model.Data{Value: "value-1", Hash: uint32(100)}
+	ser.db["test-key-2"] = model.Data{Value: 2, Hash: uint32(101)}
+	ser.db["test-key-3"] = model.Data{Value: 12, Hash: uint32(201)}
 
 	err := <-ser.BatchDelete(uint32(50), uint32(150))
 	r.NoError(err)
-	r.Len(ser.store, 1)
-	r.Equal(ser.store["test-key-3"], model.Data{Value: 12, Hash: uint32(201)})
+	r.Len(ser.db, 1)
+	r.Equal(ser.db["test-key-3"], model.Data{Value: 12, Hash: uint32(201)})
 }

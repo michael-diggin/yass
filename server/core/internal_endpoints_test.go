@@ -43,7 +43,7 @@ func TestSettoStorage(t *testing.T) {
 				Err:   status.Error(tc.errCode, "")}
 			close(resp)
 
-			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any()).Return(resp)
+			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any(), true).Return(resp)
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
 			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}

@@ -26,6 +26,7 @@ import (
 func main() {
 	port := flag.Int("p", 8080, "port for storage server to listen on")
 	cluster := flag.String("join", "yass-0,yass-1,yass-2", "nodes in the cluster")
+	defaultLeader := flag.String("leader", "yass-0", "the default raft leader on start up")
 	weights := flag.Int("w", 10, "The number of weights/data stores the server manages")
 	loglevel := flag.String("v", "info", "the logging level verbosity")
 	flag.Parse()
@@ -55,9 +56,7 @@ func main() {
 	}
 	logrus.Infof("POD_NAME is %s", podName)
 
-	defaultLeader := "yass-0:8080"
-
-	srv := core.New(lis, podName, defaultLeader, stores...)
+	srv := core.New(lis, podName, *defaultLeader, stores...)
 	defer srv.ShutDown()
 
 	ctx, cancel := context.WithCancel(context.Background())
