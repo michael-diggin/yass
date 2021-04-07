@@ -129,7 +129,7 @@ func TestBatchSend(t *testing.T) {
 
 	factory := commonmocks.NewMockClientFactory(ctrl)
 
-	srv := newServer(factory, mockMain, mockBackup)
+	srv := newServer(factory, "yass-0", "yass-0", mockMain, mockBackup)
 	srv.nodeClients["localhost:8081"] = &models.StorageClient{StorageClient: newClient}
 
 	req := &pb.BatchSendRequest{Replica: 1, Address: "localhost:8081", ToReplica: 1, Low: uint32(50), High: uint32(150)}

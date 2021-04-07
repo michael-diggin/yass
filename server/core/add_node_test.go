@@ -28,7 +28,7 @@ func TestServerAddNode(t *testing.T) {
 	factory := cmocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().NewProtoClient(gomock.Any(), "localhost:8081").Return(newClient, nil)
 
-	srv := newServer(factory, mockMain, mockBackup)
+	srv := newServer(factory, "yass-0", "yass-0", mockMain, mockBackup)
 
 	mockRing := cmocks.NewMockHashRing(ctrl)
 	mockRing.EXPECT().AddNode("localhost:8081")
@@ -56,7 +56,7 @@ func TestServerAddNodeThatAlreadyExists(t *testing.T) {
 	factory := cmocks.NewMockClientFactory(ctrl)
 	factory.EXPECT().NewProtoClient(gomock.Any(), "localhost:8081").Return(newClient, nil)
 
-	srv := newServer(factory, mockMain, mockBackup)
+	srv := newServer(factory, "yass-0", "yass-0", mockMain, mockBackup)
 	srv.nodeClients["localhost:8081"] = newClient
 
 	req := &pb.AddNodeRequest{Node: "localhost:8081"}
@@ -64,8 +64,4 @@ func TestServerAddNodeThatAlreadyExists(t *testing.T) {
 	ctx := context.Background()
 	_, err := srv.AddNode(ctx, req)
 	r.NoError(err)
-	r.Len(srv.repopulateChan, 1)
-
-	node := <-srv.repopulateChan
-	r.Equal("localhost:8081", node)
 }

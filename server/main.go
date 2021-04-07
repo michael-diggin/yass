@@ -49,7 +49,15 @@ func main() {
 		stores[i] = store
 	}
 
-	srv := core.New(lis, stores...)
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		logrus.Fatalf("No pod name specified, cannot join cluster")
+	}
+	logrus.Infof("POD_NAME is %s", podName)
+
+	defaultLeader := "yass-0:8080"
+
+	srv := core.New(lis, podName, defaultLeader, stores...)
 	defer srv.ShutDown()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -78,14 +86,8 @@ func main() {
 		}
 	}()
 
-	podName := os.Getenv("POD_NAME")
-	if podName == "" {
-		logrus.Fatalf("No pod name specified, cannot join cluster")
-	}
-	logrus.Infof("POD_NAME is %s", podName)
-
 	// adding itself as a node to the hash ring on
-	addReq := &pb.AddNodeRequest{Node: fmt.Sprintf("%s:%d", podName, *port)}
+	addReq := &pb.AddNodeRequest{Node: podName}
 	_, err = srv.AddNode(ctx, addReq)
 	if err != nil {
 		logrus.Fatalf("could not add own node: %v", err)

@@ -28,7 +28,6 @@ func (s *server) AddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Null,
 		s.nodeClients[req.Node] = client
 		logrus.Infof("Successfully added a new node: %s", req.Node)
 	} else {
-		s.repopulateChan <- req.Node
 		logrus.Infof("Reconnected to node %s", req.Node)
 	}
 

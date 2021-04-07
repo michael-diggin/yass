@@ -16,9 +16,16 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	if len(s.nodeClients) < s.minServers {
 		return nil, status.Error(codes.Unavailable, "server is not ready yet")
 	}
-	logrus.Debug("Serving Put request")
+
+	logrus.Debug("Serving Put request as RaftLeader")
 	if req.GetKey() == "" || req.GetValue() == nil {
 		return nil, status.Error(codes.InvalidArgument, "data not present in request")
+	}
+
+	if !s.IsLeader() {
+		logrus.Debug("Redirecting Put request to RaftLeader")
+		leader := s.nodeClients[s.RaftLeader]
+		return leader.Put(ctx, req)
 	}
 
 	// get node Addrs from hash ring
