@@ -7,6 +7,7 @@ import (
 	"github.com/michael-diggin/yass/common/client"
 	"github.com/michael-diggin/yass/common/hashring"
 	"github.com/michael-diggin/yass/common/models"
+	"github.com/michael-diggin/yass/common/xid"
 	pb "github.com/michael-diggin/yass/proto"
 	"github.com/michael-diggin/yass/server/model"
 	"github.com/sirupsen/logrus"
@@ -61,6 +62,7 @@ type server struct {
 	minServers  int
 	Name        string
 	RaftLeader  string
+	IDStore     *xid.IDStore
 }
 
 func newServer(factory models.ClientFactory, name, leader string, dataStores ...model.Service) *server {
@@ -74,6 +76,7 @@ func newServer(factory models.ClientFactory, name, leader string, dataStores ...
 		minServers:  3,
 		Name:        name,
 		RaftLeader:  leader,
+		IDStore:     xid.New(uint64(0)),
 	}
 	return &srv
 }

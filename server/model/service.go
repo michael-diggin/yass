@@ -4,12 +4,14 @@ package model
 type Data struct {
 	Value interface{}
 	Hash  uint32
+	Xid   uint64
 }
 
 // StorageResponse encodes key/values and the errors from the storage layer
 type StorageResponse struct {
 	Key   string
 	Value interface{}
+	Xid   uint64
 	Err   error
 }
 
@@ -19,7 +21,7 @@ type StorageResponse struct {
 type Service interface {
 	Ping() error
 	Get(string) <-chan *StorageResponse
-	Set(string, uint32, interface{}, bool) <-chan *StorageResponse
+	Set(string, uint32, interface{}, bool, uint64) <-chan *StorageResponse
 	Delete(string) <-chan *StorageResponse
 
 	BatchGet(low, high uint32) <-chan map[string]Data
