@@ -45,12 +45,13 @@ func TestSettoStorage(t *testing.T) {
 				Value: string(tc.value),
 				Err:   tc.dbErr}
 			close(resp)
+			xid := uint64(1)
 
-			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any(), true).Return(resp)
+			mockMainStore.EXPECT().Set(tc.key, tc.hash, gomock.Any(), true, xid).Return(resp)
 
 			srv := server{DataStores: []model.Service{mockMainStore}}
 			testKV := &pb.Pair{Key: tc.key, Hash: tc.hash, Value: tc.value}
-			req := &pb.SetRequest{Replica: 0, Pair: testKV, Commit: true}
+			req := &pb.SetRequest{Replica: 0, Pair: testKV, Commit: true, Xid: xid}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tc.timeout)
 			_, err := srv.Set(ctx, req)

@@ -130,15 +130,15 @@ func (mr *MockServiceMockRecorder) Ping() *gomock.Call {
 }
 
 // Set mocks base method
-func (m *MockService) Set(arg0 string, arg1 uint32, arg2 interface{}, arg3 bool) <-chan *model.StorageResponse {
+func (m *MockService) Set(arg0 string, arg1 uint32, arg2 interface{}, arg3 bool, arg4 uint64) <-chan *model.StorageResponse {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Set", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(<-chan *model.StorageResponse)
 	return ret0
 }
 
 // Set indicates an expected call of Set
-func (mr *MockServiceMockRecorder) Set(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) Set(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockService)(nil).Set), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockService)(nil).Set), arg0, arg1, arg2, arg3, arg4)
 }

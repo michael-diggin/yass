@@ -31,11 +31,11 @@ func (s *Service) Ping() error {
 }
 
 // Set adds a key/value pair to the db
-func (s *Service) Set(key string, hash uint32, value interface{}, commit bool) <-chan *model.StorageResponse {
+func (s *Service) Set(key string, hash uint32, value interface{}, commit bool, xid uint64) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	if commit {
 		go func() {
-			data := model.Data{Value: value, Hash: hash}
+			data := model.Data{Value: value, Hash: hash, Xid: xid}
 			s.mu.Lock()
 			s.pmu.Lock()
 			err := setValue(s.db, s.proposed, key, data)
@@ -46,7 +46,7 @@ func (s *Service) Set(key string, hash uint32, value interface{}, commit bool) <
 		}()
 	} else {
 		go func() {
-			data := model.Data{Value: value, Hash: hash}
+			data := model.Data{Value: value, Hash: hash, Xid: xid}
 			s.pmu.Lock()
 			err := proposeValue(s.proposed, key, data)
 			s.pmu.Unlock()
@@ -76,20 +76,20 @@ func (s *Service) Get(key string) <-chan *model.StorageResponse {
 	respChan := make(chan *model.StorageResponse, 1)
 	go func() {
 		s.mu.RLock()
-		val, err := getValue(s.db, key)
+		data, err := getValue(s.db, key)
 		s.mu.RUnlock()
-		respChan <- &model.StorageResponse{Key: key, Value: val, Err: err}
+		respChan <- &model.StorageResponse{Key: key, Value: data.Value, Err: err, Xid: data.Xid}
 		close(respChan)
 	}()
 	return respChan
 }
 
-func getValue(db map[string]model.Data, key string) (interface{}, error) {
+func getValue(db map[string]model.Data, key string) (model.Data, error) {
 	data, ok := db[key]
 	if !ok {
-		return nil, yasserrors.NotFound{Key: key}
+		return model.Data{}, yasserrors.NotFound{Key: key}
 	}
-	return data.Value, nil
+	return data, nil
 }
 
 // Delete removes a key from the proposed db

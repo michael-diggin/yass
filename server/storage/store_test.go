@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const xid = uint64(100)
+
 func TestPingStorage(t *testing.T) {
 	tt := []struct {
 		name string
@@ -30,7 +32,7 @@ func TestSetInCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true, uint64(0))
 
 	tt := []struct {
 		name  string
@@ -46,7 +48,7 @@ func TestSetInCache(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 
-			resp := <-ser.Set(tc.key, tc.hash, tc.value, true)
+			resp := <-ser.Set(tc.key, tc.hash, tc.value, true, xid)
 			r.Equal(tc.err, resp.Err)
 			r.Equal(tc.key, resp.Key)
 		})
@@ -57,9 +59,9 @@ func TestSetInCacheWithCommit(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true, uint64(0))
 
-	resp := <-ser.Set("test-key", uint32(100), "new-value", false)
+	resp := <-ser.Set("test-key", uint32(100), "new-value", false, xid)
 	r.NoError(resp.Err)
 	r.Equal("test-key", resp.Key)
 
@@ -67,7 +69,7 @@ func TestSetInCacheWithCommit(t *testing.T) {
 	r.Equal("test-value", ser.db["test-key"].Value)
 	r.Equal("new-value", ser.proposed["test-key"].Value)
 
-	resp = <-ser.Set("test-key", uint32(100), "new-value", true)
+	resp = <-ser.Set("test-key", uint32(100), "new-value", true, xid)
 	r.NoError(resp.Err)
 	r.Equal("test-key", resp.Key)
 
@@ -80,9 +82,9 @@ func TestSetInCacheWithTransacionError(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true, uint64(0))
 
-	resp := <-ser.Set("test-key", uint32(100), "new-value", false)
+	resp := <-ser.Set("test-key", uint32(100), "new-value", false, xid)
 	r.NoError(resp.Err)
 	r.Equal("test-key", resp.Key)
 
@@ -90,7 +92,7 @@ func TestSetInCacheWithTransacionError(t *testing.T) {
 	r.Equal("test-value", ser.db["test-key"].Value)
 	r.Equal("new-value", ser.proposed["test-key"].Value)
 
-	resp = <-ser.Set("test-key", uint32(100), "different-value", false)
+	resp = <-ser.Set("test-key", uint32(100), "different-value", false, uint64(99))
 	r.Error(resp.Err)
 	r.Equal(yasserrors.TransactionError{Key: "test-key"}, resp.Err)
 
@@ -103,7 +105,7 @@ func TestGetFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", true)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", true, xid)
 
 	tt := []struct {
 		name  string
@@ -128,7 +130,7 @@ func TestDelFromCache(t *testing.T) {
 	r := require.New(t)
 	ser := New()
 	defer ser.Close()
-	_ = <-ser.Set("test-key", uint32(100), "test-value", false)
+	_ = <-ser.Set("test-key", uint32(100), "test-value", false, xid)
 
 	tt := []struct {
 		name string

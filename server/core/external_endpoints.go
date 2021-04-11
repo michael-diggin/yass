@@ -29,11 +29,13 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 		return leader.Put(ctx, req)
 	}
 
+	xid := s.IDStore.IncrementXID()
+
 	// get node Addrs from hash ring
 	hashkey := s.hashRing.Hash(req.Key)
 	node := s.hashRing.Get(hashkey)
 	req.Hash = hashkey
-	proposeReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: false}
+	proposeReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: false, Xid: xid}
 	subctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -64,7 +66,7 @@ func (s *server) Put(ctx context.Context, req *pb.Pair) (*pb.Null, error) {
 	if commit >= 2 {
 		// write successful, exit here
 		// in future edits, there will be a commit call made to each node
-		commitReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: true}
+		commitReq := &pb.SetRequest{Replica: int32(node.Idx), Pair: req, Commit: true, Xid: xid}
 		s.commitWrite(ctx, commitReq)
 		return &pb.Null{}, nil
 	}

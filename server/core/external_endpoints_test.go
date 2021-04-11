@@ -39,18 +39,18 @@ func TestServerPutQuorumReached(t *testing.T) {
 	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
 	transientErr := errors.New("transient error")
-	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).Return(nil, nil)
-	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).Return(nil, transientErr)
-	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false}).
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false, Xid: uint64(1)}).Return(nil, nil)
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false, Xid: uint64(1)}).Return(nil, transientErr)
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: false, Xid: uint64(1)}).
 		DoAndReturn(func(...interface{}) (*pb.Null, error) {
 			time.Sleep(10 * time.Millisecond)
 			return nil, nil
 		})
 
 	// committed
-	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
-	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
-	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true}).Return(nil, nil).AnyTimes()
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true, Xid: uint64(1)}).Return(nil, nil).AnyTimes()
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true, Xid: uint64(1)}).Return(nil, nil).AnyTimes()
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 0, Pair: pair, Commit: true, Xid: uint64(1)}).Return(nil, nil).AnyTimes()
 
 	srv := testServer()
 	srv.hashRing = mockRing
@@ -83,9 +83,9 @@ func TestServerPutErrors(t *testing.T) {
 	mockClientThree := mocks.NewMockStorageClient(ctrl)
 
 	errMock := status.Error(codes.AlreadyExists, "key in cache already")
-	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, nil).AnyTimes()
-	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
-	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair}).Return(nil, errMock)
+	mockClientOne.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair, Xid: uint64(1)}).Return(nil, nil).AnyTimes()
+	mockClientTwo.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair, Xid: uint64(1)}).Return(nil, errMock)
+	mockClientThree.EXPECT().Set(gomock.Any(), &pb.SetRequest{Replica: 1, Pair: pair, Xid: uint64(1)}).Return(nil, errMock)
 
 	mockClientOne.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
 	mockClientTwo.EXPECT().Delete(gomock.Any(), &pb.DeleteRequest{Replica: 1, Key: key}).Return(nil, nil).AnyTimes()
