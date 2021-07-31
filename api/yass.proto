@@ -11,18 +11,18 @@ service Storage {
 }
 
 message SetRequest {
-    Record record = 1;
+    Record record = 2;
 }
 
 message GetRequest {
-    string key = 2;
+    string key = 1;
 }
 
 message SetResponse {}
 
 
 message GetResponse {
-    string key = 2;
+    Record record = 1;
 }
 
 message Record {
