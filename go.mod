@@ -3,10 +3,10 @@ module github.com/michael-diggin/yass
 go 1.14
 
 require (
-	github.com/golang/protobuf v1.4.2
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	github.com/golang/protobuf v1.4.3
+	github.com/stretchr/testify v1.7.0
+	github.com/tysontate/gommap v0.0.0-20210506040252-ef38c88b18e1
 	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a // indirect
-	google.golang.org/grpc v1.31.0
-	google.golang.org/protobuf v1.23.0
+	google.golang.org/grpc v1.39.0
+	google.golang.org/protobuf v1.25.0
 )
