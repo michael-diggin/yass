@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"bufio"
 	"context"
@@ -46,3 +47,5 @@ func main() {
 		}
 	}
 }
+
+*/
