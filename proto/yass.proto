@@ -6,81 +6,26 @@ option go_package = "github.com/michael-diggin/yass/proto;proto";
 
 // Storage is the internal interface
 service Storage {
-    rpc Set(SetRequest) returns(Null){}
-    rpc Get(GetRequest) returns(Pair){}
-    rpc Delete(DeleteRequest) returns(Null){}
-
-    rpc AddNode(AddNodeRequest) returns(Null){}
-
-    rpc BatchGet(BatchGetRequest) returns(BatchGetResponse){}
-    rpc BatchSet(BatchSetRequest) returns(Null){}
-    rpc BatchSend(BatchSendRequest) returns(Null){}
-    rpc BatchDelete(BatchDeleteRequest) returns(Null){}
-}
-
-// YassService is the external service to put and get
-service YassService {
-    rpc Put(Pair) returns(Null){}
-    rpc Fetch(Key) returns(Pair){}
+    rpc Set(SetRequest) returns(SetResponse){}
+    rpc Get(GetRequest) returns(GetResponse){}
 }
 
 message SetRequest {
-    int32 replica = 1;
-    Pair pair = 2;
-    bool commit = 3;
-    uint64 xid = 4;
+    Entry entry = 1;
 }
 
 message GetRequest {
-    int32 replica = 1;
     string key = 2;
 }
 
-message DeleteRequest {
-    int32 replica = 1;
+message SetResponse {}
+
+
+message GetResponse {
     string key = 2;
 }
 
-message Pair {
+message Entry {
     string key = 1;
-    uint32 hash = 2;
-    bytes value = 3;
-}
-
-message Key {
-    string key = 1;
-}
-
-message Null{}
-
-message AddNodeRequest {
-    string node = 1;
-}
-
-message BatchSetRequest {
-    int32 replica = 1;
-    repeated Pair data = 2;
-}
-
-message BatchSendRequest {
-    int32 replica = 1;
-    string address = 2;
-    int32 toReplica = 3;
-    uint32 low = 4;
-    uint32 high = 5;
-}
-
-message BatchDeleteRequest {
-    int32 replica = 1;
-    uint32 low = 4;
-    uint32 high = 5;
-}
-
-message BatchGetRequest {
-    int32 replica = 1;
-}
-
-message BatchGetResponse {
-    int32 replica = 1;
-    repeated Pair data = 2;
+    bytes value = 2;
 }

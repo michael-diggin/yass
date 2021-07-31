@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.23.0
 // 	protoc        v3.6.1
-// source: yass.proto
+// source: proto/yass.proto
 
 package proto
 
@@ -34,16 +34,13 @@ type SetRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Replica int32  `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Pair    *Pair  `protobuf:"bytes,2,opt,name=pair,proto3" json:"pair,omitempty"`
-	Commit  bool   `protobuf:"varint,3,opt,name=commit,proto3" json:"commit,omitempty"`
-	Xid     uint64 `protobuf:"varint,4,opt,name=xid,proto3" json:"xid,omitempty"`
+	Entry *Entry `protobuf:"bytes,1,opt,name=entry,proto3" json:"entry,omitempty"`
 }
 
 func (x *SetRequest) Reset() {
 	*x = SetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[0]
+		mi := &file_proto_yass_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -56,7 +53,7 @@ func (x *SetRequest) String() string {
 func (*SetRequest) ProtoMessage() {}
 
 func (x *SetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[0]
+	mi := &file_proto_yass_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69,35 +66,14 @@ func (x *SetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetRequest.ProtoReflect.Descriptor instead.
 func (*SetRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{0}
+	return file_proto_yass_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SetRequest) GetReplica() int32 {
+func (x *SetRequest) GetEntry() *Entry {
 	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-func (x *SetRequest) GetPair() *Pair {
-	if x != nil {
-		return x.Pair
+		return x.Entry
 	}
 	return nil
-}
-
-func (x *SetRequest) GetCommit() bool {
-	if x != nil {
-		return x.Commit
-	}
-	return false
-}
-
-func (x *SetRequest) GetXid() uint64 {
-	if x != nil {
-		return x.Xid
-	}
-	return 0
 }
 
 type GetRequest struct {
@@ -105,14 +81,13 @@ type GetRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Replica int32  `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Key     string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
 func (x *GetRequest) Reset() {
 	*x = GetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[1]
+		mi := &file_proto_yass_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -125,7 +100,7 @@ func (x *GetRequest) String() string {
 func (*GetRequest) ProtoMessage() {}
 
 func (x *GetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[1]
+	mi := &file_proto_yass_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -138,14 +113,7 @@ func (x *GetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
 func (*GetRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
+	return file_proto_yass_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetRequest) GetKey() string {
@@ -155,32 +123,29 @@ func (x *GetRequest) GetKey() string {
 	return ""
 }
 
-type DeleteRequest struct {
+type SetResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Replica int32  `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Key     string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
 }
 
-func (x *DeleteRequest) Reset() {
-	*x = DeleteRequest{}
+func (x *SetResponse) Reset() {
+	*x = SetResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[2]
+		mi := &file_proto_yass_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *DeleteRequest) String() string {
+func (x *SetResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteRequest) ProtoMessage() {}
+func (*SetResponse) ProtoMessage() {}
 
-func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[2]
+func (x *SetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -191,52 +156,84 @@ func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
-func (*DeleteRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use SetResponse.ProtoReflect.Descriptor instead.
+func (*SetResponse) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *DeleteRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
+type GetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *GetResponse) Reset() {
+	*x = GetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_yass_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
 	}
-	return 0
 }
 
-func (x *DeleteRequest) GetKey() string {
+func (x *GetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetResponse) ProtoMessage() {}
+
+func (x *GetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
+func (*GetResponse) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetResponse) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-type Pair struct {
+type Entry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Hash  uint32 `protobuf:"varint,2,opt,name=hash,proto3" json:"hash,omitempty"`
-	Value []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
-func (x *Pair) Reset() {
-	*x = Pair{}
+func (x *Entry) Reset() {
+	*x = Entry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[3]
+		mi := &file_proto_yass_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *Pair) String() string {
+func (x *Entry) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Pair) ProtoMessage() {}
+func (*Entry) ProtoMessage() {}
 
-func (x *Pair) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[3]
+func (x *Entry) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_yass_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,619 +244,93 @@ func (x *Pair) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Pair.ProtoReflect.Descriptor instead.
-func (*Pair) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use Entry.ProtoReflect.Descriptor instead.
+func (*Entry) Descriptor() ([]byte, []int) {
+	return file_proto_yass_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Pair) GetKey() string {
+func (x *Entry) GetKey() string {
 	if x != nil {
 		return x.Key
 	}
 	return ""
 }
 
-func (x *Pair) GetHash() uint32 {
-	if x != nil {
-		return x.Hash
-	}
-	return 0
-}
-
-func (x *Pair) GetValue() []byte {
+func (x *Entry) GetValue() []byte {
 	if x != nil {
 		return x.Value
 	}
 	return nil
 }
 
-type Key struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-}
-
-func (x *Key) Reset() {
-	*x = Key{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Key) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Key) ProtoMessage() {}
-
-func (x *Key) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Key.ProtoReflect.Descriptor instead.
-func (*Key) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Key) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-type Null struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Null) Reset() {
-	*x = Null{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Null) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Null) ProtoMessage() {}
-
-func (x *Null) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Null.ProtoReflect.Descriptor instead.
-func (*Null) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{5}
-}
-
-type AddNodeRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Node string `protobuf:"bytes,1,opt,name=node,proto3" json:"node,omitempty"`
-}
-
-func (x *AddNodeRequest) Reset() {
-	*x = AddNodeRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AddNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddNodeRequest) ProtoMessage() {}
-
-func (x *AddNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddNodeRequest.ProtoReflect.Descriptor instead.
-func (*AddNodeRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *AddNodeRequest) GetNode() string {
-	if x != nil {
-		return x.Node
-	}
-	return ""
-}
-
-type BatchSetRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Replica int32   `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Data    []*Pair `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
-}
-
-func (x *BatchSetRequest) Reset() {
-	*x = BatchSetRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BatchSetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BatchSetRequest) ProtoMessage() {}
-
-func (x *BatchSetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BatchSetRequest.ProtoReflect.Descriptor instead.
-func (*BatchSetRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *BatchSetRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-func (x *BatchSetRequest) GetData() []*Pair {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-type BatchSendRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Replica   int32  `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Address   string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-	ToReplica int32  `protobuf:"varint,3,opt,name=toReplica,proto3" json:"toReplica,omitempty"`
-	Low       uint32 `protobuf:"varint,4,opt,name=low,proto3" json:"low,omitempty"`
-	High      uint32 `protobuf:"varint,5,opt,name=high,proto3" json:"high,omitempty"`
-}
-
-func (x *BatchSendRequest) Reset() {
-	*x = BatchSendRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BatchSendRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BatchSendRequest) ProtoMessage() {}
-
-func (x *BatchSendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BatchSendRequest.ProtoReflect.Descriptor instead.
-func (*BatchSendRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *BatchSendRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-func (x *BatchSendRequest) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *BatchSendRequest) GetToReplica() int32 {
-	if x != nil {
-		return x.ToReplica
-	}
-	return 0
-}
-
-func (x *BatchSendRequest) GetLow() uint32 {
-	if x != nil {
-		return x.Low
-	}
-	return 0
-}
-
-func (x *BatchSendRequest) GetHigh() uint32 {
-	if x != nil {
-		return x.High
-	}
-	return 0
-}
-
-type BatchDeleteRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Replica int32  `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Low     uint32 `protobuf:"varint,4,opt,name=low,proto3" json:"low,omitempty"`
-	High    uint32 `protobuf:"varint,5,opt,name=high,proto3" json:"high,omitempty"`
-}
-
-func (x *BatchDeleteRequest) Reset() {
-	*x = BatchDeleteRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BatchDeleteRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BatchDeleteRequest) ProtoMessage() {}
-
-func (x *BatchDeleteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BatchDeleteRequest.ProtoReflect.Descriptor instead.
-func (*BatchDeleteRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *BatchDeleteRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-func (x *BatchDeleteRequest) GetLow() uint32 {
-	if x != nil {
-		return x.Low
-	}
-	return 0
-}
-
-func (x *BatchDeleteRequest) GetHigh() uint32 {
-	if x != nil {
-		return x.High
-	}
-	return 0
-}
-
-type BatchGetRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Replica int32 `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-}
-
-func (x *BatchGetRequest) Reset() {
-	*x = BatchGetRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BatchGetRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BatchGetRequest) ProtoMessage() {}
-
-func (x *BatchGetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BatchGetRequest.ProtoReflect.Descriptor instead.
-func (*BatchGetRequest) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *BatchGetRequest) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-type BatchGetResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Replica int32   `protobuf:"varint,1,opt,name=replica,proto3" json:"replica,omitempty"`
-	Data    []*Pair `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
-}
-
-func (x *BatchGetResponse) Reset() {
-	*x = BatchGetResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_yass_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BatchGetResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BatchGetResponse) ProtoMessage() {}
-
-func (x *BatchGetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_yass_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BatchGetResponse.ProtoReflect.Descriptor instead.
-func (*BatchGetResponse) Descriptor() ([]byte, []int) {
-	return file_yass_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *BatchGetResponse) GetReplica() int32 {
-	if x != nil {
-		return x.Replica
-	}
-	return 0
-}
-
-func (x *BatchGetResponse) GetData() []*Pair {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-var File_yass_proto protoreflect.FileDescriptor
-
-var file_yass_proto_rawDesc = []byte{
-	0x0a, 0x0a, 0x79, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0x71, 0x0a, 0x0a, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x1f, 0x0a, 0x04, 0x70,
-	0x61, 0x69, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x52, 0x04, 0x70, 0x61, 0x69, 0x72, 0x12, 0x16, 0x0a, 0x06,
-	0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x63, 0x6f,
-	0x6d, 0x6d, 0x69, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x78, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x03, 0x78, 0x69, 0x64, 0x22, 0x38, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x10,
-	0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79,
-	0x22, 0x3b, 0x0a, 0x0d, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x10, 0x0a, 0x03, 0x6b,
-	0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x42, 0x0a,
-	0x04, 0x50, 0x61, 0x69, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x61, 0x73, 0x68, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x68, 0x61, 0x73, 0x68, 0x12, 0x14, 0x0a, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x22, 0x17, 0x0a, 0x03, 0x4b, 0x65, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75,
-	0x6c, 0x6c, 0x22, 0x24, 0x0a, 0x0e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0x4c, 0x0a, 0x0f, 0x42, 0x61, 0x74, 0x63,
-	0x68, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72,
-	0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x65,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x1f, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72,
-	0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x8a, 0x01, 0x0a, 0x10, 0x42, 0x61, 0x74, 0x63, 0x68,
-	0x53, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72,
-	0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x65,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12,
-	0x1c, 0x0a, 0x09, 0x74, 0x6f, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x09, 0x74, 0x6f, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x12, 0x10, 0x0a,
-	0x03, 0x6c, 0x6f, 0x77, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x6c, 0x6f, 0x77, 0x12,
-	0x12, 0x0a, 0x04, 0x68, 0x69, 0x67, 0x68, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x68,
-	0x69, 0x67, 0x68, 0x22, 0x54, 0x0a, 0x12, 0x42, 0x61, 0x74, 0x63, 0x68, 0x44, 0x65, 0x6c, 0x65,
-	0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70,
-	0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x65, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x12, 0x10, 0x0a, 0x03, 0x6c, 0x6f, 0x77, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0d,
-	0x52, 0x03, 0x6c, 0x6f, 0x77, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x69, 0x67, 0x68, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x0d, 0x52, 0x04, 0x68, 0x69, 0x67, 0x68, 0x22, 0x2b, 0x0a, 0x0f, 0x42, 0x61, 0x74,
-	0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a, 0x07,
-	0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72,
-	0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x22, 0x4d, 0x0a, 0x10, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47,
-	0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x72, 0x65, 0x70,
-	0x6c, 0x69, 0x63, 0x61, 0x12, 0x1f, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x52,
-	0x04, 0x64, 0x61, 0x74, 0x61, 0x32, 0x9b, 0x03, 0x0a, 0x07, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x12, 0x27, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x03, 0x47, 0x65,
-	0x74, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69,
-	0x72, 0x22, 0x00, 0x12, 0x2d, 0x0a, 0x06, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x14, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c,
-	0x22, 0x00, 0x12, 0x2f, 0x0a, 0x07, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x15, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c,
-	0x6c, 0x22, 0x00, 0x12, 0x3d, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x12,
-	0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x42, 0x61, 0x74, 0x63, 0x68, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x00, 0x12, 0x31, 0x0a, 0x08, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x12, 0x16,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65, 0x74, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e,
-	0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x33, 0x0a, 0x09, 0x42, 0x61, 0x74, 0x63, 0x68, 0x53, 0x65,
-	0x6e, 0x64, 0x12, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68,
-	0x53, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x37, 0x0a, 0x0b, 0x42, 0x61,
-	0x74, 0x63, 0x68, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x12, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x42, 0x61, 0x74, 0x63, 0x68, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e, 0x75, 0x6c,
-	0x6c, 0x22, 0x00, 0x32, 0x54, 0x0a, 0x0b, 0x59, 0x61, 0x73, 0x73, 0x53, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x12, 0x21, 0x0a, 0x03, 0x50, 0x75, 0x74, 0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4e,
-	0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x22, 0x0a, 0x05, 0x46, 0x65, 0x74, 0x63, 0x68, 0x12, 0x0a,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4b, 0x65, 0x79, 0x1a, 0x0b, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2e, 0x50, 0x61, 0x69, 0x72, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d,
-	0x64, 0x69, 0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+var File_proto_yass_proto protoreflect.FileDescriptor
+
+var file_proto_yass_proto_rawDesc = []byte{
+	0x0a, 0x10, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x12, 0x05, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x30, 0x0a, 0x0a, 0x53, 0x65, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x22, 0x0a, 0x05, 0x65, 0x6e, 0x74, 0x72, 0x79,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x45,
+	0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x22, 0x1e, 0x0a, 0x0a, 0x47,
+	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x0d, 0x0a, 0x0b, 0x53,
+	0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x1f, 0x0a, 0x0b, 0x47, 0x65,
+	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x2f, 0x0a, 0x05, 0x45,
+	0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x32, 0x69, 0x0a, 0x07,
+	0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x2e, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x11,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x2e, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x11,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x69, 0x63, 0x68, 0x61, 0x65, 0x6c, 0x2d, 0x64, 0x69,
+	0x67, 0x67, 0x69, 0x6e, 0x2f, 0x79, 0x61, 0x73, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3b,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_yass_proto_rawDescOnce sync.Once
-	file_yass_proto_rawDescData = file_yass_proto_rawDesc
+	file_proto_yass_proto_rawDescOnce sync.Once
+	file_proto_yass_proto_rawDescData = file_proto_yass_proto_rawDesc
 )
 
-func file_yass_proto_rawDescGZIP() []byte {
-	file_yass_proto_rawDescOnce.Do(func() {
-		file_yass_proto_rawDescData = protoimpl.X.CompressGZIP(file_yass_proto_rawDescData)
+func file_proto_yass_proto_rawDescGZIP() []byte {
+	file_proto_yass_proto_rawDescOnce.Do(func() {
+		file_proto_yass_proto_rawDescData = protoimpl.X.CompressGZIP(file_proto_yass_proto_rawDescData)
 	})
-	return file_yass_proto_rawDescData
+	return file_proto_yass_proto_rawDescData
 }
 
-var file_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
-var file_yass_proto_goTypes = []interface{}{
-	(*SetRequest)(nil),         // 0: proto.SetRequest
-	(*GetRequest)(nil),         // 1: proto.GetRequest
-	(*DeleteRequest)(nil),      // 2: proto.DeleteRequest
-	(*Pair)(nil),               // 3: proto.Pair
-	(*Key)(nil),                // 4: proto.Key
-	(*Null)(nil),               // 5: proto.Null
-	(*AddNodeRequest)(nil),     // 6: proto.AddNodeRequest
-	(*BatchSetRequest)(nil),    // 7: proto.BatchSetRequest
-	(*BatchSendRequest)(nil),   // 8: proto.BatchSendRequest
-	(*BatchDeleteRequest)(nil), // 9: proto.BatchDeleteRequest
-	(*BatchGetRequest)(nil),    // 10: proto.BatchGetRequest
-	(*BatchGetResponse)(nil),   // 11: proto.BatchGetResponse
+var file_proto_yass_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_yass_proto_goTypes = []interface{}{
+	(*SetRequest)(nil),  // 0: proto.SetRequest
+	(*GetRequest)(nil),  // 1: proto.GetRequest
+	(*SetResponse)(nil), // 2: proto.SetResponse
+	(*GetResponse)(nil), // 3: proto.GetResponse
+	(*Entry)(nil),       // 4: proto.Entry
 }
-var file_yass_proto_depIdxs = []int32{
-	3,  // 0: proto.SetRequest.pair:type_name -> proto.Pair
-	3,  // 1: proto.BatchSetRequest.data:type_name -> proto.Pair
-	3,  // 2: proto.BatchGetResponse.data:type_name -> proto.Pair
-	0,  // 3: proto.Storage.Set:input_type -> proto.SetRequest
-	1,  // 4: proto.Storage.Get:input_type -> proto.GetRequest
-	2,  // 5: proto.Storage.Delete:input_type -> proto.DeleteRequest
-	6,  // 6: proto.Storage.AddNode:input_type -> proto.AddNodeRequest
-	10, // 7: proto.Storage.BatchGet:input_type -> proto.BatchGetRequest
-	7,  // 8: proto.Storage.BatchSet:input_type -> proto.BatchSetRequest
-	8,  // 9: proto.Storage.BatchSend:input_type -> proto.BatchSendRequest
-	9,  // 10: proto.Storage.BatchDelete:input_type -> proto.BatchDeleteRequest
-	3,  // 11: proto.YassService.Put:input_type -> proto.Pair
-	4,  // 12: proto.YassService.Fetch:input_type -> proto.Key
-	5,  // 13: proto.Storage.Set:output_type -> proto.Null
-	3,  // 14: proto.Storage.Get:output_type -> proto.Pair
-	5,  // 15: proto.Storage.Delete:output_type -> proto.Null
-	5,  // 16: proto.Storage.AddNode:output_type -> proto.Null
-	11, // 17: proto.Storage.BatchGet:output_type -> proto.BatchGetResponse
-	5,  // 18: proto.Storage.BatchSet:output_type -> proto.Null
-	5,  // 19: proto.Storage.BatchSend:output_type -> proto.Null
-	5,  // 20: proto.Storage.BatchDelete:output_type -> proto.Null
-	5,  // 21: proto.YassService.Put:output_type -> proto.Null
-	3,  // 22: proto.YassService.Fetch:output_type -> proto.Pair
-	13, // [13:23] is the sub-list for method output_type
-	3,  // [3:13] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+var file_proto_yass_proto_depIdxs = []int32{
+	4, // 0: proto.SetRequest.entry:type_name -> proto.Entry
+	0, // 1: proto.Storage.Set:input_type -> proto.SetRequest
+	1, // 2: proto.Storage.Get:input_type -> proto.GetRequest
+	2, // 3: proto.Storage.Set:output_type -> proto.SetResponse
+	3, // 4: proto.Storage.Get:output_type -> proto.GetResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_yass_proto_init() }
-func file_yass_proto_init() {
-	if File_yass_proto != nil {
+func init() { file_proto_yass_proto_init() }
+func file_proto_yass_proto_init() {
+	if File_proto_yass_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_yass_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_yass_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetRequest); i {
 			case 0:
 				return &v.state
@@ -871,7 +342,7 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_yass_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRequest); i {
 			case 0:
 				return &v.state
@@ -883,8 +354,8 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteRequest); i {
+		file_proto_yass_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -895,8 +366,8 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Pair); i {
+		file_proto_yass_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -907,92 +378,8 @@ func file_yass_proto_init() {
 				return nil
 			}
 		}
-		file_yass_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Key); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Null); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddNodeRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchSetRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchSendRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchDeleteRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchGetRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_yass_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BatchGetResponse); i {
+		file_proto_yass_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Entry); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1008,20 +395,20 @@ func file_yass_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_yass_proto_rawDesc,
+			RawDescriptor: file_proto_yass_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   5,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   1,
 		},
-		GoTypes:           file_yass_proto_goTypes,
-		DependencyIndexes: file_yass_proto_depIdxs,
-		MessageInfos:      file_yass_proto_msgTypes,
+		GoTypes:           file_proto_yass_proto_goTypes,
+		DependencyIndexes: file_proto_yass_proto_depIdxs,
+		MessageInfos:      file_proto_yass_proto_msgTypes,
 	}.Build()
-	File_yass_proto = out.File
-	file_yass_proto_rawDesc = nil
-	file_yass_proto_goTypes = nil
-	file_yass_proto_depIdxs = nil
+	File_proto_yass_proto = out.File
+	file_proto_yass_proto_rawDesc = nil
+	file_proto_yass_proto_goTypes = nil
+	file_proto_yass_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1036,14 +423,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type StorageClient interface {
-	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error)
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error)
-	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error)
-	AddNode(ctx context.Context, in *AddNodeRequest, opts ...grpc.CallOption) (*Null, error)
-	BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error)
-	BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error)
-	BatchSend(ctx context.Context, in *BatchSendRequest, opts ...grpc.CallOption) (*Null, error)
-	BatchDelete(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*Null, error)
+	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
+	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 }
 
 type storageClient struct {
@@ -1054,8 +435,8 @@ func NewStorageClient(cc grpc.ClientConnInterface) StorageClient {
 	return &storageClient{cc}
 }
 
-func (c *storageClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
+func (c *storageClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
+	out := new(SetResponse)
 	err := c.cc.Invoke(ctx, "/proto.Storage/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1063,63 +444,9 @@ func (c *storageClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *storageClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Pair, error) {
-	out := new(Pair)
+func (c *storageClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	out := new(GetResponse)
 	err := c.cc.Invoke(ctx, "/proto.Storage/Get", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Storage/Delete", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) AddNode(ctx context.Context, in *AddNodeRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Storage/AddNode", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) BatchGet(ctx context.Context, in *BatchGetRequest, opts ...grpc.CallOption) (*BatchGetResponse, error) {
-	out := new(BatchGetResponse)
-	err := c.cc.Invoke(ctx, "/proto.Storage/BatchGet", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) BatchSet(ctx context.Context, in *BatchSetRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Storage/BatchSet", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) BatchSend(ctx context.Context, in *BatchSendRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Storage/BatchSend", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *storageClient) BatchDelete(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.Storage/BatchDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1128,43 +455,19 @@ func (c *storageClient) BatchDelete(ctx context.Context, in *BatchDeleteRequest,
 
 // StorageServer is the server API for Storage service.
 type StorageServer interface {
-	Set(context.Context, *SetRequest) (*Null, error)
-	Get(context.Context, *GetRequest) (*Pair, error)
-	Delete(context.Context, *DeleteRequest) (*Null, error)
-	AddNode(context.Context, *AddNodeRequest) (*Null, error)
-	BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error)
-	BatchSet(context.Context, *BatchSetRequest) (*Null, error)
-	BatchSend(context.Context, *BatchSendRequest) (*Null, error)
-	BatchDelete(context.Context, *BatchDeleteRequest) (*Null, error)
+	Set(context.Context, *SetRequest) (*SetResponse, error)
+	Get(context.Context, *GetRequest) (*GetResponse, error)
 }
 
 // UnimplementedStorageServer can be embedded to have forward compatible implementations.
 type UnimplementedStorageServer struct {
 }
 
-func (*UnimplementedStorageServer) Set(context.Context, *SetRequest) (*Null, error) {
+func (*UnimplementedStorageServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (*UnimplementedStorageServer) Get(context.Context, *GetRequest) (*Pair, error) {
+func (*UnimplementedStorageServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
-}
-func (*UnimplementedStorageServer) Delete(context.Context, *DeleteRequest) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
-}
-func (*UnimplementedStorageServer) AddNode(context.Context, *AddNodeRequest) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddNode not implemented")
-}
-func (*UnimplementedStorageServer) BatchGet(context.Context, *BatchGetRequest) (*BatchGetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BatchGet not implemented")
-}
-func (*UnimplementedStorageServer) BatchSet(context.Context, *BatchSetRequest) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BatchSet not implemented")
-}
-func (*UnimplementedStorageServer) BatchSend(context.Context, *BatchSendRequest) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BatchSend not implemented")
-}
-func (*UnimplementedStorageServer) BatchDelete(context.Context, *BatchDeleteRequest) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BatchDelete not implemented")
 }
 
 func RegisterStorageServer(s *grpc.Server, srv StorageServer) {
@@ -1207,114 +510,6 @@ func _Storage_Get_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Storage_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).Delete(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/Delete",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).Delete(ctx, req.(*DeleteRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Storage_AddNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddNodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).AddNode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/AddNode",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).AddNode(ctx, req.(*AddNodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Storage_BatchGet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BatchGetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).BatchGet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/BatchGet",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).BatchGet(ctx, req.(*BatchGetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Storage_BatchSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BatchSetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).BatchSet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/BatchSet",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).BatchSet(ctx, req.(*BatchSetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Storage_BatchSend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BatchSendRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).BatchSend(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/BatchSend",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).BatchSend(ctx, req.(*BatchSendRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Storage_BatchDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BatchDeleteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StorageServer).BatchDelete(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Storage/BatchDelete",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).BatchDelete(ctx, req.(*BatchDeleteRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Storage_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Storage",
 	HandlerType: (*StorageServer)(nil),
@@ -1327,139 +522,7 @@ var _Storage_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Get",
 			Handler:    _Storage_Get_Handler,
 		},
-		{
-			MethodName: "Delete",
-			Handler:    _Storage_Delete_Handler,
-		},
-		{
-			MethodName: "AddNode",
-			Handler:    _Storage_AddNode_Handler,
-		},
-		{
-			MethodName: "BatchGet",
-			Handler:    _Storage_BatchGet_Handler,
-		},
-		{
-			MethodName: "BatchSet",
-			Handler:    _Storage_BatchSet_Handler,
-		},
-		{
-			MethodName: "BatchSend",
-			Handler:    _Storage_BatchSend_Handler,
-		},
-		{
-			MethodName: "BatchDelete",
-			Handler:    _Storage_BatchDelete_Handler,
-		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "yass.proto",
-}
-
-// YassServiceClient is the client API for YassService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type YassServiceClient interface {
-	Put(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Null, error)
-	Fetch(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error)
-}
-
-type yassServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewYassServiceClient(cc grpc.ClientConnInterface) YassServiceClient {
-	return &yassServiceClient{cc}
-}
-
-func (c *yassServiceClient) Put(ctx context.Context, in *Pair, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
-	err := c.cc.Invoke(ctx, "/proto.YassService/Put", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *yassServiceClient) Fetch(ctx context.Context, in *Key, opts ...grpc.CallOption) (*Pair, error) {
-	out := new(Pair)
-	err := c.cc.Invoke(ctx, "/proto.YassService/Fetch", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// YassServiceServer is the server API for YassService service.
-type YassServiceServer interface {
-	Put(context.Context, *Pair) (*Null, error)
-	Fetch(context.Context, *Key) (*Pair, error)
-}
-
-// UnimplementedYassServiceServer can be embedded to have forward compatible implementations.
-type UnimplementedYassServiceServer struct {
-}
-
-func (*UnimplementedYassServiceServer) Put(context.Context, *Pair) (*Null, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
-}
-func (*UnimplementedYassServiceServer) Fetch(context.Context, *Key) (*Pair, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Fetch not implemented")
-}
-
-func RegisterYassServiceServer(s *grpc.Server, srv YassServiceServer) {
-	s.RegisterService(&_YassService_serviceDesc, srv)
-}
-
-func _YassService_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Pair)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(YassServiceServer).Put(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.YassService/Put",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(YassServiceServer).Put(ctx, req.(*Pair))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _YassService_Fetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Key)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(YassServiceServer).Fetch(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.YassService/Fetch",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(YassServiceServer).Fetch(ctx, req.(*Key))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var _YassService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.YassService",
-	HandlerType: (*YassServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Put",
-			Handler:    _YassService_Put_Handler,
-		},
-		{
-			MethodName: "Fetch",
-			Handler:    _YassService_Fetch_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "yass.proto",
+	Metadata: "proto/yass.proto",
 }
