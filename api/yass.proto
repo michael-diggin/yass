@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package proto;
+package api;
 
-option go_package = "github.com/michael-diggin/yass/proto;proto";
+option go_package = "github.com/michael-diggin/yass/api;api";
 
 // Storage is the internal interface
 service Storage {
@@ -11,7 +11,7 @@ service Storage {
 }
 
 message SetRequest {
-    Entry entry = 1;
+    Record record = 1;
 }
 
 message GetRequest {
@@ -25,7 +25,8 @@ message GetResponse {
     string key = 2;
 }
 
-message Entry {
+message Record {
     string key = 1;
     bytes value = 2;
+    uint64 offset = 3;
 }
