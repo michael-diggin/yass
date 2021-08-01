@@ -40,7 +40,7 @@ func (db *DB) Set(record *api.Record) error {
 		return err
 	}
 	record.Offset = off
-	db.data[record.Key] = record
+	db.data[record.Id] = record
 	return nil
 }
 
@@ -50,13 +50,21 @@ func (db *DB) Get(key string) (*api.Record, error) {
 
 	record, ok := db.data[key]
 	if !ok {
-		return nil, ErrNotFound{Key: key}
+		return nil, api.ErrNotFound{Key: key}
 	}
 	return record, nil
 }
 
 func (db *DB) Close() error {
 	if err := db.plog.Close(); err != nil {
+		return err
+	}
+	db.data = nil
+	return nil
+}
+
+func (db *DB) Clear() error {
+	if err := db.plog.Remove(); err != nil {
 		return err
 	}
 	db.data = nil
