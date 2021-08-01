@@ -11,7 +11,4 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
-      run: 
-        - make init
-        - make gencert
-        - make test
+      run: make init && make gencert && make test
