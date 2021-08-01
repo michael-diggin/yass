@@ -21,7 +21,7 @@ func TestKVDBSetAndGet(t *testing.T) {
 
 	key := "test-key"
 	append := &api.Record{
-		Key:   key,
+		Id:    key,
 		Value: []byte("hello world"),
 	}
 	err = db.Set(append)
@@ -49,5 +49,5 @@ func TestKVDBNotFound(t *testing.T) {
 	read, err := db.Get(key)
 	require.Error(t, err)
 	require.Nil(t, read)
-	require.True(t, errors.As(err, &ErrNotFound{}))
+	require.True(t, errors.As(err, &api.ErrNotFound{}))
 }
