@@ -25,5 +25,5 @@ gencert:
 	mv *.pem *.csr ${CERT_PATH}
 
 test:
-	go test ./... --race --cover
+	go test ./... --cover
 
