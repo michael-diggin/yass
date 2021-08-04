@@ -1,6 +1,7 @@
 package kv
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/michael-diggin/yass/api"
@@ -20,14 +21,15 @@ type Config struct {
 }
 
 func NewDB(dir string, c Config) (*DB, error) {
-	store := make(map[string]*api.Record)
 	plog, err := log.NewLog(dir, c.logConfig)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: restore data if plog is not empty
-	// the log.Reader method can be used to read all the contents
-	// api.Record contains the `key` as well
+
+	store, err := resetOnStartUp(plog)
+	if err != nil {
+		return nil, err
+	}
 	return &DB{data: store, mu: sync.RWMutex{}, plog: plog}, nil
 }
 
@@ -69,4 +71,24 @@ func (db *DB) Clear() error {
 	}
 	db.data = nil
 	return nil
+}
+
+func resetOnStartUp(plog *log.Log) (map[string]*api.Record, error) {
+	store := make(map[string]*api.Record)
+	i := 0
+	done := false
+	for !done {
+		rec, err := plog.Read(uint64(i))
+		if err != nil {
+			if errors.As(err, &api.ErrOffsetOutOfRange{}) {
+				done = true
+				continue
+			} else {
+				return nil, err
+			}
+		}
+		store[rec.Id] = rec
+		i++
+	}
+	return store, nil
 }
