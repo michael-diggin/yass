@@ -2,6 +2,7 @@ package kv
 
 import (
 	"errors"
+	"io"
 	"sync"
 
 	"github.com/michael-diggin/yass/api"
@@ -11,9 +12,10 @@ import (
 // DB is a struct containing the in memory KV store
 // as well as the persistent log
 type DB struct {
-	data map[string]*api.Record
-	mu   sync.RWMutex
-	plog *log.Log
+	data      map[string]*api.Record
+	mu        sync.RWMutex
+	plog      *log.Log
+	LogConfig log.Config
 }
 
 type Config struct {
@@ -30,7 +32,7 @@ func NewDB(dir string, c Config) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DB{data: store, mu: sync.RWMutex{}, plog: plog}, nil
+	return &DB{data: store, mu: sync.RWMutex{}, plog: plog, LogConfig: c.logConfig}, nil
 }
 
 func (db *DB) Set(record *api.Record) error {
@@ -46,13 +48,13 @@ func (db *DB) Set(record *api.Record) error {
 	return nil
 }
 
-func (db *DB) Get(key string) (*api.Record, error) {
+func (db *DB) Get(id string) (*api.Record, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 
-	record, ok := db.data[key]
+	record, ok := db.data[id]
 	if !ok {
-		return nil, api.ErrNotFound{Key: key}
+		return nil, api.ErrNotFound{Id: id}
 	}
 	return record, nil
 }
@@ -91,4 +93,13 @@ func resetOnStartUp(plog *log.Log) (map[string]*api.Record, error) {
 		i++
 	}
 	return store, nil
+}
+
+func (db *DB) Restore() error {
+	db.data = make(map[string]*api.Record)
+	return db.plog.Reset()
+}
+
+func (db *DB) LogReader() io.Reader {
+	return db.plog.Reader()
 }

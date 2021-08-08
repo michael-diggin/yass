@@ -1,14 +1,19 @@
 package agent
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"sync"
+	"time"
 
+	"github.com/hashicorp/raft"
 	"github.com/michael-diggin/yass/discovery"
-	"github.com/michael-diggin/yass/kv"
+	"github.com/michael-diggin/yass/distributed"
 	"github.com/michael-diggin/yass/server"
+	"github.com/soheilhy/cmux"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -17,9 +22,10 @@ import (
 type Agent struct {
 	Config
 
-	db         *kv.DB
+	db         *distributed.YassDB
 	server     *grpc.Server
 	membership *discovery.Membership
+	mux        cmux.CMux
 
 	shutdown     bool
 	shutdowns    chan struct{}
@@ -34,6 +40,7 @@ type Config struct {
 	RPCPort         int
 	NodeName        string
 	StartJoinAddrs  []string
+	Bootstrap       bool
 }
 
 func (c Config) RPCAddr() (string, error) {
@@ -52,6 +59,7 @@ func New(config Config) (*Agent, error) {
 
 	setup := []func() error{
 		a.setupLogger,
+		a.setupMux,
 		a.setupDB,
 		a.setupServer,
 		a.setupMembership,
@@ -62,6 +70,7 @@ func New(config Config) (*Agent, error) {
 			return nil, err
 		}
 	}
+	go a.serve()
 	return a, nil
 }
 
@@ -74,8 +83,39 @@ func (a *Agent) setupLogger() error {
 	return nil
 }
 
+func (a *Agent) setupMux() error {
+	rpcAddr := fmt.Sprintf(":%d", a.Config.RPCPort)
+	ln, err := net.Listen("tcp", rpcAddr)
+	if err != nil {
+		return err
+	}
+	a.mux = cmux.New(ln)
+	return nil
+}
+
 func (a *Agent) setupDB() (err error) {
-	a.db, err = kv.NewDB(a.Config.DataDir, kv.Config{})
+	raftLn := a.mux.Match(func(reader io.Reader) bool {
+		b := make([]byte, 1)
+		if _, err := reader.Read(b); err != nil {
+			return false
+		}
+		return bytes.Compare(b, []byte{byte(distributed.RaftRPC)}) == 0
+	})
+
+	conf := distributed.Config{}
+	conf.Raft.StreamLayer = distributed.NewStreamLayer(
+		raftLn, a.Config.ServerTLSConfig, a.Config.PeerTLSConfig,
+	)
+	conf.Raft.LocalID = raft.ServerID(a.Config.NodeName)
+	conf.Raft.Bootstrap = a.Config.Bootstrap
+
+	a.db, err = distributed.NewYassDB(a.Config.DataDir, conf)
+	if err != nil {
+		return err
+	}
+	if a.Config.Bootstrap {
+		err = a.db.WaitForLeader(3 * time.Second)
+	}
 	return err
 }
 
@@ -92,20 +132,13 @@ func (a *Agent) setupServer() (err error) {
 	if err != nil {
 		return err
 	}
-	rpcAddr, err := a.RPCAddr()
-	if err != nil {
-		return err
-	}
-	ln, err := net.Listen("tcp", rpcAddr)
-	if err != nil {
-		return err
-	}
+	grpcLn := a.mux.Match(cmux.Any())
 	go func() {
-		if err := a.server.Serve(ln); err != nil {
+		if err := a.server.Serve(grpcLn); err != nil {
 			a.Shutdown()
 		}
 	}()
-	return err
+	return nil
 }
 
 func (a *Agent) setupMembership() (err error) {
@@ -113,7 +146,7 @@ func (a *Agent) setupMembership() (err error) {
 	if err != nil {
 		return err
 	}
-	a.membership, err = discovery.New(discovery.UnimplementedHandler{},
+	a.membership, err = discovery.New(a.db,
 		discovery.Config{
 			NodeName:       a.Config.NodeName,
 			BindAddr:       a.Config.BindAddr,
@@ -121,6 +154,14 @@ func (a *Agent) setupMembership() (err error) {
 			StartJoinAddrs: a.Config.StartJoinAddrs,
 		},
 	)
+	return err
+}
+
+func (a *Agent) serve() error {
+	if err := a.mux.Serve(); err != nil {
+		a.Shutdown()
+		return err
+	}
 	return nil
 }
 
@@ -149,5 +190,4 @@ func (a *Agent) Shutdown() error {
 		}
 	}
 	return nil
-
 }
