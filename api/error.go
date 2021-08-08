@@ -24,12 +24,12 @@ func (e ErrOffsetOutOfRange) Error() string {
 }
 
 type ErrNotFound struct {
-	Key string
+	Id string
 }
 
 // GRPCStatus implements the GRPC status interface
 func (e ErrNotFound) GRPCStatus() *status.Status {
-	return status.New(codes.NotFound, fmt.Sprintf("no record found for key: %s", e.Key))
+	return status.New(codes.NotFound, fmt.Sprintf("no record found for Id: %s", e.Id))
 }
 
 // Error implements the error interface

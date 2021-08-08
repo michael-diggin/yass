@@ -56,6 +56,7 @@ func TestAgent(t *testing.T) {
 			DataDir:         datadir,
 			ServerTLSConfig: serverTLSConfig,
 			PeerTLSConfig:   peerTLSConfig,
+			Bootstrap:       i == 0,
 		})
 		require.NoError(t, err)
 		agents = append(agents, agent)
@@ -80,6 +81,16 @@ func TestAgent(t *testing.T) {
 	)
 	require.NoError(t, err)
 	getResp, err := leaderClient.Get(
+		context.Background(),
+		&api.GetRequest{Id: "test-key"},
+	)
+	require.NoError(t, err)
+	require.Equal(t, []byte("hello world"), getResp.Record.Value)
+
+	time.Sleep(1 * time.Second)
+
+	followerClient := client(t, agents[1], peerTLSConfig)
+	getResp, err = followerClient.Get(
 		context.Background(),
 		&api.GetRequest{Id: "test-key"},
 	)
